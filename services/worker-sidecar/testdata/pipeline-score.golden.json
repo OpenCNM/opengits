@@ -1,0 +1,101 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "cases": [
+    {
+      "name": "空仓库",
+      "chapterCount": 0,
+      "docs": [],
+      "expected": 0
+    },
+    {
+      "name": "全部处理-无代码-无大纲",
+      "chapterCount": 0,
+      "docs": [
+        {
+          "status": "PROCESSED",
+          "content": "# A\n\n正文"
+        },
+        {
+          "status": "PROCESSED",
+          "content": "# B\n\n正文"
+        }
+      ],
+      "expected": 28
+    },
+    {
+      "name": "高覆盖-高代码密度-现代范式",
+      "chapterCount": 8,
+      "docs": [
+        {
+          "status": "PROCESSED",
+          "content": "```ts\nimport x from 'y';\ntry { await x(); } catch (e) {}\n```"
+        },
+        {
+          "status": "PROCESSED",
+          "content": "```ts\nexport const run = async () => { await retry(); };\n```"
+        }
+      ],
+      "expected": 97
+    },
+    {
+      "name": "半数错误-无代码",
+      "chapterCount": 4,
+      "docs": [
+        {
+          "status": "PROCESSED",
+          "content": "plain"
+        },
+        {
+          "status": "ERROR",
+          "content": "plain"
+        }
+      ],
+      "expected": 24
+    },
+    {
+      "name": "空内容行不计入密度",
+      "chapterCount": 2,
+      "docs": [
+        {
+          "status": "PROCESSED",
+          "content": ""
+        },
+        {
+          "status": "PROCESSED",
+          "content": "   "
+        }
+      ],
+      "expected": 40
+    },
+    {
+      "name": "低代码密度带块数补偿",
+      "chapterCount": 6,
+      "docs": [
+        {
+          "status": "PROCESSED",
+          "content": "# T\n\n```ts\na = 1\n```\n\n```ts\nb = 2\n```\n\n```ts\nc = 3\n```\n\n长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文长正文"
+        }
+      ],
+      "expected": 66
+    },
+    {
+      "name": "生产特征与认知梯度混合",
+      "chapterCount": 5,
+      "docs": [
+        {
+          "status": "PROCESSED",
+          "content": "uses timeout and fallback and retry somewhere"
+        },
+        {
+          "status": "PROCESSED",
+          "content": "uses import and await"
+        },
+        {
+          "status": "UNPROCESSED",
+          "content": "pending"
+        }
+      ],
+      "expected": 43
+    }
+  ]
+}

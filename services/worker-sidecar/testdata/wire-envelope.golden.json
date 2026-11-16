@@ -1,0 +1,510 @@
+{
+  "endpoints": {
+    "/v1/archive/diff": {
+      "added": [
+        "s"
+      ],
+      "modified": [
+        "s"
+      ],
+      "removed": [
+        "s"
+      ],
+      "renamed": [
+        {
+          "from": "s",
+          "to": "s"
+        }
+      ]
+    },
+    "/v1/archive/ensure": {
+      "dir": "s",
+      "fromCache": true
+    },
+    "/v1/archive/sniff": {
+      "ok": true,
+      "profile": {
+        "answerFile": "s",
+        "chapterCount": 1,
+        "docCodeRatio": {
+          "codeBytes": 1,
+          "codeExtensions": {
+            "s": 1
+          },
+          "codeFiles": 1,
+          "docBytes": 1,
+          "docExtensions": {
+            "s": 1
+          },
+          "docFiles": 1,
+          "otherFiles": 1,
+          "ratio": 1,
+          "totalFiles": 1
+        },
+        "excludeFromNav": [
+          "s"
+        ],
+        "globalAssets": {
+          "buildScripts": [
+            "s"
+          ],
+          "misc": [
+            "s"
+          ],
+          "pdfs": [
+            {
+              "path": "",
+              "size": 0
+            }
+          ],
+          "translations": [
+            {
+              "dir": "",
+              "lang": ""
+            }
+          ]
+        },
+        "hasTranslations": true,
+        "ingestMode": "s",
+        "isTreeTruncated": true,
+        "labRoots": [
+          "s"
+        ],
+        "repoType": "s",
+        "semanticTags": {
+          "s": "s"
+        },
+        "textRoot": "s",
+        "tier": "s",
+        "translationRoots": [
+          "s"
+        ]
+      },
+      "scale": {
+        "confidence": "s",
+        "maxDepth": 1,
+        "reason": "s",
+        "scale": "s",
+        "totalFiles": 1
+      }
+    },
+    "/v1/archive/tree": {
+      "nodes": [
+        {
+          "path": "s",
+          "size": 1,
+          "type": "s"
+        }
+      ],
+      "ok": true
+    },
+    "/v1/chunk/code-module": {
+      "chunks": [
+        {
+          "content": "s",
+          "contentType": "s",
+          "heading": "s",
+          "headingPath": "s",
+          "sourceFile": "s"
+        }
+      ]
+    },
+    "/v1/chunk/markdown": {
+      "chunks": [
+        {
+          "content": "s",
+          "contentType": "s",
+          "heading": "s",
+          "headingPath": "s"
+        }
+      ]
+    },
+    "/v1/fingerprint/compute": {
+      "error": "s",
+      "ok": true,
+      "result": {
+        "chapterScores": [
+          {
+            "breakdown": {
+              "scrollProgress": 0,
+              "timeProgress": 0
+            },
+            "contentWeight": 0,
+            "path": "",
+            "score": 0,
+            "totalDwellMs": 0,
+            "visitCount": 0
+          }
+        ],
+        "effectivelyRead": 1,
+        "overallProgress": 1,
+        "summary": {
+          "avgScore": 1,
+          "maxScore": 1,
+          "minScore": 1
+        },
+        "totalChapters": 1
+      }
+    },
+    "/v1/fingerprint/compute-batch": {
+      "error": "s",
+      "ok": true,
+      "results": {
+        "s": {
+          "chapterScores": [
+            {
+              "breakdown": {
+                "scrollProgress": 0,
+                "timeProgress": 0
+              },
+              "contentWeight": 0,
+              "path": "",
+              "score": 0,
+              "totalDwellMs": 0,
+              "visitCount": 0
+            }
+          ],
+          "effectivelyRead": 1,
+          "overallProgress": 1,
+          "summary": {
+            "avgScore": 1,
+            "maxScore": 1,
+            "minScore": 1
+          },
+          "totalChapters": 1
+        }
+      }
+    },
+    "/v1/graph/concept-grounding": {
+      "backboneFiles": [
+        {
+          "pageRank": 1,
+          "path": "s",
+          "role": "s"
+        }
+      ],
+      "error": "s",
+      "goldenSymbols": [
+        {
+          "file": "s",
+          "kind": "s",
+          "name": "s",
+          "score": 1
+        }
+      ],
+      "ok": true
+    },
+    "/v1/graph/symbol-lookup": {
+      "error": "s",
+      "found": true,
+      "ok": true,
+      "symbol": {
+        "callers": [
+          "s"
+        ],
+        "endLine": 1,
+        "file": "s",
+        "importers": 1,
+        "kind": "s",
+        "name": "s",
+        "pageRank": 1,
+        "role": "s",
+        "startLine": 1
+      }
+    },
+    "/v1/mdx/heal": {
+      "content": "s",
+      "ok": true
+    },
+    "/v1/mdx/sanitize": {
+      "content": "s",
+      "ok": true
+    },
+    "/v1/mdx/validate": {
+      "error": "s",
+      "ok": true,
+      "valid": true
+    },
+    "/v1/outline/candidates": {
+      "candidates": [
+        {
+          "anchor": "s",
+          "detail": "s",
+          "handle": 1,
+          "isDoc": true,
+          "kind": "s",
+          "path": "s",
+          "role": "s",
+          "weight": 1
+        }
+      ],
+      "ok": true
+    },
+    "/v1/outline/prepare-signals": {
+      "candidates": [
+        {
+          "anchor": "s",
+          "detail": "s",
+          "handle": 1,
+          "isDoc": true,
+          "kind": "s",
+          "path": "s",
+          "role": "s",
+          "weight": 1
+        }
+      ],
+      "fileCount": 1,
+      "flatRepoHints": "s",
+      "isFlat": true,
+      "ok": true
+    },
+    "/v1/outline/rule-fallback": {
+      "chapters": [
+        {
+          "files": [
+            {
+              "path": "",
+              "shortTitle": ""
+            }
+          ],
+          "name": "s",
+          "partTitle": "s",
+          "summary": "s"
+        }
+      ],
+      "ok": true
+    },
+    "/v1/outline/sanitize": {
+      "droppedPaths": [
+        "s"
+      ],
+      "ok": true,
+      "sanitizedChapters": [
+        {
+          "files": [
+            {
+              "path": "",
+              "shortTitle": ""
+            }
+          ],
+          "name": "s",
+          "partTitle": "s",
+          "summary": "s"
+        }
+      ],
+      "sanitizedModules": [
+        {
+          "directories": [
+            "s"
+          ],
+          "granularity": "s",
+          "name": "s",
+          "summary": "s"
+        }
+      ]
+    },
+    "/v1/symbols/extract": {
+      "callSites": [
+        {
+          "line": 1,
+          "name": "s"
+        }
+      ],
+      "imports": [
+        {
+          "bindings": [
+            "s"
+          ],
+          "module": "s"
+        }
+      ],
+      "ok": true,
+      "referencedConstants": [
+        "s"
+      ],
+      "symbols": [
+        {
+          "endLine": 1,
+          "exported": true,
+          "golden": true,
+          "importers": 1,
+          "kind": "s",
+          "name": "s",
+          "startLine": 1
+        }
+      ]
+    },
+    "/v1/update/candidate-set": {
+      "architectureDrift": {
+        "affectedEdges": [
+          {
+            "from": "",
+            "status": "",
+            "to": ""
+          }
+        ],
+        "affectedNodes": [
+          {
+            "changedFiles": null,
+            "name": "",
+            "nodeId": "",
+            "path": "",
+            "rippleFiles": null,
+            "status": "",
+            "summary": ""
+          }
+        ],
+        "driftMermaid": "s",
+        "hasDrift": true,
+        "isCrossBoundary": true,
+        "verdict": "s"
+      },
+      "chapters": [
+        {
+          "affectedFiles": [
+            {
+              "change": "",
+              "path": ""
+            }
+          ],
+          "change": "s",
+          "isBreaking": true,
+          "keepExemption": {
+            "evidence": "",
+            "reason": ""
+          },
+          "oldSummary": "s",
+          "path": "s",
+          "rename": {
+            "from": "",
+            "to": ""
+          },
+          "surgicalAnchors": [
+            {
+              "change": "",
+              "exported": false,
+              "file": "",
+              "kind": "",
+              "line": 0,
+              "reason": "",
+              "symbolName": ""
+            }
+          ],
+          "title": "s"
+        }
+      ],
+      "diffStats": {
+        "added": 1,
+        "modified": 1,
+        "removed": 1,
+        "renamed": 1
+      },
+      "graphDrift": {
+        "addedBackbone": [
+          "s"
+        ],
+        "index": 1,
+        "removedBackbone": [
+          "s"
+        ],
+        "unionSize": 1
+      },
+      "hasOldArchive": true,
+      "isBreaking": true,
+      "structuralAdds": [
+        {
+          "affectedFiles": [
+            {
+              "change": "",
+              "path": ""
+            }
+          ],
+          "change": "s",
+          "isBreaking": true,
+          "keepExemption": {
+            "evidence": "",
+            "reason": ""
+          },
+          "oldSummary": "s",
+          "path": "s",
+          "rename": {
+            "from": "",
+            "to": ""
+          },
+          "surgicalAnchors": [
+            {
+              "change": "",
+              "exported": false,
+              "file": "",
+              "kind": "",
+              "line": 0,
+              "reason": "",
+              "symbolName": ""
+            }
+          ],
+          "title": "s"
+        }
+      ],
+      "structuralRemoves": [
+        {
+          "affectedFiles": [
+            {
+              "change": "",
+              "path": ""
+            }
+          ],
+          "change": "s",
+          "isBreaking": true,
+          "keepExemption": {
+            "evidence": "",
+            "reason": ""
+          },
+          "oldSummary": "s",
+          "path": "s",
+          "rename": {
+            "from": "",
+            "to": ""
+          },
+          "surgicalAnchors": [
+            {
+              "change": "",
+              "exported": false,
+              "file": "",
+              "kind": "",
+              "line": 0,
+              "reason": "",
+              "symbolName": ""
+            }
+          ],
+          "title": "s"
+        }
+      ],
+      "suggestsNewEdition": true,
+      "unmatchedFiles": [
+        {
+          "change": "s",
+          "path": "s"
+        }
+      ]
+    },
+    "/v1/web-doc/diff": {
+      "etag": "s",
+      "hasChanges": true,
+      "pagesToAdd": [
+        "s"
+      ],
+      "pagesToRemove": [
+        "s"
+      ],
+      "pagesToUpdate": [
+        "s"
+      ],
+      "sitemapLastModMap": {
+        "s": "s"
+      },
+      "totalChanged": 1,
+      "totalPages": 1
+    }
+  },
+  "version": 1
+}

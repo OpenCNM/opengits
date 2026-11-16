@@ -1,0 +1,653 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "cases": [
+    {
+      "name": "docs-repo-diff-mapping",
+      "input": {
+        "owner": "testowner",
+        "repo": "test-docs-repo",
+        "branch": "main",
+        "fromSha": "1111111111111111111111111111111111111111",
+        "toSha": "2222222222222222222222222222222222222222",
+        "repositoryId": "repo-docs",
+        "diff": {
+          "modified": [
+            "docs/intro.md"
+          ],
+          "removed": [
+            "docs/deprecated.md"
+          ],
+          "added": [
+            "docs/new-guide.md"
+          ],
+          "renamed": [
+            {
+              "from": "docs/old-name.md",
+              "to": "docs/new-name.md"
+            }
+          ]
+        },
+        "documents": [
+          {
+            "path": "docs/intro.md",
+            "title": "起步介绍",
+            "summary": "这是旧的起步介绍摘要"
+          },
+          {
+            "path": "docs/deprecated.md",
+            "title": "废弃功能",
+            "summary": "这是已废弃的功能说明"
+          },
+          {
+            "path": "docs/unchanged.md",
+            "title": "不变文档",
+            "summary": "未改动的文档"
+          }
+        ],
+        "graphDiff": {
+          "fromSha": "1111111111111111111111111111111111111111",
+          "toSha": "2222222222222222222222222222222222222222",
+          "fileDiffs": {},
+          "chapterDecisions": [
+            {
+              "path": "docs/intro.md",
+              "action": "update",
+              "isBreaking": false
+            },
+            {
+              "path": "docs/deprecated.md",
+              "action": "update",
+              "isBreaking": false
+            }
+          ],
+          "suggestsNewEdition": false,
+          "isBreaking": false,
+          "stats": {
+            "totalFiles": 0,
+            "astIdenticalFiles": 0,
+            "privateOnlyFiles": 0,
+            "exportedChangedFiles": 0,
+            "rippleAffectedFiles": 0,
+            "totalChapters": 2,
+            "exemptChapters": 0,
+            "updateChapters": 2
+          }
+        }
+      },
+      "expected": {
+        "chapters": [
+          {
+            "path": "docs/intro.md",
+            "title": "起步介绍",
+            "oldSummary": "这是旧的起步介绍摘要",
+            "change": "content",
+            "affectedFiles": [
+              {
+                "path": "docs/intro.md",
+                "change": "modified"
+              }
+            ]
+          },
+          {
+            "path": "docs/deprecated.md",
+            "title": "废弃功能",
+            "oldSummary": "这是已废弃的功能说明",
+            "change": "structural",
+            "affectedFiles": [
+              {
+                "path": "docs/deprecated.md",
+                "change": "removed"
+              }
+            ]
+          }
+        ],
+        "unmatchedFiles": [
+          {
+            "path": "docs/new-guide.md",
+            "change": "added"
+          },
+          {
+            "path": "docs/old-name.md",
+            "change": "renamed"
+          },
+          {
+            "path": "docs/new-name.md",
+            "change": "renamed"
+          }
+        ],
+        "structuralAdds": [],
+        "structuralRemoves": [],
+        "diffStats": {
+          "added": 1,
+          "modified": 1,
+          "removed": 1,
+          "renamed": 1
+        },
+        "hasOldArchive": false,
+        "suggestsNewEdition": false,
+        "isBreaking": false
+      }
+    },
+    {
+      "name": "code-repo-recluster-and-shift",
+      "input": {
+        "owner": "testowner",
+        "repo": "test-code-repo",
+        "branch": "main",
+        "fromSha": "1111111111111111111111111111111111111111",
+        "toSha": "2222222222222222222222222222222222222222",
+        "repositoryId": "repo-code",
+        "repoProfile": {
+          "codeClusters": [
+            {
+              "teachingOrder": 1,
+              "chapterNo": 1,
+              "title": "运行时核心",
+              "summary": "核心架构",
+              "directories": [
+                "src/runtime"
+              ],
+              "files": [
+                "src/runtime/core.ts"
+              ]
+            },
+            {
+              "teachingOrder": 2,
+              "chapterNo": 2,
+              "title": "编译器实现",
+              "summary": "编译器",
+              "directories": [
+                "src/compiler"
+              ],
+              "files": [
+                "src/compiler/parser.ts"
+              ]
+            }
+          ]
+        },
+        "diff": {
+          "modified": [
+            "src/runtime/core.ts"
+          ],
+          "added": [
+            "src/runtime/helper.ts",
+            "src/fresh/new_mod.ts"
+          ],
+          "removed": [
+            "src/compiler/parser.ts"
+          ],
+          "renamed": []
+        },
+        "newTree": [
+          {
+            "path": "src",
+            "mode": "040000",
+            "type": "tree",
+            "sha": "dummy-sha",
+            "url": ""
+          },
+          {
+            "path": "src/runtime",
+            "mode": "040000",
+            "type": "tree",
+            "sha": "dummy-sha",
+            "url": ""
+          },
+          {
+            "path": "src/fresh",
+            "mode": "040000",
+            "type": "tree",
+            "sha": "dummy-sha",
+            "url": ""
+          },
+          {
+            "path": "src/runtime/core.ts",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "dummy-sha",
+            "url": "",
+            "size": 100
+          },
+          {
+            "path": "src/runtime/helper.ts",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "dummy-sha",
+            "url": "",
+            "size": 100
+          },
+          {
+            "path": "src/fresh/new_mod.ts",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "dummy-sha",
+            "url": "",
+            "size": 100
+          }
+        ],
+        "documents": [
+          {
+            "path": "chapters/01.mdx",
+            "title": "运行时核心",
+            "summary": "旧核心摘要"
+          },
+          {
+            "path": "chapters/02.mdx",
+            "title": "编译器实现",
+            "summary": "旧编译器摘要"
+          }
+        ],
+        "graphDiff": {
+          "fromSha": "1111111111111111111111111111111111111111",
+          "toSha": "2222222222222222222222222222222222222222",
+          "fileDiffs": {},
+          "chapterDecisions": [
+            {
+              "path": "chapters/01.mdx",
+              "action": "update",
+              "isBreaking": false
+            }
+          ],
+          "suggestsNewEdition": false,
+          "isBreaking": false,
+          "stats": {
+            "totalFiles": 0,
+            "astIdenticalFiles": 0,
+            "privateOnlyFiles": 0,
+            "exportedChangedFiles": 0,
+            "rippleAffectedFiles": 0,
+            "totalChapters": 1,
+            "exemptChapters": 0,
+            "updateChapters": 1
+          }
+        }
+      },
+      "expected": {
+        "chapters": [
+          {
+            "path": "chapters/01.mdx",
+            "title": "运行时核心",
+            "oldSummary": "旧核心摘要",
+            "change": "structural",
+            "affectedFiles": [
+              {
+                "path": "src/runtime/core.ts",
+                "change": "modified"
+              },
+              {
+                "path": "src/runtime/helper.ts",
+                "change": "added"
+              }
+            ]
+          },
+          {
+            "path": "chapters/02.mdx",
+            "title": "编译器实现",
+            "oldSummary": "旧编译器摘要",
+            "change": "structural",
+            "affectedFiles": []
+          }
+        ],
+        "unmatchedFiles": [
+          {
+            "path": "src/fresh/new_mod.ts",
+            "change": "added"
+          },
+          {
+            "path": "src/compiler/parser.ts",
+            "change": "removed"
+          }
+        ],
+        "structuralAdds": [],
+        "structuralRemoves": [
+          {
+            "path": "chapters/02.mdx",
+            "title": "编译器实现",
+            "oldSummary": "旧编译器摘要",
+            "change": "structural",
+            "affectedFiles": []
+          }
+        ],
+        "diffStats": {
+          "added": 2,
+          "modified": 1,
+          "removed": 1,
+          "renamed": 0
+        },
+        "hasOldArchive": false,
+        "suggestsNewEdition": false,
+        "isBreaking": false
+      }
+    },
+    {
+      "name": "deterministic-rename-absorbed",
+      "input": {
+        "owner": "testowner",
+        "repo": "test-docs-repo",
+        "branch": "main",
+        "fromSha": "1111111111111111111111111111111111111111",
+        "toSha": "2222222222222222222222222222222222222222",
+        "repositoryId": "repo-rename",
+        "diff": {
+          "modified": [],
+          "added": [],
+          "removed": [],
+          "renamed": [
+            {
+              "from": "docs/old-guide.md",
+              "to": "docs/new-guide.md"
+            }
+          ]
+        },
+        "documents": [
+          {
+            "path": "docs/old-guide.md",
+            "title": "指南",
+            "summary": "改名前的指南文档"
+          }
+        ],
+        "graphDiff": {
+          "fromSha": "1111111111111111111111111111111111111111",
+          "toSha": "2222222222222222222222222222222222222222",
+          "fileDiffs": {},
+          "chapterDecisions": [
+            {
+              "path": "docs/old-guide.md",
+              "action": "update",
+              "isBreaking": false
+            }
+          ],
+          "suggestsNewEdition": false,
+          "isBreaking": false,
+          "stats": {
+            "totalFiles": 0,
+            "astIdenticalFiles": 0,
+            "privateOnlyFiles": 0,
+            "exportedChangedFiles": 0,
+            "rippleAffectedFiles": 0,
+            "totalChapters": 1,
+            "exemptChapters": 0,
+            "updateChapters": 1
+          }
+        }
+      },
+      "expected": {
+        "chapters": [
+          {
+            "path": "docs/old-guide.md",
+            "title": "指南",
+            "oldSummary": "改名前的指南文档",
+            "change": "content",
+            "affectedFiles": [
+              {
+                "path": "docs/old-guide.md",
+                "change": "renamed"
+              }
+            ],
+            "rename": {
+              "from": "docs/old-guide.md",
+              "to": "docs/new-guide.md"
+            }
+          }
+        ],
+        "unmatchedFiles": [],
+        "structuralAdds": [],
+        "structuralRemoves": [],
+        "diffStats": {
+          "added": 0,
+          "modified": 0,
+          "removed": 0,
+          "renamed": 1
+        },
+        "hasOldArchive": false,
+        "suggestsNewEdition": false,
+        "isBreaking": false
+      }
+    },
+    {
+      "name": "infra-keep-exemption-and-surgical-anchors",
+      "input": {
+        "owner": "testowner",
+        "repo": "test-repo",
+        "branch": "main",
+        "fromSha": "1111111111111111111111111111111111111111",
+        "toSha": "2222222222222222222222222222222222222222",
+        "repositoryId": "repo-anchors",
+        "repoProfile": {
+          "codeClusters": [
+            {
+              "teachingOrder": 1,
+              "title": "工程基建",
+              "summary": "CI与构建",
+              "directories": [
+                "config"
+              ],
+              "files": [
+                "pnpm-lock.yaml"
+              ]
+            },
+            {
+              "teachingOrder": 2,
+              "title": "解析器",
+              "summary": "核心语法解析",
+              "directories": [
+                "src"
+              ],
+              "files": [
+                "src/parser.ts"
+              ]
+            },
+            {
+              "teachingOrder": 3,
+              "title": "调用方",
+              "summary": "下游消费模块",
+              "directories": [
+                "src"
+              ],
+              "files": [
+                "src/consumer.ts"
+              ]
+            }
+          ]
+        },
+        "diff": {
+          "modified": [
+            "pnpm-lock.yaml",
+            "src/parser.ts"
+          ],
+          "added": [],
+          "removed": [],
+          "renamed": []
+        },
+        "documents": [
+          {
+            "path": "chapters/01.mdx",
+            "title": "工程基建",
+            "summary": "旧基建"
+          },
+          {
+            "path": "chapters/02.mdx",
+            "title": "解析器",
+            "summary": "旧解析器"
+          },
+          {
+            "path": "chapters/03.mdx",
+            "title": "调用方",
+            "summary": "旧调用方"
+          }
+        ],
+        "graphDiff": {
+          "fromSha": "1111111111111111111111111111111111111111",
+          "toSha": "2222222222222222222222222222222222222222",
+          "fileDiffs": {},
+          "chapterDecisions": [
+            {
+              "path": "chapters/01.mdx",
+              "action": "keep",
+              "keepExemption": {
+                "reason": "受影响文件全部为基础设施角色，教学核心未受影响，零 LLM 豁免",
+                "evidence": "pnpm-lock.yaml"
+              },
+              "isBreaking": false
+            },
+            {
+              "path": "chapters/02.mdx",
+              "action": "update",
+              "surgicalAnchors": [
+                {
+                  "symbolName": "parseToken",
+                  "kind": "function",
+                  "file": "src/parser.ts",
+                  "change": "modified",
+                  "exported": true,
+                  "line": 42,
+                  "reason": "导出符号 parseToken 发生变更"
+                }
+              ],
+              "isBreaking": true
+            },
+            {
+              "path": "chapters/03.mdx",
+              "action": "update",
+              "surgicalAnchors": [
+                {
+                  "symbolName": "callerFn",
+                  "kind": "function",
+                  "file": "src/consumer.ts",
+                  "change": "ripple",
+                  "exported": false,
+                  "line": 88,
+                  "reason": "调用了已变更的上游导出符号 src/parser.ts::parseToken"
+                }
+              ],
+              "isBreaking": false
+            }
+          ],
+          "suggestsNewEdition": true,
+          "isBreaking": true,
+          "stats": {
+            "totalFiles": 3,
+            "astIdenticalFiles": 1,
+            "privateOnlyFiles": 0,
+            "exportedChangedFiles": 1,
+            "rippleAffectedFiles": 1,
+            "totalChapters": 3,
+            "exemptChapters": 1,
+            "updateChapters": 2
+          }
+        }
+      },
+      "expected": {
+        "chapters": [
+          {
+            "path": "chapters/01.mdx",
+            "title": "工程基建",
+            "oldSummary": "旧基建",
+            "change": "content",
+            "affectedFiles": [
+              {
+                "path": "pnpm-lock.yaml",
+                "change": "modified"
+              }
+            ],
+            "keepExemption": {
+              "reason": "受影响文件全部为基础设施角色，教学核心未受影响，零 LLM 豁免",
+              "evidence": "pnpm-lock.yaml"
+            }
+          },
+          {
+            "path": "chapters/02.mdx",
+            "title": "解析器",
+            "oldSummary": "旧解析器",
+            "change": "content",
+            "affectedFiles": [
+              {
+                "path": "src/parser.ts",
+                "change": "modified"
+              }
+            ],
+            "surgicalAnchors": [
+              {
+                "symbolName": "parseToken",
+                "kind": "function",
+                "file": "src/parser.ts",
+                "change": "modified",
+                "exported": true,
+                "line": 42,
+                "reason": "导出符号 parseToken 发生变更"
+              }
+            ],
+            "isBreaking": true
+          },
+          {
+            "path": "chapters/03.mdx",
+            "title": "调用方",
+            "oldSummary": "旧调用方",
+            "change": "content",
+            "affectedFiles": [
+              {
+                "path": "src/consumer.ts",
+                "change": "modified"
+              }
+            ],
+            "surgicalAnchors": [
+              {
+                "symbolName": "callerFn",
+                "kind": "function",
+                "file": "src/consumer.ts",
+                "change": "ripple",
+                "exported": false,
+                "line": 88,
+                "reason": "调用了已变更的上游导出符号 src/parser.ts::parseToken"
+              }
+            ],
+            "isBreaking": false
+          }
+        ],
+        "unmatchedFiles": [],
+        "structuralAdds": [],
+        "structuralRemoves": [],
+        "diffStats": {
+          "added": 0,
+          "modified": 2,
+          "removed": 0,
+          "renamed": 0
+        },
+        "hasOldArchive": false,
+        "suggestsNewEdition": true,
+        "isBreaking": true
+      }
+    },
+    {
+      "name": "empty-diff-boundary",
+      "input": {
+        "owner": "testowner",
+        "repo": "test-empty",
+        "branch": "main",
+        "fromSha": "1111111111111111111111111111111111111111",
+        "toSha": "2222222222222222222222222222222222222222",
+        "repositoryId": "repo-empty",
+        "diff": {
+          "modified": [],
+          "added": [],
+          "removed": [],
+          "renamed": []
+        },
+        "documents": []
+      },
+      "expected": {
+        "chapters": [],
+        "unmatchedFiles": [],
+        "structuralAdds": [],
+        "structuralRemoves": [],
+        "diffStats": {
+          "added": 0,
+          "modified": 0,
+          "removed": 0,
+          "renamed": 0
+        },
+        "hasOldArchive": false
+      }
+    }
+  ]
+}

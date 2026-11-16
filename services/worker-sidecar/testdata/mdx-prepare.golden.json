@@ -1,0 +1,85 @@
+{
+  "generatedBy": "TS lib/mdx/prepareMdxSource（渲染态契约事实源）；Go internal/mdx 按生产组合断言一致",
+  "cases": [
+    {
+      "name": "empty",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "name": "plain-prose-cjk",
+      "input": "# 简介\n\n这是一个针对知识库构建引擎的正文段落，包含中文与 English 混排。",
+      "expected": "# 简介\n\n这是一个针对知识库构建引擎的正文段落，包含中文与 English 混排。"
+    },
+    {
+      "name": "sentinel-markers",
+      "input": "===CONTENT_BEGIN===\n# 第一章\n\n正文内容。\n===CONTENT_END===",
+      "expected": "\n# 第一章\n\n正文内容。\n"
+    },
+    {
+      "name": "pandoc-image-attrs",
+      "input": "![架构图](https://example.com/arch.png){height=55%}\n\n![小图](img.png){width=30}",
+      "expected": "![架构图](https://example.com/arch.png)\n\n![小图](img.png)"
+    },
+    {
+      "name": "concept-manifest-paired",
+      "input": "前文\n<concept_manifest version=\"1\">{\"a\":1}</concept_manifest>\n后文",
+      "expected": "前文\n\n后文"
+    },
+    {
+      "name": "concept-manifest-unclosed",
+      "input": "前文\n<concept_manifest version=\"1\">{\"a\":1}\n后文继续存在",
+      "expected": "前文\n"
+    },
+    {
+      "name": "void-br-hr-wbr",
+      "input": "第一行<br>第二行\n\n分隔<hr>\n\n软换<wbr>行",
+      "expected": "第一行<br />第二行\n\n分隔<hr />\n\n软换<wbr />行"
+    },
+    {
+      "name": "void-img-with-attrs",
+      "input": "图示：<img src=\"a.png\" alt=\"示例\"> 与 <input type=\"text\" value=\"x\">",
+      "expected": "图示：<img src=\"a.png\" alt=\"示例\" /> 与 <input type=\"text\" value=\"x\" />"
+    },
+    {
+      "name": "void-img-bare-not-converted",
+      "input": "裸 img 不转换：<img>",
+      "expected": "裸 img 不转换：<img>"
+    },
+    {
+      "name": "void-already-self-closed",
+      "input": "已闭合保持原样：<br /> 与 <hr/> 与 <img src=\"a.png\" />",
+      "expected": "已闭合保持原样：<br /> 与 <hr/> 与 <img src=\"a.png\" />"
+    },
+    {
+      "name": "void-uppercase",
+      "input": "大写标签：<BR> 与 <IMG SRC=\"a.png\" ALT=\"x\">",
+      "expected": "大写标签：<br /> 与 <img SRC=\"a.png\" ALT=\"x\" />"
+    },
+    {
+      "name": "void-inside-fence-protected",
+      "input": "正文 <br> 前\n\n```html\n<img src=\"inside.png\">\n<br>\n```\n\n正文后",
+      "expected": "正文 <br /> 前\n\n```html\n<img src=\"inside.png\">\n<br>\n```\n\n正文后"
+    },
+    {
+      "name": "void-inside-tilde-fence-protected",
+      "input": "~~~\n<hr>\n<img src=\"t.png\">\n~~~",
+      "expected": "~~~\n<hr>\n<img src=\"t.png\">\n~~~"
+    },
+    {
+      "name": "void-inside-indented-fence-protected",
+      "input": "   ```js\n   <br>\n   ```",
+      "expected": "   ```js\n   <br>\n   ```"
+    },
+    {
+      "name": "void-inside-inline-backtick-protected",
+      "input": "行内代码保护：`<br>` 与 `<img src=\"x\">` 不受影响，但行外 <br> 要转。",
+      "expected": "行内代码保护：`<br>` 与 `<img src=\"x\">` 不受影响，但行外 <br /> 要转。"
+    },
+    {
+      "name": "mixed-all-dimensions",
+      "input": "===CONTENT_BEGIN===\n# 标题 <br> 行内\n\n```typescript\nconst el = <img src=\"code.png\">;\n```\n\n行内 `<hr>` 保持。\n\n![图](u.png){height=10%}\n\n<concept_manifest>{\"k\":1}</concept_manifest>\n\n尾行 <wbr> 结束。\n===CONTENT_END===",
+      "expected": "\n# 标题 <br /> 行内\n\n```typescript\nconst el = <img src=\"code.png\">;\n```\n\n行内 `<hr>` 保持。\n\n![图](u.png)\n\n\n\n尾行 <wbr /> 结束。\n"
+    }
+  ]
+}

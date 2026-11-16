@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "stripTitleCases": [
+    {
+      "rawTitle": "Quickstart | VitePress Docs",
+      "expected": "Quickstart"
+    },
+    {
+      "rawTitle": "Architecture Guide · OpenGits",
+      "expected": "Architecture Guide"
+    },
+    {
+      "rawTitle": "01 - Introduction - React Docs",
+      "expected": "01 - Introduction"
+    },
+    {
+      "rawTitle": "01 - Introduction",
+      "expected": "01 - Introduction"
+    },
+    {
+      "rawTitle": "Step 1 - Installation",
+      "expected": "Step 1 - Installation"
+    },
+    {
+      "rawTitle": "Overview - Docs",
+      "expected": "Overview"
+    },
+    {
+      "rawTitle": "第1章 - 架构演进与设计模式",
+      "expected": "第1章 - 架构演进与设计模式"
+    },
+    {
+      "rawTitle": "第一讲 - 快速入门与环境配置",
+      "expected": "第一讲 - 快速入门与环境配置"
+    },
+    {
+      "rawTitle": "1.1 - 快速上手指南",
+      "expected": "1.1 - 快速上手指南"
+    },
+    {
+      "rawTitle": "Getting Started — Vue.js",
+      "expected": "Getting Started"
+    },
+    {
+      "rawTitle": "API Reference – Next.js",
+      "expected": "API Reference"
+    },
+    {
+      "rawTitle": "02 - Core Mechanics - Engine - GlobalDocs",
+      "expected": "02 - Core Mechanics - Engine"
+    },
+    {
+      "rawTitle": "BareTitleWithoutSeparator",
+      "expected": "BareTitleWithoutSeparator"
+    }
+  ],
+  "canonicalPathCases": [
+    {
+      "rawUrl": "https://example.com/docs/guide",
+      "expected": "docs/guide.md"
+    },
+    {
+      "rawUrl": "https://example.com/",
+      "expected": "index.md"
+    },
+    {
+      "rawUrl": "https://example.com/api/v1/user/",
+      "expected": "api/v1/user.md"
+    },
+    {
+      "rawUrl": "https://example.com/about",
+      "expected": "about.md"
+    },
+    {
+      "rawUrl": "https://example.com",
+      "expected": "index.md"
+    },
+    {
+      "rawUrl": "https://example.com/nested/path/to/doc.html",
+      "expected": "nested/path/to/doc.html.md"
+    }
+  ],
+  "headingCases": [
+    {
+      "name": "markdown-headings-with-fences",
+      "input": "# Document Main Title\nSome introductory paragraph.\n```typescript\n// # Comment inside code block should be ignored\nconsole.log(\"hello\");\n```\n## Section One\n~~~python\n# Another fenced comment\n~~~\n### Subsection 1.1\n#### Deep Feature Title",
+      "expected": [
+        {
+          "level": 1,
+          "text": "Document Main Title",
+          "id": "document-main-title"
+        },
+        {
+          "level": 2,
+          "text": "Section One",
+          "id": "section-one"
+        },
+        {
+          "level": 3,
+          "text": "Subsection 1.1",
+          "id": "subsection-1-1"
+        },
+        {
+          "level": 4,
+          "text": "Deep Feature Title",
+          "id": "deep-feature-title"
+        }
+      ]
+    }
+  ]
+}

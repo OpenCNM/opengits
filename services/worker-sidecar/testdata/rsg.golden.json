@@ -1,0 +1,1040 @@
+{
+ "_comment": "冻结手工维护契约：TS<->Go RSG 对拍单一事实源（原 TS 生成脚本 gen-rsg-golden.ts 已于 2026-11 死代码清算退役，改动需手工双侧同步）。",
+ "gitSha": "golden-sha-test-2026",
+ "files": [
+  {
+   "path": "src/index.ts",
+   "content": "\n      import { startServer } from './server';\n      import { db } from '@/lib/db';\n      import { add } from './utils/math';\n      export function main() { startServer(); }\n    "
+  },
+  {
+   "path": "src/server.ts",
+   "content": "\n      import { handleRoute } from './routes/api';\n      import { db } from '@/lib/db';\n      export class Server { run() { handleRoute(); } }\n    "
+  },
+  {
+   "path": "src/routes/api.ts",
+   "content": "\n      import { authenticate } from '@/services/auth';\n      import { User } from '@/models/user';\n      import { db } from '@/lib/db';\n      export function handleRoute() { authenticate(); }\n    "
+  },
+  {
+   "path": "src/services/auth.ts",
+   "content": "\n      import { User } from '@/models/user';\n      import { db } from '@/lib/db';\n      export function authenticate() {}\n    "
+  },
+  {
+   "path": "src/models/user.ts",
+   "content": "\n      import { db } from '@/lib/db';\n      export interface User { id: string; }\n    "
+  },
+  {
+   "path": "src/lib/db.ts",
+   "content": "\n      export const db = { query: () => {} };\n    "
+  },
+  {
+   "path": "src/utils/math.ts",
+   "content": "\n      export function add(a: number, b: number) { return a + b; }\n    "
+  },
+  {
+   "path": "src/lib/db.test.ts",
+   "content": "\n      import { db } from './db';\n      test('db', () => {});\n    "
+  },
+  {
+   "path": "app/main.py",
+   "content": "\n      from app.controller import run_app\n      if __name__ == '__main__':\n          run_app()\n    "
+  },
+  {
+   "path": "app/controller.py",
+   "content": "\n      from app.models.user import UserModel\n      from app.utils import helper\n      def run_app(): pass\n    "
+  },
+  {
+   "path": "app/models/user.py",
+   "content": "\n      class UserModel: pass\n    "
+  },
+  {
+   "path": "app/utils.py",
+   "content": "\n      def helper(): pass\n    "
+  },
+  {
+   "path": "main.go",
+   "content": "\n      package main\n      import (\n        \"fmt\"\n        \"./pkg/handler\"\n      )\n      func main() {}\n    "
+  },
+  {
+   "path": "pkg/handler/handler.go",
+   "content": "\n      package handler\n      import \"./pkg/service\"\n      func Handle() {}\n    "
+  },
+  {
+   "path": "pkg/service/service.go",
+   "content": "\n      package service\n      import \"./pkg/store\"\n      func Serve() {}\n    "
+  },
+  {
+   "path": "pkg/store/store.go",
+   "content": "\n      package store\n      type Store struct{}\n    "
+  },
+  {
+   "path": "composer.json",
+   "content": "{\"autoload\":{\"psr-4\":{\"App\\\\\":\"app_php/\"}}}"
+  },
+  {
+   "path": "index.php",
+   "content": "<?php\n      use App\\Models\\Order;\n      $order = new Order();\n    "
+  },
+  {
+   "path": "app_php/Models/Order.php",
+   "content": "<?php\n      namespace App\\Models;\n      class Order {}\n    "
+  },
+  {
+   "path": "packages/core/src/util.ts",
+   "content": "export const coreUtil = true;"
+  },
+  {
+   "path": "packages/api/src/util.ts",
+   "content": "export const apiUtil = true;"
+  },
+  {
+   "path": "packages/api/src/service.ts",
+   "content": "\n      import { apiUtil } from '../lib/util';\n    "
+  },
+  {
+   "path": "scripts/deploy.ts",
+   "content": "console.log('isolated deployment');"
+  }
+ ],
+ "artifact": {
+  "version": 2,
+  "generatedAt": "2026-09-09T03:22:11.815Z",
+  "gitSha": "golden-sha-test-2026",
+  "nodes": [
+   {
+    "path": "app_php/Models/Order.php",
+    "language": "php",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.04874852261834591,
+    "role": "core_contract",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "app/controller.py",
+    "language": "python",
+    "inDegree": 1,
+    "outDegree": 2,
+    "pageRank": 0.04874852261834591,
+    "role": "pipeline_flow",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "app/main.py",
+    "language": "python",
+    "inDegree": 0,
+    "outDegree": 1,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   {
+    "path": "app/models/user.py",
+    "language": "python",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.04706867487947049,
+    "role": "core_contract",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "app/utils.py",
+    "language": "python",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.04706867487947049,
+    "role": "core_contract",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "composer.json",
+    "language": "unknown",
+    "inDegree": 0,
+    "outDegree": 0,
+    "pageRank": 0.026350552766673474,
+    "role": "leaf_utility",
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   {
+    "path": "index.php",
+    "language": "php",
+    "inDegree": 0,
+    "outDegree": 1,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   {
+    "path": "main.go",
+    "language": "go",
+    "inDegree": 0,
+    "outDegree": 1,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   {
+    "path": "packages/api/src/service.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 1,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   {
+    "path": "packages/api/src/util.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.04874852261834591,
+    "role": "core_contract",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "packages/core/src/util.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 0,
+    "pageRank": 0.026350552766673474,
+    "role": "leaf_utility",
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   {
+    "path": "pkg/handler/handler.go",
+    "language": "go",
+    "inDegree": 1,
+    "outDegree": 1,
+    "pageRank": 0.04874852261834591,
+    "role": "pipeline_flow",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "pkg/service/service.go",
+    "language": "go",
+    "inDegree": 1,
+    "outDegree": 1,
+    "pageRank": 0.0677867969922675,
+    "role": "pipeline_flow",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "pkg/store/store.go",
+    "language": "go",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.08396933021010082,
+    "role": "core_contract",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "scripts/deploy.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 0,
+    "pageRank": 0.026350552766673474,
+    "role": "leaf_utility",
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   {
+    "path": "src/index.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 3,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   {
+    "path": "src/lib/db.test.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 0,
+    "pageRank": 0.026350552766673474,
+    "role": "leaf_utility",
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   {
+    "path": "src/lib/db.ts",
+    "language": "typescript",
+    "inDegree": 5,
+    "outDegree": 0,
+    "pageRank": 0.12172188999091772,
+    "role": "core_contract",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "src/models/user.ts",
+    "language": "typescript",
+    "inDegree": 2,
+    "outDegree": 1,
+    "pageRank": 0.05399128074893897,
+    "role": "pipeline_flow",
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   {
+    "path": "src/routes/api.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 3,
+    "pageRank": 0.04072258342149663,
+    "role": "pipeline_flow",
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   {
+    "path": "src/server.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 2,
+    "pageRank": 0.03381654271723095,
+    "role": "pipeline_flow",
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   {
+    "path": "src/services/auth.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 2,
+    "pageRank": 0.03788861806943085,
+    "role": "pipeline_flow",
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   {
+    "path": "src/utils/math.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.03381654271723095,
+    "role": "core_contract",
+    "isBackbone": true,
+    "isEntryPoint": false
+   }
+  ],
+  "entryPoints": [
+   "app/main.py",
+   "index.php",
+   "main.go",
+   "packages/api/src/service.ts",
+   "src/index.ts"
+  ],
+  "backboneNodes": [
+   "app_php/Models/Order.php",
+   "app/controller.py",
+   "app/main.py",
+   "app/models/user.py",
+   "app/utils.py",
+   "index.php",
+   "main.go",
+   "packages/api/src/service.ts",
+   "packages/api/src/util.ts",
+   "pkg/handler/handler.go",
+   "pkg/service/service.go",
+   "pkg/store/store.go",
+   "src/index.ts",
+   "src/lib/db.ts",
+   "src/models/user.ts",
+   "src/utils/math.ts"
+  ],
+  "coreContractNodes": [
+   "app_php/Models/Order.php",
+   "app/models/user.py",
+   "app/utils.py",
+   "packages/api/src/util.ts",
+   "pkg/store/store.go",
+   "src/lib/db.ts",
+   "src/utils/math.ts"
+  ],
+  "pipelineNodes": [
+   "app/controller.py",
+   "pkg/handler/handler.go",
+   "pkg/service/service.go",
+   "src/models/user.ts",
+   "src/routes/api.ts",
+   "src/server.ts",
+   "src/services/auth.ts"
+  ],
+  "symbolsByFile": {
+   "app_php/Models/Order.php": [
+    {
+     "name": "Order",
+     "kind": "type",
+     "startLine": 3,
+     "endLine": 3,
+     "exported": true
+    }
+   ],
+   "app/controller.py": [
+    {
+     "name": "run_app",
+     "kind": "function",
+     "startLine": 4,
+     "endLine": 4,
+     "exported": true
+    }
+   ],
+   "app/models/user.py": [
+    {
+     "name": "UserModel",
+     "kind": "type",
+     "startLine": 2,
+     "endLine": 2,
+     "exported": true
+    }
+   ],
+   "app/utils.py": [
+    {
+     "name": "helper",
+     "kind": "function",
+     "startLine": 2,
+     "endLine": 2,
+     "exported": true
+    }
+   ],
+   "main.go": [
+    {
+     "name": "main",
+     "kind": "function",
+     "startLine": 7,
+     "endLine": 7,
+     "exported": false
+    }
+   ],
+   "pkg/handler/handler.go": [
+    {
+     "name": "Handle",
+     "kind": "function",
+     "startLine": 4,
+     "endLine": 4,
+     "exported": true
+    }
+   ],
+   "pkg/service/service.go": [
+    {
+     "name": "Serve",
+     "kind": "function",
+     "startLine": 4,
+     "endLine": 4,
+     "exported": true
+    }
+   ],
+   "pkg/store/store.go": [
+    {
+     "name": "Store",
+     "kind": "type",
+     "startLine": 3,
+     "endLine": 3,
+     "exported": true
+    }
+   ],
+   "src/index.ts": [
+    {
+     "name": "main",
+     "kind": "function",
+     "startLine": 5,
+     "endLine": 5,
+     "exported": true
+    }
+   ],
+   "src/models/user.ts": [
+    {
+     "name": "User",
+     "kind": "type",
+     "startLine": 3,
+     "endLine": 3,
+     "exported": true,
+     "golden": true,
+     "importers": 2
+    }
+   ],
+   "src/routes/api.ts": [
+    {
+     "name": "handleRoute",
+     "kind": "function",
+     "startLine": 5,
+     "endLine": 5,
+     "exported": true
+    }
+   ],
+   "src/server.ts": [
+    {
+     "name": "Server",
+     "kind": "type",
+     "startLine": 4,
+     "endLine": 4,
+     "exported": true
+    },
+    {
+     "name": "run",
+     "kind": "function",
+     "startLine": 4,
+     "endLine": 4,
+     "exported": false
+    }
+   ],
+   "src/services/auth.ts": [
+    {
+     "name": "authenticate",
+     "kind": "function",
+     "startLine": 4,
+     "endLine": 4,
+     "exported": true
+    }
+   ],
+   "src/utils/math.ts": [
+    {
+     "name": "add",
+     "kind": "function",
+     "startLine": 2,
+     "endLine": 2,
+     "exported": true
+    }
+   ]
+  },
+  "softEdges": [],
+  "goldenSymbols": [
+   {
+    "file": "src/models/user.ts",
+    "name": "User",
+    "kind": "type",
+    "score": 0.07861120149092748,
+    "importers": 2
+   }
+  ],
+  "callEdges": [
+   {
+    "callerFile": "src/routes/api.ts",
+    "callerSymbol": "handleRoute",
+    "calleeFile": "src/services/auth.ts",
+    "calleeSymbol": "authenticate",
+    "line": 5
+   },
+   {
+    "callerFile": "src/server.ts",
+    "callerSymbol": "run",
+    "calleeFile": "src/routes/api.ts",
+    "calleeSymbol": "handleRoute",
+    "line": 4
+   }
+  ],
+  "meta": {
+   "totalFiles": 23,
+   "astParsedFiles": 22,
+   "registryFallbackFiles": 0,
+   "skippedFiles": 1,
+   "droppedTestEdges": 1,
+   "unresolvedImportCount": 1,
+   "softEdgeCount": 0,
+   "ambiguousSoftReferenceCount": 0,
+   "unresolvedCallSiteCount": 1,
+   "grammarsUsed": [
+    "tree-sitter-php.wasm",
+    "tree-sitter-python.wasm",
+    "tree-sitter-go.wasm",
+    "tree-sitter-typescript.wasm"
+   ]
+  }
+ },
+ "expectedGraph": {
+  "entryPoints": [
+   "app/main.py",
+   "index.php",
+   "main.go",
+   "packages/api/src/service.ts",
+   "src/index.ts"
+  ],
+  "backboneNodes": [
+   "app_php/Models/Order.php",
+   "app/controller.py",
+   "app/main.py",
+   "app/models/user.py",
+   "app/utils.py",
+   "index.php",
+   "main.go",
+   "packages/api/src/service.ts",
+   "packages/api/src/util.ts",
+   "pkg/handler/handler.go",
+   "pkg/service/service.go",
+   "pkg/store/store.go",
+   "src/index.ts",
+   "src/lib/db.ts",
+   "src/models/user.ts",
+   "src/utils/math.ts"
+  ],
+  "coreContractNodes": [
+   "app_php/Models/Order.php",
+   "app/models/user.py",
+   "app/utils.py",
+   "packages/api/src/util.ts",
+   "pkg/store/store.go",
+   "src/lib/db.ts",
+   "src/utils/math.ts"
+  ],
+  "pipelineNodes": [
+   "app/controller.py",
+   "pkg/handler/handler.go",
+   "pkg/service/service.go",
+   "src/models/user.ts",
+   "src/routes/api.ts",
+   "src/server.ts",
+   "src/services/auth.ts"
+  ],
+  "edges": [
+   {
+    "source": "app/controller.py",
+    "target": "app/models/user.py"
+   },
+   {
+    "source": "app/controller.py",
+    "target": "app/utils.py"
+   },
+   {
+    "source": "app/main.py",
+    "target": "app/controller.py"
+   },
+   {
+    "source": "index.php",
+    "target": "app_php/Models/Order.php"
+   },
+   {
+    "source": "main.go",
+    "target": "pkg/handler/handler.go"
+   },
+   {
+    "source": "packages/api/src/service.ts",
+    "target": "packages/api/src/util.ts"
+   },
+   {
+    "source": "pkg/handler/handler.go",
+    "target": "pkg/service/service.go"
+   },
+   {
+    "source": "pkg/service/service.go",
+    "target": "pkg/store/store.go"
+   },
+   {
+    "source": "src/index.ts",
+    "target": "src/lib/db.ts"
+   },
+   {
+    "source": "src/index.ts",
+    "target": "src/server.ts"
+   },
+   {
+    "source": "src/index.ts",
+    "target": "src/utils/math.ts"
+   },
+   {
+    "source": "src/models/user.ts",
+    "target": "src/lib/db.ts"
+   },
+   {
+    "source": "src/routes/api.ts",
+    "target": "src/lib/db.ts"
+   },
+   {
+    "source": "src/routes/api.ts",
+    "target": "src/models/user.ts"
+   },
+   {
+    "source": "src/routes/api.ts",
+    "target": "src/services/auth.ts"
+   },
+   {
+    "source": "src/server.ts",
+    "target": "src/lib/db.ts"
+   },
+   {
+    "source": "src/server.ts",
+    "target": "src/routes/api.ts"
+   },
+   {
+    "source": "src/services/auth.ts",
+    "target": "src/lib/db.ts"
+   },
+   {
+    "source": "src/services/auth.ts",
+    "target": "src/models/user.ts"
+   }
+  ],
+  "nodes": {
+   "app_php/Models/Order.php": {
+    "path": "app_php/Models/Order.php",
+    "language": "php",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.04874852261834591,
+    "role": "core_contract",
+    "imports": [],
+    "importedBy": [
+     "index.php"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "app/controller.py": {
+    "path": "app/controller.py",
+    "language": "python",
+    "inDegree": 1,
+    "outDegree": 2,
+    "pageRank": 0.04874852261834591,
+    "role": "pipeline_flow",
+    "imports": [
+     "app/models/user.py",
+     "app/utils.py"
+    ],
+    "importedBy": [
+     "app/main.py"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "app/main.py": {
+    "path": "app/main.py",
+    "language": "python",
+    "inDegree": 0,
+    "outDegree": 1,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "imports": [
+     "app/controller.py"
+    ],
+    "importedBy": [],
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   "app/models/user.py": {
+    "path": "app/models/user.py",
+    "language": "python",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.04706867487947049,
+    "role": "core_contract",
+    "imports": [],
+    "importedBy": [
+     "app/controller.py"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "app/utils.py": {
+    "path": "app/utils.py",
+    "language": "python",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.04706867487947049,
+    "role": "core_contract",
+    "imports": [],
+    "importedBy": [
+     "app/controller.py"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "composer.json": {
+    "path": "composer.json",
+    "language": "unknown",
+    "inDegree": 0,
+    "outDegree": 0,
+    "pageRank": 0.026350552766673474,
+    "role": "leaf_utility",
+    "imports": [],
+    "importedBy": [],
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   "index.php": {
+    "path": "index.php",
+    "language": "php",
+    "inDegree": 0,
+    "outDegree": 1,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "imports": [
+     "app_php/Models/Order.php"
+    ],
+    "importedBy": [],
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   "main.go": {
+    "path": "main.go",
+    "language": "go",
+    "inDegree": 0,
+    "outDegree": 1,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "imports": [
+     "pkg/handler/handler.go"
+    ],
+    "importedBy": [],
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   "packages/api/src/service.ts": {
+    "path": "packages/api/src/service.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 1,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "imports": [
+     "packages/api/src/util.ts"
+    ],
+    "importedBy": [],
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   "packages/api/src/util.ts": {
+    "path": "packages/api/src/util.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.04874852261834591,
+    "role": "core_contract",
+    "imports": [],
+    "importedBy": [
+     "packages/api/src/service.ts"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "packages/core/src/util.ts": {
+    "path": "packages/core/src/util.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 0,
+    "pageRank": 0.026350552766673474,
+    "role": "leaf_utility",
+    "imports": [],
+    "importedBy": [],
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   "pkg/handler/handler.go": {
+    "path": "pkg/handler/handler.go",
+    "language": "go",
+    "inDegree": 1,
+    "outDegree": 1,
+    "pageRank": 0.04874852261834591,
+    "role": "pipeline_flow",
+    "imports": [
+     "pkg/service/service.go"
+    ],
+    "importedBy": [
+     "main.go"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "pkg/service/service.go": {
+    "path": "pkg/service/service.go",
+    "language": "go",
+    "inDegree": 1,
+    "outDegree": 1,
+    "pageRank": 0.0677867969922675,
+    "role": "pipeline_flow",
+    "imports": [
+     "pkg/store/store.go"
+    ],
+    "importedBy": [
+     "pkg/handler/handler.go"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "pkg/store/store.go": {
+    "path": "pkg/store/store.go",
+    "language": "go",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.08396933021010082,
+    "role": "core_contract",
+    "imports": [],
+    "importedBy": [
+     "pkg/service/service.go"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "scripts/deploy.ts": {
+    "path": "scripts/deploy.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 0,
+    "pageRank": 0.026350552766673474,
+    "role": "leaf_utility",
+    "imports": [],
+    "importedBy": [],
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   "src/index.ts": {
+    "path": "src/index.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 3,
+    "pageRank": 0.026350552766673474,
+    "role": "entry_point",
+    "imports": [
+     "src/lib/db.ts",
+     "src/server.ts",
+     "src/utils/math.ts"
+    ],
+    "importedBy": [],
+    "isBackbone": true,
+    "isEntryPoint": true
+   },
+   "src/lib/db.test.ts": {
+    "path": "src/lib/db.test.ts",
+    "language": "typescript",
+    "inDegree": 0,
+    "outDegree": 0,
+    "pageRank": 0.026350552766673474,
+    "role": "leaf_utility",
+    "imports": [],
+    "importedBy": [],
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   "src/lib/db.ts": {
+    "path": "src/lib/db.ts",
+    "language": "typescript",
+    "inDegree": 5,
+    "outDegree": 0,
+    "pageRank": 0.12172188999091772,
+    "role": "core_contract",
+    "imports": [],
+    "importedBy": [
+     "src/index.ts",
+     "src/models/user.ts",
+     "src/routes/api.ts",
+     "src/server.ts",
+     "src/services/auth.ts"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "src/models/user.ts": {
+    "path": "src/models/user.ts",
+    "language": "typescript",
+    "inDegree": 2,
+    "outDegree": 1,
+    "pageRank": 0.05399128074893897,
+    "role": "pipeline_flow",
+    "imports": [
+     "src/lib/db.ts"
+    ],
+    "importedBy": [
+     "src/routes/api.ts",
+     "src/services/auth.ts"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   },
+   "src/routes/api.ts": {
+    "path": "src/routes/api.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 3,
+    "pageRank": 0.04072258342149663,
+    "role": "pipeline_flow",
+    "imports": [
+     "src/lib/db.ts",
+     "src/models/user.ts",
+     "src/services/auth.ts"
+    ],
+    "importedBy": [
+     "src/server.ts"
+    ],
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   "src/server.ts": {
+    "path": "src/server.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 2,
+    "pageRank": 0.03381654271723095,
+    "role": "pipeline_flow",
+    "imports": [
+     "src/lib/db.ts",
+     "src/routes/api.ts"
+    ],
+    "importedBy": [
+     "src/index.ts"
+    ],
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   "src/services/auth.ts": {
+    "path": "src/services/auth.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 2,
+    "pageRank": 0.03788861806943085,
+    "role": "pipeline_flow",
+    "imports": [
+     "src/lib/db.ts",
+     "src/models/user.ts"
+    ],
+    "importedBy": [
+     "src/routes/api.ts"
+    ],
+    "isBackbone": false,
+    "isEntryPoint": false
+   },
+   "src/utils/math.ts": {
+    "path": "src/utils/math.ts",
+    "language": "typescript",
+    "inDegree": 1,
+    "outDegree": 0,
+    "pageRank": 0.03381654271723095,
+    "role": "core_contract",
+    "imports": [],
+    "importedBy": [
+     "src/index.ts"
+    ],
+    "isBackbone": true,
+    "isEntryPoint": false
+   }
+  },
+  "meta": {
+   "totalFiles": 23,
+   "astParsedFiles": 22,
+   "registryFallbackFiles": 0,
+   "skippedFiles": 1,
+   "droppedTestEdges": 1,
+   "unresolvedImportCount": 1,
+   "softEdgeCount": 0,
+   "ambiguousSoftReferenceCount": 0,
+   "unresolvedCallSiteCount": 1,
+   "grammarsUsed": [
+    "tree-sitter-php.wasm",
+    "tree-sitter-python.wasm",
+    "tree-sitter-go.wasm",
+    "tree-sitter-typescript.wasm"
+   ]
+  }
+ }
+}

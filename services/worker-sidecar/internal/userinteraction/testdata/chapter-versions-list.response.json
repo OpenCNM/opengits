@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "versions": [
+    {
+      "id": "cv-0001",
+      "authorId": "user-0001",
+      "voteCount": 3,
+      "isCanonical": true,
+      "visibility": "PUBLIC",
+      "source": "RELAY",
+      "createdAt": "2026-10-19T12:00:00Z",
+      "contentId": "content-0001",
+      "author": {
+        "name": "Alice",
+        "image": "https://example.com/a.png"
+      },
+      "hasVoted": false,
+      "isContentValid": true,
+      "content": "正典正文：L1 已通过机检。"
+    },
+    {
+      "id": "cv-0002",
+      "authorId": "user-0002",
+      "voteCount": 0,
+      "isCanonical": false,
+      "visibility": "PRIVATE",
+      "source": "RETRANSLATE",
+      "createdAt": "2026-10-19T13:00:00Z",
+      "contentId": null,
+      "author": {
+        "name": null,
+        "image": null
+      },
+      "hasVoted": true,
+      "isContentValid": false
+    }
+  ]
+}

@@ -1,0 +1,509 @@
+[
+  {
+    "name": "monorepo-balanced-round-robin",
+    "input": {
+      "maxFiles": 10,
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/core/src/index.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/core/src/engine.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/core/src/parser.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/cli/src/main.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/cli/src/commands.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/cli/src/options.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/web/src/App.tsx",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/web/src/page.tsx",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/web/src/routes.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/intro.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/quickstart.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/architecture.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "dist/bundle.js",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "test/index.test.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "assets/banner.png",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "path": "README.md",
+        "isDoc": true,
+        "weight": 25,
+        "handle": 1
+      },
+      {
+        "path": "docs/intro.md",
+        "isDoc": true,
+        "weight": 23,
+        "handle": 2
+      },
+      {
+        "path": "docs/quickstart.md",
+        "isDoc": true,
+        "weight": 23,
+        "handle": 3
+      },
+      {
+        "path": "docs/architecture.md",
+        "isDoc": true,
+        "weight": 15,
+        "handle": 4
+      },
+      {
+        "path": "packages/cli/src/main.ts",
+        "isDoc": false,
+        "role": "entry_point",
+        "weight": 15,
+        "handle": 5
+      },
+      {
+        "path": "packages/core/src/index.ts",
+        "isDoc": false,
+        "role": "entry_point",
+        "weight": 15,
+        "handle": 6
+      },
+      {
+        "path": "packages/web/src/App.tsx",
+        "isDoc": false,
+        "role": "entry_point",
+        "weight": 15,
+        "handle": 7
+      },
+      {
+        "path": "packages/web/src/page.tsx",
+        "isDoc": false,
+        "role": "entry_point",
+        "weight": 15,
+        "handle": 8
+      },
+      {
+        "path": "packages/cli/src/commands.ts",
+        "isDoc": false,
+        "role": "core_logic",
+        "weight": 8,
+        "handle": 9
+      },
+      {
+        "path": "packages/core/src/engine.ts",
+        "isDoc": false,
+        "role": "core_logic",
+        "weight": 8,
+        "handle": 10
+      }
+    ]
+  },
+  {
+    "name": "flat-repo-with-entry-and-models",
+    "input": {
+      "maxFiles": 6,
+      "nodes": [
+        {
+          "path": "main.py",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "server.py",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "models.py",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "config.py",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "utils.py",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "helpers.py",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "test_main.py",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "requirements.txt",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "path": "README.md",
+        "isDoc": true,
+        "weight": 25,
+        "handle": 1
+      },
+      {
+        "path": "main.py",
+        "isDoc": false,
+        "role": "entry_point",
+        "weight": 15,
+        "handle": 2
+      },
+      {
+        "path": "models.py",
+        "isDoc": false,
+        "role": "data_model",
+        "weight": 10,
+        "handle": 3
+      },
+      {
+        "path": "server.py",
+        "isDoc": false,
+        "role": "core_logic",
+        "weight": 8,
+        "handle": 4
+      },
+      {
+        "path": "test_main.py",
+        "isDoc": false,
+        "role": "core_logic",
+        "weight": 8,
+        "handle": 5
+      },
+      {
+        "path": "config.py",
+        "isDoc": false,
+        "role": "configuration",
+        "weight": 7,
+        "handle": 6
+      }
+    ]
+  },
+  {
+    "name": "doc-heavy-with-keywords",
+    "input": {
+      "maxFiles": 8,
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/guide.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/tutorial.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/getting-started.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/api.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/changelog.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/license.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/main.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/config.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "path": "README.md",
+        "isDoc": true,
+        "weight": 25,
+        "handle": 1
+      },
+      {
+        "path": "docs/getting-started.md",
+        "isDoc": true,
+        "weight": 23,
+        "handle": 2
+      },
+      {
+        "path": "docs/guide.md",
+        "isDoc": true,
+        "weight": 23,
+        "handle": 3
+      },
+      {
+        "path": "docs/tutorial.md",
+        "isDoc": true,
+        "weight": 23,
+        "handle": 4
+      },
+      {
+        "path": "docs/api.md",
+        "isDoc": true,
+        "weight": 15,
+        "handle": 5
+      },
+      {
+        "path": "src/main.ts",
+        "isDoc": false,
+        "role": "entry_point",
+        "weight": 15,
+        "handle": 6
+      },
+      {
+        "path": "src/config.ts",
+        "isDoc": false,
+        "role": "configuration",
+        "weight": 7,
+        "handle": 7
+      }
+    ]
+  },
+  {
+    "name": "small-repo-under-max-files",
+    "input": {
+      "maxFiles": 10,
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/index.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/utils.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "path": "README.md",
+        "isDoc": true,
+        "weight": 25,
+        "handle": 1
+      },
+      {
+        "path": "src/index.ts",
+        "isDoc": false,
+        "role": "entry_point",
+        "weight": 15,
+        "handle": 2
+      },
+      {
+        "path": "src/utils.ts",
+        "isDoc": false,
+        "role": "utility",
+        "weight": 5,
+        "handle": 3
+      }
+    ]
+  }
+]

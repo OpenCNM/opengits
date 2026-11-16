@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Nextra Guide and Mixed Tabs</title></head>
+<body>
+  <main>
+    <article>
+      <h1>Nextra Integration Reference</h1>
+      <p>Nextra sites combine semantic callouts, mixed prose/code tab panels, and ARIA-controlled FAQ disclosures.</p>
+      <div class="nextra-callout" role="note">
+        <p><strong>Note</strong></p>
+        <p>Mixed tab panels preserve rich instructional text without discarding hidden DOM panes.</p>
+      </div>
+      <div class="nx-tabs">
+        <div role="tablist">
+          <button type="button" role="tab" aria-controls="nx-overview">Overview Guide</button>
+          <button type="button" role="tab" aria-controls="nx-code">Config Snippet</button>
+        </div>
+        <div id="nx-overview" role="tabpanel">
+          <p>Start by registering your Nextra theme configuration alongside App Router routes.</p>
+        </div>
+        <div id="nx-code" role="tabpanel" hidden>
+          <pre><code class="language-js">export default { docsRepositoryBase: "https://github.com/acme/docs" };</code></pre>
+        </div>
+      </div>
+      <div>
+        <h3><button type="button" aria-expanded="false" aria-controls="nx-faq-1">Does Nextra support i18n routing?</button></h3>
+        <div id="nx-faq-1" hidden>
+          <p>Yes, configure localized subfolders so each language builds independently under its own prefix.</p>
+        </div>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

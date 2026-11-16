@@ -1,0 +1,471 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "name": "identical-empty",
+      "input": {
+        "oldText": "",
+        "newText": ""
+      },
+      "expected": {
+        "unified": "",
+        "hunks": [],
+        "additions": 0,
+        "deletions": 0
+      }
+    },
+    {
+      "name": "identical-simple",
+      "input": {
+        "oldText": "hello world",
+        "newText": "hello world"
+      },
+      "expected": {
+        "unified": "",
+        "hunks": [],
+        "additions": 0,
+        "deletions": 0
+      }
+    },
+    {
+      "name": "identical-multiline-crlf-normalized",
+      "input": {
+        "oldText": "line1\nline2\nline3\n",
+        "newText": "line1\r\nline2\r\nline3\r\n"
+      },
+      "expected": {
+        "unified": "",
+        "hunks": [],
+        "additions": 0,
+        "deletions": 0
+      }
+    },
+    {
+      "name": "pure-insert-into-empty",
+      "input": {
+        "oldText": "",
+        "newText": "line1\nline2\nline3",
+        "oldPath": "/dev/null",
+        "newPath": "newfile.txt"
+      },
+      "expected": {
+        "unified": "--- /dev/null\n+++ b/newfile.txt\n@@ -0,0 +1,3 @@\n+line1\n+line2\n+line3",
+        "hunks": [
+          {
+            "oldStart": 0,
+            "oldLines": 0,
+            "newStart": 1,
+            "newLines": 3,
+            "lines": [
+              "+line1",
+              "+line2",
+              "+line3"
+            ]
+          }
+        ],
+        "additions": 3,
+        "deletions": 0
+      }
+    },
+    {
+      "name": "pure-delete-to-empty",
+      "input": {
+        "oldText": "line1\nline2\nline3",
+        "newText": "",
+        "oldPath": "oldfile.txt",
+        "newPath": "/dev/null"
+      },
+      "expected": {
+        "unified": "--- a/oldfile.txt\n+++ /dev/null\n@@ -1,3 +0,0 @@\n-line1\n-line2\n-line3",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 3,
+            "newStart": 0,
+            "newLines": 0,
+            "lines": [
+              "-line1",
+              "-line2",
+              "-line3"
+            ]
+          }
+        ],
+        "additions": 0,
+        "deletions": 3
+      }
+    },
+    {
+      "name": "single-line-modify-middle",
+      "input": {
+        "oldText": "alpha\nbeta\ngamma\ndelta\nepsilon",
+        "newText": "alpha\nbeta\nGAMMA_MODIFIED\ndelta\nepsilon",
+        "oldPath": "greek.txt",
+        "newPath": "greek.txt",
+        "contextLines": 3
+      },
+      "expected": {
+        "unified": "--- a/greek.txt\n+++ b/greek.txt\n@@ -1,5 +1,5 @@\n alpha\n beta\n-gamma\n+GAMMA_MODIFIED\n delta\n epsilon",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 5,
+            "newStart": 1,
+            "newLines": 5,
+            "lines": [
+              " alpha",
+              " beta",
+              "-gamma",
+              "+GAMMA_MODIFIED",
+              " delta",
+              " epsilon"
+            ]
+          }
+        ],
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    {
+      "name": "single-line-modify-start",
+      "input": {
+        "oldText": "first line\nsecond line\nthird line",
+        "newText": "NEW first line\nsecond line\nthird line",
+        "contextLines": 3
+      },
+      "expected": {
+        "unified": "--- a/file\n+++ b/file\n@@ -1,3 +1,3 @@\n-first line\n+NEW first line\n second line\n third line",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 3,
+            "newStart": 1,
+            "newLines": 3,
+            "lines": [
+              "-first line",
+              "+NEW first line",
+              " second line",
+              " third line"
+            ]
+          }
+        ],
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    {
+      "name": "single-line-modify-end",
+      "input": {
+        "oldText": "first line\nsecond line\nthird line",
+        "newText": "first line\nsecond line\nNEW third line",
+        "contextLines": 3
+      },
+      "expected": {
+        "unified": "--- a/file\n+++ b/file\n@@ -1,3 +1,3 @@\n first line\n second line\n-third line\n+NEW third line",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 3,
+            "newStart": 1,
+            "newLines": 3,
+            "lines": [
+              " first line",
+              " second line",
+              "-third line",
+              "+NEW third line"
+            ]
+          }
+        ],
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    {
+      "name": "adjacent-changes-merged",
+      "input": {
+        "oldText": "line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10",
+        "newText": "line1\nLINE2_MOD\nline3\nline4\nLINE5_MOD\nline6\nline7\nline8\nline9\nline10",
+        "contextLines": 3
+      },
+      "expected": {
+        "unified": "--- a/file\n+++ b/file\n@@ -1,8 +1,8 @@\n line1\n-line2\n+LINE2_MOD\n line3\n line4\n-line5\n+LINE5_MOD\n line6\n line7\n line8",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 8,
+            "newStart": 1,
+            "newLines": 8,
+            "lines": [
+              " line1",
+              "-line2",
+              "+LINE2_MOD",
+              " line3",
+              " line4",
+              "-line5",
+              "+LINE5_MOD",
+              " line6",
+              " line7",
+              " line8"
+            ]
+          }
+        ],
+        "additions": 2,
+        "deletions": 2
+      }
+    },
+    {
+      "name": "distant-changes-split",
+      "input": {
+        "oldText": "header\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10\nline11\nline12\nline13\nfooter",
+        "newText": "HEADER_MOD\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10\nline11\nline12\nline13\nFOOTER_MOD",
+        "contextLines": 3
+      },
+      "expected": {
+        "unified": "--- a/file\n+++ b/file\n@@ -1,4 +1,4 @@\n-header\n+HEADER_MOD\n line2\n line3\n line4\n@@ -11,4 +11,4 @@\n line11\n line12\n line13\n-footer\n+FOOTER_MOD",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 4,
+            "newStart": 1,
+            "newLines": 4,
+            "lines": [
+              "-header",
+              "+HEADER_MOD",
+              " line2",
+              " line3",
+              " line4"
+            ]
+          },
+          {
+            "oldStart": 11,
+            "oldLines": 4,
+            "newStart": 11,
+            "newLines": 4,
+            "lines": [
+              " line11",
+              " line12",
+              " line13",
+              "-footer",
+              "+FOOTER_MOD"
+            ]
+          }
+        ],
+        "additions": 2,
+        "deletions": 2
+      }
+    },
+    {
+      "name": "exact-boundary-merged",
+      "input": {
+        "oldText": "p1\nCHANGE_A\nc1\nc2\nc3\nc4\nc5\nc6\nCHANGE_B\ns1",
+        "newText": "p1\nCHANGE_A_MOD\nc1\nc2\nc3\nc4\nc5\nc6\nCHANGE_B_MOD\ns1",
+        "contextLines": 3
+      },
+      "expected": {
+        "unified": "--- a/file\n+++ b/file\n@@ -1,10 +1,10 @@\n p1\n-CHANGE_A\n+CHANGE_A_MOD\n c1\n c2\n c3\n c4\n c5\n c6\n-CHANGE_B\n+CHANGE_B_MOD\n s1",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 10,
+            "newStart": 1,
+            "newLines": 10,
+            "lines": [
+              " p1",
+              "-CHANGE_A",
+              "+CHANGE_A_MOD",
+              " c1",
+              " c2",
+              " c3",
+              " c4",
+              " c5",
+              " c6",
+              "-CHANGE_B",
+              "+CHANGE_B_MOD",
+              " s1"
+            ]
+          }
+        ],
+        "additions": 2,
+        "deletions": 2
+      }
+    },
+    {
+      "name": "exact-boundary-split",
+      "input": {
+        "oldText": "p1\nCHANGE_A\nc1\nc2\nc3\nc4\nc5\nc6\nc7\nCHANGE_B\ns1",
+        "newText": "p1\nCHANGE_A_MOD\nc1\nc2\nc3\nc4\nc5\nc6\nc7\nCHANGE_B_MOD\ns1",
+        "contextLines": 3
+      },
+      "expected": {
+        "unified": "--- a/file\n+++ b/file\n@@ -1,5 +1,5 @@\n p1\n-CHANGE_A\n+CHANGE_A_MOD\n c1\n c2\n c3\n@@ -7,5 +7,5 @@\n c5\n c6\n c7\n-CHANGE_B\n+CHANGE_B_MOD\n s1",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 5,
+            "newStart": 1,
+            "newLines": 5,
+            "lines": [
+              " p1",
+              "-CHANGE_A",
+              "+CHANGE_A_MOD",
+              " c1",
+              " c2",
+              " c3"
+            ]
+          },
+          {
+            "oldStart": 7,
+            "oldLines": 5,
+            "newStart": 7,
+            "newLines": 5,
+            "lines": [
+              " c5",
+              " c6",
+              " c7",
+              "-CHANGE_B",
+              "+CHANGE_B_MOD",
+              " s1"
+            ]
+          }
+        ],
+        "additions": 2,
+        "deletions": 2
+      }
+    },
+    {
+      "name": "zero-context-lines",
+      "input": {
+        "oldText": "l1\nl2\nl3\nl4\nl5",
+        "newText": "l1\nL2_MOD\nl3\nL4_MOD\nl5",
+        "contextLines": 0
+      },
+      "expected": {
+        "unified": "--- a/file\n+++ b/file\n@@ -2,1 +2,1 @@\n-l2\n+L2_MOD\n@@ -4,1 +4,1 @@\n-l4\n+L4_MOD",
+        "hunks": [
+          {
+            "oldStart": 2,
+            "oldLines": 1,
+            "newStart": 2,
+            "newLines": 1,
+            "lines": [
+              "-l2",
+              "+L2_MOD"
+            ]
+          },
+          {
+            "oldStart": 4,
+            "oldLines": 1,
+            "newStart": 4,
+            "newLines": 1,
+            "lines": [
+              "-l4",
+              "+L4_MOD"
+            ]
+          }
+        ],
+        "additions": 2,
+        "deletions": 2
+      }
+    },
+    {
+      "name": "code-refactoring-function",
+      "input": {
+        "oldText": "export function calculateTax(amount: number, rate: number): number {\n  console.log(\"calculating tax for\", amount);\n  if (amount <= 0) {\n    return 0;\n  }\n  const tax = amount * rate;\n  return tax;\n}",
+        "newText": "export function calculateTax(amount: number, rate: number, isExempt?: boolean): number {\n  if (isExempt) {\n    return 0;\n  }\n  if (amount <= 0) {\n    return 0;\n  }\n  return Math.round(amount * rate * 100) / 100;\n}",
+        "oldPath": "src/tax.ts",
+        "newPath": "src/tax.ts",
+        "contextLines": 2
+      },
+      "expected": {
+        "unified": "--- a/src/tax.ts\n+++ b/src/tax.ts\n@@ -1,8 +1,9 @@\n-export function calculateTax(amount: number, rate: number): number {\n-  console.log(\"calculating tax for\", amount);\n+export function calculateTax(amount: number, rate: number, isExempt?: boolean): number {\n+  if (isExempt) {\n+    return 0;\n+  }\n   if (amount <= 0) {\n     return 0;\n   }\n-  const tax = amount * rate;\n-  return tax;\n+  return Math.round(amount * rate * 100) / 100;\n }",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 8,
+            "newStart": 1,
+            "newLines": 9,
+            "lines": [
+              "-export function calculateTax(amount: number, rate: number): number {",
+              "-  console.log(\"calculating tax for\", amount);",
+              "+export function calculateTax(amount: number, rate: number, isExempt?: boolean): number {",
+              "+  if (isExempt) {",
+              "+    return 0;",
+              "+  }",
+              "   if (amount <= 0) {",
+              "     return 0;",
+              "   }",
+              "-  const tax = amount * rate;",
+              "-  return tax;",
+              "+  return Math.round(amount * rate * 100) / 100;",
+              " }"
+            ]
+          }
+        ],
+        "additions": 5,
+        "deletions": 4
+      }
+    },
+    {
+      "name": "chinese-cjk-mixed",
+      "input": {
+        "oldText": "标题：用户指南 🚀\n第一节：快速入门\n请在终端运行 npm install。\n第二节：高级配置\n配置完成。",
+        "newText": "标题：用户指南（2026年最新版）🌟\n第一节：快速入门\n请在终端运行 pnpm install --frozen-lockfile。\n第二节：高级配置\n支持自动热重载与增量更新。\n配置完成。",
+        "oldPath": "doc/guide.md",
+        "newPath": "doc/guide.md",
+        "contextLines": 1
+      },
+      "expected": {
+        "unified": "--- a/doc/guide.md\n+++ b/doc/guide.md\n@@ -1,5 +1,6 @@\n-标题：用户指南 🚀\n+标题：用户指南（2026年最新版）🌟\n 第一节：快速入门\n-请在终端运行 npm install。\n+请在终端运行 pnpm install --frozen-lockfile。\n 第二节：高级配置\n+支持自动热重载与增量更新。\n 配置完成。",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 5,
+            "newStart": 1,
+            "newLines": 6,
+            "lines": [
+              "-标题：用户指南 🚀",
+              "+标题：用户指南（2026年最新版）🌟",
+              " 第一节：快速入门",
+              "-请在终端运行 npm install。",
+              "+请在终端运行 pnpm install --frozen-lockfile。",
+              " 第二节：高级配置",
+              "+支持自动热重载与增量更新。",
+              " 配置完成。"
+            ]
+          }
+        ],
+        "additions": 3,
+        "deletions": 2
+      }
+    },
+    {
+      "name": "multiline-deletions-and-insertions",
+      "input": {
+        "oldText": "start\nremove1\nremove2\nremove3\nend",
+        "newText": "start\ninsert1\ninsert2\nend",
+        "contextLines": 1
+      },
+      "expected": {
+        "unified": "--- a/file\n+++ b/file\n@@ -1,5 +1,4 @@\n start\n-remove1\n-remove2\n-remove3\n+insert1\n+insert2\n end",
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldLines": 5,
+            "newStart": 1,
+            "newLines": 4,
+            "lines": [
+              " start",
+              "-remove1",
+              "-remove2",
+              "-remove3",
+              "+insert1",
+              "+insert2",
+              " end"
+            ]
+          }
+        ],
+        "additions": 2,
+        "deletions": 3
+      }
+    }
+  ]
+}

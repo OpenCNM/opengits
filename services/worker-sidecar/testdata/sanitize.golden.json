@@ -1,0 +1,70 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "cases": [
+    {
+      "name": "html-comment-removed",
+      "input": "正文段落\n\n<!-- 这是隐藏注释 -->\n\n后续段落",
+      "expected": "正文段落\n\n后续段落\n"
+    },
+    {
+      "name": "script-tags-stripped",
+      "input": "前文\n\n<script>alert(1)</script>\n<script src=\"evil.js\" />\n后文",
+      "expected": "前文\n\n\n\n\n后文\n"
+    },
+    {
+      "name": "embedded-objects-stripped",
+      "input": "内容\n<iframe src=\"https://x.com\"></iframe>\n<embed src=\"test.swf\" />",
+      "expected": "内容\n\n\n"
+    },
+    {
+      "name": "event-attrs-stripped",
+      "input": "段落\n\n<img src=\"x.png\" onclick=\"steal()\">",
+      "expected": "段落\n\n<img src=\"x.png\"  />\n"
+    },
+    {
+      "name": "pseudo-protocol-urls-neutralized",
+      "input": "<a href=\"javascript:alert(1)\">点我</a>\n<img src='javascript:void(0)'>",
+      "expected": "<a href=\"\">点我</a> <img src='' />\n"
+    },
+    {
+      "name": "void-tags-force-self-closed",
+      "input": "<img src=\"a.png\">\n<br>\n<hr>",
+      "expected": "<img src=\"a.png\" />\n<br />\n<hr />\n"
+    },
+    {
+      "name": "self-closed-void-kept",
+      "input": "<img src=\"b.png\" />\n<br />",
+      "expected": "<img src=\"b.png\" />\n<br />\n"
+    },
+    {
+      "name": "inline-style-stripped",
+      "input": "<div style=\"color: red\" class=\"box\">内容</div>",
+      "expected": "<div  class=\"box\">内容</div>\n"
+    },
+    {
+      "name": "code-lang-normalized",
+      "input": "```env\nKEY=1\n```\n\n```c#\nvar x;\n```\n\n```c++\nint y;\n```",
+      "expected": "```bash\nKEY=1\n```\n\n```csharp\nvar x;\n```\n\n```cpp\nint y;\n```\n"
+    },
+    {
+      "name": "heading-links-images-flattened",
+      "input": "# [点击这里](https://x.dev)\n## 介绍 ![图标](icon.png) 详情\n### 嵌套 [![徽章](badge.png)](https://ci.org)",
+      "expected": "# 点击这里\n\n## 介绍 图标 详情\n\n### 嵌套 \n"
+    },
+    {
+      "name": "preprocessor-cleaned",
+      "input": "===CONTENT_BEGIN===\n![预览](pic.png){width=100px}\n<concept_manifest><item>概念</item></concept_manifest>\n正文===CONTENT_END===",
+      "expected": "![预览](pic.png)\n\n正文\n"
+    },
+    {
+      "name": "code-block-zero-pollution",
+      "input": "```html\n<script>var x = 1;</script>\n<div style=\"color:blue\">保留</div>\n```\n\n行内代码 `<script>保留</script>` 也安全",
+      "expected": "```html\n<script>var x = 1;</script>\n<div style=\"color:blue\">保留</div>\n```\n\n行内代码 `<script>保留</script>` 也安全\n"
+    },
+    {
+      "name": "blank-input-passthrough",
+      "input": "   \n\n   ",
+      "expected": ""
+    }
+  ]
+}

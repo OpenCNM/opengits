@@ -1,0 +1,185 @@
+{
+  "generatedBy": "tmp gen (Node validateMdxDetailed 裁定 = 契约事实源；Go goValidateMdxDetailed 单端断言)",
+  "cases": [
+    {
+      "name": "clean-standard",
+      "source": "# Title\n\nHello **world** with [link](https://x.dev).\n\n- a\n- b\n",
+      "valid": true
+    },
+    {
+      "name": "frontmatter-ok",
+      "source": "---\ntitle: T\n---\n\n# Doc\n",
+      "valid": true
+    },
+    {
+      "name": "frontmatter-unclosed",
+      "source": "---\ntitle: T\n\n# Doc\n",
+      "valid": true
+    },
+    {
+      "name": "fence-unclosed",
+      "source": "# T\n\n```ts\nconst a = 1;\n",
+      "valid": true
+    },
+    {
+      "name": "balanced-braces-prose",
+      "source": "# T\n\nUse {config} to init and { a: 1 } objects.\n",
+      "valid": true
+    },
+    {
+      "name": "multiline-brace-json",
+      "source": "# T\n\n```json\n{ \"a\": 1 }\n```\n\nBody:\n{\n  \"b\": 2\n}\n",
+      "valid": true
+    },
+    {
+      "name": "esm-import",
+      "source": "import { Chart } from 'charti'\n\n# T\n\n<Chart data={1} />\n",
+      "valid": true
+    },
+    {
+      "name": "jsx-component-ok",
+      "source": "# T\n\n<CardGroup cols={2}>\n  <Card title=\"A\">x</Card>\n  <Card title=\"B\">y</Card>\n</CardGroup>\n",
+      "valid": true
+    },
+    {
+      "name": "jsx-unclosed",
+      "source": "# T\n\n<Card title=\"A\">\n  content\n",
+      "valid": false
+    },
+    {
+      "name": "generic-type",
+      "source": "# T\n\nContainer<T> is generic.\n",
+      "valid": false
+    },
+    {
+      "name": "unclosed-li",
+      "source": "# T\n\n<ul>\n<li>one\n<li>two\n</ul>\n",
+      "valid": false
+    },
+    {
+      "name": "unclosed-p",
+      "source": "# T\n\n<p>para one\n<p>para two\n",
+      "valid": true
+    },
+    {
+      "name": "bad-jsx-expr",
+      "source": "# T\n\n<Card title={1 + }>x</Card>\n",
+      "valid": false
+    },
+    {
+      "name": "good-jsx-expr",
+      "source": "# T\n\n<Card title={x > 5 ? `a` : `b`}>x</Card>\n",
+      "valid": true
+    },
+    {
+      "name": "orphan-close-brace",
+      "source": "# T\n\nvalue } here\n",
+      "valid": true
+    },
+    {
+      "name": "unclosed-brace",
+      "source": "# T\n\nexpr { a: 1\n",
+      "valid": true
+    },
+    {
+      "name": "html-comment",
+      "source": "# T\n\n<!-- note -->\n\ntext\n",
+      "valid": true
+    },
+    {
+      "name": "script-tag",
+      "source": "# T\n\n<script>alert(1)</script>\n\ntext\n",
+      "valid": true
+    },
+    {
+      "name": "mixed-li-closed",
+      "source": "# List\n\n<ul>\n<li>one</li>\n<li>two</li>\n</ul>\n",
+      "valid": true
+    },
+    {
+      "name": "type-assertion-expr",
+      "source": "# T\n\n<Card title={val as string}>x</Card>\n",
+      "valid": true
+    },
+    {
+      "name": "ts-generic-in-jsx",
+      "source": "# T\n\n<Card items={items as Array<string>} /> \n",
+      "valid": true
+    },
+    {
+      "name": "nested-quotes-backtick",
+      "source": "# T\n\n<Card title={`He said \"hi\" > ok`} />\n",
+      "valid": true
+    },
+    {
+      "name": "llm-typical-output",
+      "source": "# 指南\n\n在终端执行：\n\n```bash\npnpm install { pkg }\n```\n\n配置对象 `{ \"key\": \"value\" }` 需转义。\n\n<Callout type=\"info\">注意 <T> 泛型在代码里。</Callout>",
+      "valid": false
+    },
+    {
+      "name": "inline-code-braces",
+      "source": "# T\n\nRun `cfg { a }` then `x = {1}`.\n",
+      "valid": true
+    },
+    {
+      "name": "markdown-autolink-bare",
+      "source": "# T\n\nvisit https://example.com now.\n",
+      "valid": true
+    },
+    {
+      "name": "unclosed-jsx-multi",
+      "source": "# T\n\n<Steps>\n<Step>One</Step>\n<Step>Two\n</Steps>\n",
+      "valid": false
+    },
+    {
+      "name": "void-img-no-close",
+      "source": "# T\n\n<img src=\"/a.png\" alt=\"a\">\n\ntext\n",
+      "valid": true
+    },
+    {
+      "name": "self-closing-component",
+      "source": "# T\n\n<YouTube id=\"abc\" />\n\n<WhiteboardImage src=\"/w.png\" />\n",
+      "valid": true
+    },
+    {
+      "name": "mismatched-close-tag",
+      "source": "# T\n\n<Card title=\"A\">x</Wrap>\n",
+      "valid": false
+    },
+    {
+      "name": "empty-source",
+      "source": "",
+      "valid": true
+    },
+    {
+      "name": "whitespace-only",
+      "source": "   \n\n  \n",
+      "valid": true
+    },
+    {
+      "name": "truncated-expr-dot",
+      "source": "# T\n\n<Card title={obj.>x</Card>\n",
+      "valid": false
+    },
+    {
+      "name": "comment-with-tags-inside",
+      "source": "# T\n\n<!-- <Card> unclosed inside comment -->\n\ntext\n",
+      "valid": true
+    },
+    {
+      "name": "fence-with-jsx-inside",
+      "source": "# T\n\n```jsx\n<Card title=\"x\">\n```\n\ntext\n",
+      "valid": true
+    },
+    {
+      "name": "tilde-fence-generics-inside",
+      "source": "# T\n\n~~~ts\nconst x: Container<T> = {};\n~~~\n",
+      "valid": true
+    },
+    {
+      "name": "jsx-multiline-attr",
+      "source": "# T\n\n<Card\n  title=\"A\"\n  count={items.length}\n>\n  body\n</Card>\n",
+      "valid": true
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "$comment": "Transformer 确定性变换层共享断言夹具（M5 Go 下沉的等价性规范）。Node（tests/unit/transform-shared-cases.test.ts 跑原版 Transformer.process）与 Go（transform_shared_cases_test.go 跑 goTransformText）各自消费同一份断言——两边对语义规范收敛，不追求 remark-stringify/goldmark 字节一致。断言语汇：contains / notContains / countOf(子串, 期望次数)。语料取自 transformer-hardening / transformer-links 既有用例。",
+  "ctx": {
+    "owner": "acme",
+    "repo": "widgets",
+    "branch": "main",
+    "currentFilePath": "docs/guide.md",
+    "validFilePaths": ["docs/guide.md"],
+    "rawBase": "https://raw.githubusercontent.com",
+    "webBase": "https://github.com"
+  },
+  "cases": [
+    {
+      "name": "fenced C++ 头文件 include 不被转义（mask 保护）",
+      "input": "# Title\n\n```cpp\n#include <vector>\n#include <map>\n```\n",
+      "assertions": [
+        { "contains": "#include <vector>" },
+        { "contains": "#include <map>" }
+      ]
+    },
+    {
+      "name": "inline code 内的 HTML 标签不被转义",
+      "input": "Use `<div>` and `<MyWidget>` inline.\n",
+      "assertions": [
+        { "contains": "`<div>`" },
+        { "contains": "`<MyWidget>`" }
+      ]
+    },
+    {
+      "name": "prose 中孤立 < 按后随数字/空白转义（字母后不误伤）",
+      "input": "I <3 this. Value < 0. a<b compact stays.\n",
+      "assertions": [
+        { "contains": "&lt;3" },
+        { "contains": "&lt; 0" },
+        { "notContains": "&lt;b" }
+      ]
+    },
+    {
+      "name": "非白名单裸标签开括号转义，内在元素保留（实体/反斜杠转义二态等价）",
+      "input": "<MyWidget title=\"x\"> vs <div class=\"y\"> and <pre>.\n",
+      "assertions": [
+        { "either": ["&lt;MyWidget", "\\<MyWidget"] },
+        { "contains": "<div" },
+        { "contains": "<pre" }
+      ]
+    },
+    {
+      "name": "YouTube 视频卡片转组件",
+      "input": "[![thumb](https://img.youtube.com/vi/abc123/0.jpg)](https://www.youtube.com/watch?v=abc123&t=10)\n",
+      "assertions": [
+        { "contains": "<YouTube id=\"abc123\"" }
+      ]
+    },
+    {
+      "name": "autolink：<url> 与 <email> 转 markdown 链接",
+      "input": "See <https://example.com/docs> or mail <someone@example.com>.\n",
+      "assertions": [
+        { "contains": "[https://example.com/docs](https://example.com/docs)" },
+        { "contains": "[someone@example.com](mailto:someone@example.com)" }
+      ]
+    },
+    {
+      "name": "相对图片改写为资产代理 URL（图片扩展名）",
+      "input": "![logo](images/logo.png) and ![photo](./pics/team.jpg)\n",
+      "assertions": [
+        { "contains": "/api/assets/acme/widgets/docs/images/logo.png" },
+        { "contains": "/api/assets/acme/widgets/docs/pics/team.jpg" }
+      ]
+    },
+    {
+      "name": "非图片扩展名的相对图片改写为 raw 回源 URL",
+      "input": "![diagram](architecture.drawio)\n",
+      "assertions": [
+        { "contains": "https://raw.githubusercontent.com/acme/widgets/main/docs/architecture.drawio" }
+      ]
+    },
+    {
+      "name": "命中 validFilePaths 的相对链接改写为 /docs URL（含 README 折叠）",
+      "input": "Back to [guide](guide.md) and [home](../README.md).\n",
+      "assertions": [
+        { "contains": "(/docs/acme/widgets/docs/guide)" }
+      ]
+    },
+    {
+      "name": "未命中的相对链接落 GitHub blob（锚点保留）",
+      "input": "See [contributing](CONTRIBUTING.md#section) guide.\n",
+      "assertions": [
+        { "contains": "https://github.com/acme/widgets/blob/main/docs/CONTRIBUTING.md#section)" }
+      ]
+    },
+    {
+      "name": "自嵌套守卫：归一化后含 api/assets 段的图片路径不改写",
+      "input": "![x](api/assets/foo.png)\n",
+      "assertions": [
+        { "notContains": "/api/assets/acme/widgets/docs/api/assets/foo.png" }
+      ]
+    },
+    {
+      "name": "含尾括号的 http 链接原样保留（平衡括号扫描不误伤；stringify 括号转义二态等价）",
+      "input": "See [wiki](https://en.wikipedia.org/wiki/Foo_(bar)) for details.\n",
+      "assertions": [
+        { "either": ["https://en.wikipedia.org/wiki/Foo_(bar)", "https://en.wikipedia.org/wiki/Foo_\\(bar\\)"] }
+      ]
+    },
+    {
+      "name": "围栏代码块语言归一：env→bash、剥 | 后缀",
+      "input": "```env\nAPI_KEY=x\n```\n\n```ts|highlight\nconst a = 1;\n```\n",
+      "assertions": [
+        { "contains": "```bash" },
+        { "contains": "```ts" },
+        { "notContains": "ts|highlight" }
+      ]
+    },
+    {
+      "name": "未闭合围栏到文末整块保留",
+      "input": "text\n\n```\ncode with <tags> inside\n",
+      "assertions": [
+        { "contains": "code with <tags> inside" }
+      ]
+    },
+    {
+      "name": "绝对路径图片改写（仓库根解析）",
+      "input": "![arch](/assets/arch.svg)\n",
+      "assertions": [
+        { "contains": "/api/assets/acme/widgets/assets/arch.svg" }
+      ]
+    }
+  ]
+}

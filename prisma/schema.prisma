@@ -1,0 +1,1509 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
+  access_token             String? @db.Text
+  expires_at               Int?
+  refresh_token_expires_in Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.Text
+  session_state            String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expires])
+  @@index([userId])
+}
+
+model User {
+  id                  String                @id @default(cuid())
+  name                String?
+  email               String?               @unique
+  image               String?
+  // 注册时间（注册漏斗地基；存量行由 backfill 以首事件时间回填）
+  createdAt           DateTime              @default(now())
+  accounts            Account[]
+  sessions            Session[]
+  savedRepos          SavedRepo[]
+  importRecords       ImportRecord[]
+  updateRuns          ImportUpdateRun[]
+  importJobs          ImportJob[]
+  ownedDocuments      Document[]            @relation("DocumentOwner")
+  conversations       Conversation[]
+  messages            ConversationMessage[]
+  episodicEvents      EpisodicEvent[]
+  tokenUsageLogs      TokenUsageLog[]
+  mcpActiveSessions   McpActiveSession[]
+  mcpApiTokens        McpApiToken[]
+  mcpUsageLedgers     McpUsageLedger[]
+  contentReports      ContentReport[]
+  helpfulVotes        HelpfulVote[]
+  notifications       Notification[]
+  modelProviders      UserModelProvider[]
+  chapterVersions     ChapterVersion[]
+  chapterVersionVotes ChapterVersionVote[]
+  oauthAuthCodes      OAuthAuthCode[]
+  readingProgresses   UserReadingProgress[]
+  creditGrantLedgers  CreditGrantLedger[]
+  pendingCreditGrants PendingCreditGrant[]
+  mcpCallLogs         McpCallLog[]
+
+  /// 贡献余额（章节更新市场赠送制的持久钱包）：
+  /// 上游检测到变更 → 章节携带奖励 → 谁转录过门归谁（swapIn 时入账，日获赠上限校验）。
+  /// 与每日配额完全独立：消费先走日配额，超出部分才动用本余额（导入结算时扣减）。
+  creditBalance Int       @default(0)
+  /// 开户礼金一次性领取标记（惰性 CAS：首次书架扣费时自动发放，置位后永不再发）
+  signupGiftAt  DateTime?
+
+  // Profile Preferences
+  preferredLang1     String?
+  preferredLang2     String?
+  preferredLang3     String?
+  industry           String?
+  primaryProgLang    String?
+  secondaryProgLang  String?
+  fontSize           String   @default("small")
+  hasPreferencesSet  Boolean  @default(false)
+  disabledMcpRepoIds String[] @default([])
+  pinnedRepoIds      String[] @default([])
+
+  // Admin & Quota Management
+  isBanned           Boolean @default(false)
+  tier               String  @default("FREE") // FREE / PRO / ENTERPRISE
+  mcpRpmLimit        Int     @default(30) // Requests per minute limit
+  dailyMcpQuota      Int     @default(100) // Daily total requests limit (0 = unlimited)
+  singleCallTokenCap Int     @default(4000) // Single response token cap
+  role               String  @default("USER")
+}
+
+model UserReadingProgress {
+  id             String   @id @default(cuid())
+  userId         String
+  repositoryId   String
+  lastReadPath   String?
+  completedPaths String[] @default([])
+  updatedAt      DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, repositoryId])
+}
+
+model Repository {
+  id               String   @id @default(cuid())
+  owner            String
+  repo             String
+  branch           String   @default("main")
+  // 讲法（转录版本）维度：'' = 基础讲法（存量行默认值，零迁移语义）；
+  // 风格讲法行在导入时生成短 key（ed_ + 随机 hex），显示名/preset 存
+  // repoProfile.editionLabel / editionPreset。同一 (owner, repo, branch) 允许
+  // 多条讲法行并存——展示层按 (owner, repo) 分组聚合。
+  edition          String   @default("")
+  semVerLabel      String?
+  // ── 同源相似度签名（写路径预计算，浏览路径零计算）──
+  // skeleton：内容路径骨架串（源码树 blob 路径排序拼接，clone/fork 检测主信号）
+  // skeletonHash：骨架 md5（精确命中快路径）；sourceClusterKey：同源簇键（广场归卡展示）
+  skeleton         String?
+  skeletonHash     String?
+  sourceClusterKey String?
+  navTree          Json?
+  repoProfile      Json?
+  // 最近一次导入（任意用户）对应的 commit sha；归档缓存按此键控失效
+  gitSha           String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  documents        Document[]
+  importRecords    ImportRecord[]
+  updateRuns       ImportUpdateRun[]
+  conversations    Conversation[]
+  savedRepos       SavedRepo[]
+  updateJobs       ChapterUpdateJob[]
+  chapterVersions  ChapterVersion[]
+  bundles          McpBundle[]        @relation("BundleRepositories")
+
+  // Meta & Social
+  isPublic                   Boolean   @default(false)
+  publishedAt                DateTime?
+  /// 发布赠送一次性标记：首次加入公共库时将受赠人导入实扣积分全额赠回
+  /// User.creditBalance（净零）。置位后永不再发（管理员下架不清除此标记）。
+  publishGiftAt              DateTime?
+  /// 接力开启通知一次性事实戳：relay_open 通知成功发出后落位，此后发布扇出的一切
+  /// 重放（重试/定时对账）对本步骤 no-op；下架（unpublish）清除此戳以便重新发布时再通知。
+  relayNotifiedAt            DateTime?
+  /// 转录劳动账本（累计）：市场两段 + JIT 首译 + 导入转录奖励的实发积分之和，
+  /// 书架费定价基数（× shelfFeeMultiplier）。发放点经 incrementTranscriptionLedger 记账。
+  transcriptionCreditsEarned Int       @default(0)
+  category                   String?
+  tags                       String[]  @default([])
+  views                      Int       @default(0)
+
+  // Marketplace & Verification (Blueprint 01 & 04)
+  isVerified   Boolean @default(false)
+  starCount    Int     @default(0)
+  mcpCallCount Int     @default(0)
+  mcpStatus    String  @default("ACTIVE") // ACTIVE / PAUSED
+
+  // ── 公开审核流（双通道评分：管线分 × LLM 分，AND 门绿色通道）──
+  // 语义：isPublic=true ⇔ 已过审（全部公开出口只认 isPublic，零查询侵入）。
+  // PENDING 期间 isPublic 保持 false；APPROVED = 发布事务完成；REJECTED = 不可见 + 理由对贡献者透明。
+  // 已公开教程的 re-sync（update-applier）不触碰可见性 → 同步免审。
+  reviewStatus       String    @default("NONE") // NONE / PENDING / APPROVED / REJECTED
+  reviewPipeline     Json? // 提交时管线分快照：{total, passed, dimensions:[{key,label,score,detail}]}
+  reviewLlm          Json? // LLM 初审判定：{overallScore, passed, dimensions, concerns, summary, confidence}
+  reviewAutoApproved Boolean   @default(false) // 绿色通道自动过审标记（校准期人工抽查视图）
+  rejectionReason    String? // Admin 驳回理由（贡献者可见；重新提交时清空）
+  reviewedAt         DateTime?
+
+  /// 巨仓社区接力：发布者开启后，未转录章节按 path 顺序以「接力窗口」逐批
+  /// 生成 kind=RELAY 首译悬赏任务（认领者 BYOK 转录换积分，见 update-market/jobs.ts）
+  relayEnabled Boolean @default(false)
+
+  // 转录暂停标志（服务端）：客户端队列共同遵守，
+  // 跨浏览器会话持久（用户暂停/关闭页面自动暂停均落库于此）
+  transcriptionPaused Boolean @default(false)
+
+  // Capability Manifest Best Used For Statements
+  bestUsedFor         String[]              @default([])
+  conceptNodes        TutorialConceptNode[]
+  tokenUsageLogs      TokenUsageLog[]
+  outlines            TutorialOutline[]
+  contentReports      ContentReport[]
+  helpfulVotes        HelpfulVote[]
+  readingProgresses   UserReadingProgress[]
+  creditGrantLedgers  CreditGrantLedger[]
+  pendingCreditGrants PendingCreditGrant[]
+  conceptEdges        TutorialConceptEdge[]
+  mcpCallLogs         McpCallLog[]
+  episodicEvents      EpisodicEvent[]
+
+  // 上游变更提醒（调度器仅检测不应用——用户自行决定是否更新转录）
+  hasUpstreamUpdate Boolean   @default(false)
+  upstreamCheckedAt DateTime?
+  /// 分支头条件探测凭证（GET /commits/{branch} 的 ETag 原文，含 W/"…" 引号）。
+  /// If-None-Match 命中返回 304 不计 GitHub 配额；同 (owner, repo, branch) 组内
+  /// 各 edition 行共享同一探测结果，写回时落组内全部行。
+  upstreamEtag      String?
+  /// 公共副本自动同步开关：维护者（最早 ImportRecord 用户）授权系统在检测到上游
+  /// 更新时自动执行 plan→apply 维护共享行。总闸在 env AUTO_UPDATE_ENABLED=1。
+  autoSyncEnabled   Boolean   @default(false)
+  /// 更新市场 v1：内容级同步目标（有活跃 job 时暂存，全部结算后推进 gitSha）
+  pendingSyncSha    String?
+  /// 累计换入章数（每 N 次触发绝对底线 re-audit）
+  autoSwapCount     Int       @default(0)
+  /// 质量守门：绝对底线检查未过 → 暂停众包更新等维护者人工介入
+  qualityHold       Boolean   @default(false)
+
+  // 「有帮助」计数（HelpfulVote 的冗余聚合，推荐分社区认可信号）
+  helpfulCount Int @default(0)
+
+  // 教程实际转录模型集合（中途切换模型自动累加去重，如 ["gemini-3.7-flash", "deepseek-v4-pro"]）
+  transcriptionModels String[] @default([])
+
+  // 教程实际转录累计消耗 Token（全仓章节实际总消耗，用于公共教程展示与心理预期参考）
+  transcriptionTokens Int @default(0)
+
+  // ── 两阶段缓冲下架（前台 0 秒隐身，后台 24h 冷冻期撤销权）──
+  unpublishCooldownUntil DateTime?
+  unpublishRequestedAt   DateTime?
+
+  chapterQuizzes ChapterQuiz[]
+
+  @@unique([owner, repo, branch, edition])
+  @@index([owner, repo, branch])
+  @@index([sourceClusterKey])
+  @@index([skeletonHash])
+  // clone/fork 检测的模糊骨架相似索引（迁移 20260827120100，gin_trgm_ops；声明防 db push 误删）
+  @@index([skeleton(ops: raw("gin_trgm_ops"))], map: "idx_repo_skeleton_trgm", type: Gin)
+  // 大小写不敏感解析热路径的函数索引（迁移 20261013000000：(lower(owner)), (lower(repo)), (branch)）。
+  // insensitive 查询编译为 LOWER 等值无法用上方大小写敏感 btree；Prisma schema 不支持
+  // 表达式索引故无法在此声明（db push 会误删——生产以 migrate deploy 为权威）。
+  // 物理定义见 prisma/migrations/20261013000000_repository_lower_lookup_index/migration.sql。
+  // 首页公共列表（isPublic + views/createdAt 排序 + take 上限）的覆盖索引
+  @@index([isPublic, views(sort: Desc), createdAt(sort: Desc)])
+  // 非 hot 排序（newest/oldest）的取数覆盖：orderBy createdAt 不经过 views 前缀
+  @@index([isPublic, createdAt(sort: Desc)])
+}
+
+/// 「有帮助」反馈（推荐分社区认可的组成信号；一人一仓一票，toggle 语义）
+model HelpfulVote {
+  id           String   @id @default(cuid())
+  repositoryId String
+  userId       String
+  createdAt    DateTime @default(now())
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, userId])
+}
+
+/// 书架收藏（显式连接表，取代隐式 m2m "UserSavedRepos"）。
+/// autoFollow：跟随公共副本——内容随维护同步 + 接收自动更新通知；
+/// 关闭 = 只读快照。存量收藏由 scripts/migrate-saved-repos.ts 回填（autoFollow=true）。
+model SavedRepo {
+  id           String   @id @default(cuid())
+  userId       String
+  repositoryId String
+  autoFollow   Boolean  @default(true)
+  /// 书架费实付快照（加入时结算，>0 即已付——幂等不双扣；豁免/免费期/私有仓为 0）
+  paidCredits  Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, repositoryId])
+  @@index([repositoryId])
+}
+
+/// 站内通知（346 三层同步模型：transcription_done / transcription_failed / tutorial_published / tutorial_rejected / transcription_reward / version_won / relay_open / chapter_trial_open / auto_sync_applied）。
+/// payload 携带深链信息（owner/repo 等）；readAt 空 = 未读。
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // NOTIFICATION_TYPES（DB 为 String，应用层强类型校验）
+  title     String
+  body      String?
+  payload   Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}
+
+/// 章节级更新任务（更新市场 v1）：上游变更 → 共享章节标记过期（旧内容继续服务）→
+/// 认领转录（暂存 DocumentContent 新行）→ 试读投票（法定人数或超时默认）→ 原子换入。
+/// 状态机：PENDING → CLAIMED → TRIAL → SWAPPED|REJECTED；FAILED/CANCELLED 终态；
+/// CLAIMED 超租约回 PENDING。积分沿 ImportJob 派生口径：CLAIMED/TRIAL 冻结、
+/// SWAPPED/REJECTED 结算 actualCredits、FAILED/CANCELLED 不计（隐式退还）。
+/// kind：UPDATE = 上游变更重译；RELAY = 巨仓首译悬赏（接力窗口按 path 顺序惰性生成，
+/// fromSha=toSha，豁免同仓月度获赠上限——单人自费完本是被欢迎的"文豪模式"）。
+model ChapterUpdateJob {
+  id              String    @id @default(cuid())
+  repositoryId    String
+  documentId      String // 共享正典薄行（ownerUserId=null）
+  path            String
+  fromSha         String
+  toSha           String
+  kind            String    @default("UPDATE")
+  status          String    @default("PENDING")
+  claimedBy       String?
+  claimedUntil    DateTime?
+  /// 暂存新内容（换入前薄行 contentId 指针不动，读者始终看到旧版）
+  stagedContentId String?
+  stagedModel     String?
+  /// 认领时预估的可赚积分（展示用）
+  frozenCredits   Int       @default(0)
+  /// 转录即得：L0 过门入试读时实发 base（新版体量实算，计入日获赠上限）
+  baseCredits     Int       @default(0)
+  /// 过审加赠：换入成功时实发 bonus = base × 50%（不计入日获赠上限）。
+  /// 两段均入 User.creditBalance 持久余额；发布者/维护者与普通贡献者同酬
+  actualCredits   Int?
+  /// TRIAL 截止：超时默认换入（L0 已过的无罪推定），倒计时 UI 消费
+  voteDeadline    DateTime?
+  errorMessage    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  repository Repository          @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  document   Document            @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryId, status])
+  @@index([documentId])
+  @@index([claimedBy, createdAt])
+}
+
+/// 章节多版本（接力 v2 竞争制）：RELAY 首译与重译产出并列版本，读者阅读时投票；
+/// 正典 = document.contentId 指针（isCanonical 为冗余标记，翻正事务内维护），
+/// 挑战者票数超正典 flipMargin 才夺位（在位者偏置防抖动）。
+/// PRIVATE 版本仅作者可见无奖励；公开得小额 base，夺位得大额 bonus（记账走 ChapterUpdateJob kind=RETRANSLATE）。
+model ChapterVersion {
+  id           String    @id @default(cuid())
+  documentId   String
+  repositoryId String
+  authorId     String
+  contentId    String
+  source       String    @default("RELAY") // RELAY（首译悬赏）| RETRANSLATE（重译）
+  visibility   String    @default("PUBLIC") // PUBLIC（竞争池）| PRIVATE（仅作者）
+  voteCount    Int       @default(0)
+  isCanonical  Boolean   @default(false)
+  /// 维护者钦定时间戳（pin）：非空 = 作者钦定推荐正典，投票夺位对其免疫（作者裁决 > 社区投票）
+  pinnedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  document   Document             @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  repository Repository           @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  content    DocumentContent      @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  author     User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  votes      ChapterVersionVote[]
+
+  @@index([documentId, visibility])
+  @@index([repositoryId])
+  @@index([authorId])
+}
+
+/// 章节版本票（阅读时投票，一人一版一票，toggle）
+model ChapterVersionVote {
+  id        String   @id @default(cuid())
+  versionId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  version ChapterVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([versionId, userId])
+  @@index([userId])
+}
+
+/// 内容举报（后置兜底）：已公开教程的违规信号入口，admin 审核台处置（下架/标记已处理）。
+model ContentReport {
+  id           String    @id @default(cuid())
+  repositoryId String
+  reporterId   String
+  reason       String // INFRINGEMENT（侵权）/ LOW_QUALITY（低质）/ MALICIOUS（恶意）/ OTHER（其他）
+  detail       String?
+  /// LLM 分诊结果：{severity: high|medium|low, comment}（admin 队列按严重度排序）
+  triage       Json?
+  handledAt    DateTime?
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  reporter   User       @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  createdAt  DateTime   @default(now())
+
+  @@index([repositoryId, createdAt])
+  @@index([reporterId])
+  @@index([handledAt])
+}
+
+// 用户导入快照记录：每个用户每次导入瞬间的 commit sha。
+// 用户的教程产物（Document.content）一旦物化即冻结；此表记录"冻结于哪个 commit"，
+// 是"教程不会随他人更新而更新，除非用户自己重新导入"的依据。
+model ImportRecord {
+  id           String   @id @default(cuid())
+  userId       String
+  repositoryId String
+  owner        String
+  repo         String
+  branch       String
+  sha          String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, repositoryId, branch])
+  @@index([repositoryId])
+}
+
+// 教程增量更新运行记录（plan-then-apply：LLM 计划 + 确定性应用 + 审计）。
+// plan/candidateSet 快照落库供审计回放；status 驱动 plan/apply 两阶段 API。
+model ImportUpdateRun {
+  id           String    @id @default(cuid())
+  repositoryId String
+  userId       String
+  fromSha      String // 用户冻结于哪个 commit
+  toSha        String // 更新目标 commit
+  status       String    @default("PLANNING") // PLANNING | PLANNED | APPLYING | MAJOR_REBUILD | APPLIED | FAILED
+  plan         Json? // LLM 计划快照（审计）
+  candidateSet Json? // 候选集快照（审计：diff 摘要 + 受影响章节）
+  stats        Json? // { docsToUpdate, docsToRemove, docsToAdd, docsToRename, coercedActions, navTreePatched }
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  finishedAt   DateTime?
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId, repositoryId])
+}
+
+/// 导入管线 Job（工作与连接解耦：/api/ingest 建 Job 后立即 202，后台 worker 执行，
+/// 前端经快照轮询或可续传 SSE 订阅进度，断线/关页零损失）。
+/// lastHeartbeatAt 是 worker 存活租约：读取端发现 RUNNING 且心跳过期 → 惰性判 FAIL。
+model ImportJob {
+  id              String    @id @default(cuid())
+  userId          String
+  owner           String
+  repo            String
+  branch          String
+  edition         String    @default("") // 讲法 key（''= 基础讲法），与 Repository 行对齐
+  status          String    @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
+  params          Json // /api/ingest 预检后的完整入参快照（含回滚守卫所需的 preExistingRepo）
+  options         Json? // 导入作业运行选项及 progressInfo 流式进度（与 TranscriptionJob 对齐）
+  result          Json? // ingestRepo 返回值快照（repositoryId 等）
+  error           String?   @db.Text
+  /// 认领(QUEUED→RUNNING)时刻:排队等待时长分析锚点(wait = startedAt - createdAt)
+  startedAt       DateTime?
+  lastHeartbeatAt DateTime?
+  finishedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events ImportJobEvent[]
+
+  @@index([userId, createdAt])
+  @@index([status, lastHeartbeatAt])
+  // 同仓导入幂等检查（活跃任务去重）的覆盖索引
+  @@index([owner, repo, branch, edition, status])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 调度器 leader 租约（Phase 1 多实例互斥）：CAS 抢租/续租，到期自愈。
+// 替代 pg_advisory_lock（Prisma 池化下 session 锁不可靠、xact 锁需整周期持连接）。
+// key 与 apps/worker task-registry 的任务名一致；ownerId = 进程实例标识。
+// ─────────────────────────────────────────────────────────────
+model SchedulerLease {
+  key         String   @id
+  ownerId     String
+  lockedUntil DateTime
+  updatedAt   DateTime @updatedAt
+}
+
+/// 导入进度事件（只追加、只 INSERT：避免 UPDATE 造成的 MVCC 膨胀）。
+/// seq 由 worker 进程内计数器分配（Job 单次运行、重启即 reap，不会跨进程冲突）；
+/// @@unique([jobId, seq]) 供 Last-Event-ID 游标续传的确定性重放。
+model ImportJobEvent {
+  id        String   @id @default(cuid())
+  jobId     String
+  seq       Int
+  type      String // log | done | error（ai_stream 为遗留死协议，不再产生）
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  job ImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, seq])
+  @@index([jobId, seq])
+}
+
+enum DocumentStatus {
+  UNPROCESSED
+  PROCESSING
+  PROCESSED
+  ERROR
+}
+
+model Document {
+  id              String         @id @default(cuid())
+  repositoryId    String
+  // 文档归属（真冻结核心）：null = 共享文档（公开课程/历史数据/匿名导入）；
+  // 非 null = 该用户私有导入的冻结副本，他人导入/更新永不触碰。
+  // 读取规则统一为 ownerUserId IS NULL OR ownerUserId = 当前用户。
+  ownerUserId     String?
+  path            String
+  title           String?
+  content         String?
+  status          DocumentStatus @default(UNPROCESSED)
+  errorMessage    String?
+  gitSha          String?
+  summary         String?        @db.Text
+  // 本篇/本章转录所使用的 AI 模型（如 "gemini-3.7-flash", "deepseek-v4-pro"）
+  generationModel String?
+  // 内容等级标注（2026-10）：生成时写入的确定性事实（非内容嗅探）——
+  // enhanced=增强+翻译/纯增强；translated=纯翻译；original=原文收编/原文保底；
+  // code_lesson=代码章 LLM 写课。读者知情分级（CDC：诚实交付"拿到的是哪档"），
+  // 零 LLM 指纹复用继承 donor 行等级；null=存量数据（回填前未标注）。
+  generationLevel String?
+  // 内容寻址指针（Phase 2）：指向共享内容层薄行；双写过渡期 content 列保留，
+  // READS flag 切换后以本指针为准。置空 = 尚未迁移/双写前存量。
+  contentId       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  repository        Repository            @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  owner             User?                 @relation("DocumentOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  chunks            DocumentChunk[]
+  conceptNodes      TutorialConceptNode[]
+  outlineNodes      OutlineNode[]
+  contentRef        DocumentContent?      @relation(fields: [contentId], references: [id], onDelete: SetNull)
+  transcriptionJob  TranscriptionJob?
+  chapterUpdateJobs ChapterUpdateJob[]
+  versions          ChapterVersion[]
+  quizzes           ChapterQuiz[]
+
+  // Postgres 唯一索引中 NULL 彼此互异：同一 (repository, path) 允许一个共享行 + 多个用户私有行
+  @@unique([repositoryId, path, ownerUserId])
+  @@index([ownerUserId])
+  @@index([contentId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 内容寻址层（Phase 2 / P-11）：同一份章节内容全网唯一。
+// Document 退化为私有状态薄行（谁拥有哪一章/翻译状态），不可变的内容字节
+// 与 chunk/searchVector 全部上收本层——行数从「用户数 × 仓页数」塌缩到「唯一内容数」。
+// - contentHash：sha256(规范化正文 + lang)，存储去重键
+// - requestFingerprint：sha256(repository+path+gitSha+lang+preset 参数+model)，
+//   生成请求指纹——命中即零 LLM 直接复用（全局转录命中）
+// ─────────────────────────────────────────────────────────────
+model DocumentContent {
+  id                 String   @id @default(cuid())
+  contentHash        String   @unique
+  requestFingerprint String?  @unique
+  content            String?  @db.Text
+  lang               String   @default("")
+  generationModel    String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  chunks          DocumentChunk[]
+  documents       Document[]
+  chapterVersions ChapterVersion[]
+}
+
+/// 服务端共享转录队列（Phase 2 #5）：JIT/打开入口入队，worker 按优先级消费。
+/// priority = views 基础分 + 等待时长衰减；BYOK 浏览器直驱通道不经此表。
+model TranscriptionJob {
+  id                    String    @id @default(cuid())
+  documentId            String    @unique
+  requestedBy           String // 触发者 userId（预算豁免判定用）
+  priority              Int       @default(0)
+  attempts              Int       @default(0)
+  status                String    @default("QUEUED") // QUEUED | RUNNING | DONE | FAILED
+  lastError             String?
+  claimedAt             DateTime?
+  finishedAt            DateTime?
+  // ── chunk 级断点续接存档（Phase 3 #9）──
+  // 指纹 = computeRequestFingerprint（repo+path+gitSha+model+参数）；指纹不匹配视为无存档。
+  // chunks 只存真实 LLM 产物（增强/降级翻译），原文回退不存（零成本可重得）。
+  checkpointFingerprint String?   @default("")
+  // 触发时的处理选项(enhance/model/语言/风格等)——共享转录模式下
+  // /api/documents/[id]/process 的 body 选项随任务行传递,Go prepare 消费
+  options               Json?
+  checkpointChunks      Json? // Record<块索引, 块成品>
+  checkpointTotal       Int? // 本轮切块总数（进度展示 N/M）
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([status, priority])
+}
+
+// ─────────────────────────────────────────────────────────────
+// LLM 平台预算配置（Phase 2 #7，单行表）：admin 可视/热调阈值/手动解除熔断。
+// 口径：keyOrigin='platform' 的 TokenUsageLog 当日合计；BYOK(user) 永不计入。
+// ─────────────────────────────────────────────────────────────
+model PlatformBudgetConfig {
+  id                  String   @id @default("singleton")
+  perUserDailyTokens  Int      @default(200000)
+  platformDailyTokens Int      @default(5000000)
+  breakerEnabled      Boolean  @default(true)
+  /// 按 source 分桶的日预算（channel isolation）：{ "publish_review": 500000 }。
+  /// 恶意刷某一通道（如刷发布初审）只烧干自己桶内的额度，不拖垮其他平台 key 职责；
+  /// 缺省桶 = 不单独限额，仅受全局 platformDailyTokens 约束。
+  sourceQuotas        Json     @default("{}")
+  updatedAt           DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// 算力积分与重置策略动态配置（单例表 singleton）：admin 热调每日基础额度、单次上限、重置周期与折扣
+// ─────────────────────────────────────────────────────────────
+model PlatformCreditsConfig {
+  id                          String   @id @default("singleton")
+  /// [DEPRECATED] 历史遗留配额列，导入转录现已全面 0 消耗，本列已退役
+  defaultDailyCredits         Int      @default(1000)
+  /// [DEPRECATED] 历史遗留配额列，导入转录现已全面 0 消耗，本列已退役
+  resetIntervalHours          Int      @default(24)
+  /// 公开导入单任务最高奖励防爆上限
+  maxCreditsPerImport         Int      @default(300)
+  codePedagogyMultiplier      Float    @default(2.0)
+  standardChunkCharSize       Int      @default(1500)
+  /**
+   * 发布赠送（实扣全额退回）开关：按章发酬上线后默认退役，防双重补偿
+   */
+  publishGiftEnabled          Boolean  @default(false)
+  /**
+   * 书架计费系数：加入公开教程费用 = 劳动账本 × 本系数（1.0 等额；0 免费期）
+   */
+  shelfFeeMultiplier          Float    @default(1.0)
+  /**
+   * 贡献积分归属锁定期（天）：公开后剩余未结积分的锁定天数，admin 热调
+   */
+  contributionVestingDays     Int      @default(30)
+  /**
+   * 公开即时奖励比例：公开瞬间直接入账 User.creditBalance 的比例（0.0 ~ 1.0），admin 热调
+   */
+  initialPublishRewardRatio   Float    @default(0.3)
+  updatedAt                   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// 平台发布审核模型配置（单例 singleton）：发布安全初审的中立「法官」。
+// 发布者自己的 BYOK 模型不能审自己的内容（假端点可自判「安全」绕过审核），
+// 安全裁决强制走平台 Key；admin 热配置（发布时直读本表、无缓存，改完即生效）。
+// apiKey 仅存 AES-256-GCM 密文（BYOK_ENC_KEY 体系）；调用走 keyOrigin='platform'，
+// 计入 PlatformBudgetConfig 日预算熔断——审核费用的爆炸半径被预算闸锁死。
+// ─────────────────────────────────────────────────────────────
+model PlatformReviewConfig {
+  id                    String   @id @default("singleton")
+  isEnabled             Boolean  @default(false)
+  /// openai 兼容供应商标识（仅记账与展示用）
+  provider              String   @default("openai")
+  /// openai 兼容端点（须公网地址，SSRF 校验见 admin 配置路由）
+  baseUrl               String   @default("")
+  /// 法官模型名（平台指定，用户不可选）
+  model                 String   @default("")
+  /// 平台审核 Key 密文（enc:v1:...，admin 明文输入、接口只回掩码）
+  apiKeyEncrypted       String   @default("")
+  /// 管线分合格线基准（0-100，默认 70，全库均分常备参考）
+  pipelinePassThreshold Int      @default(70)
+  /// AI 初审分合格线基准（0-100，默认 75）
+  llmPassThreshold      Int      @default(75)
+  /// AI 初审最低置信度门禁（0.0-1.0，默认 0.7）
+  confidenceThreshold   Float    @default(0.7)
+  /// 是否开启质量基线硬门禁：false=软基线仅做排序与勋章（默认），true=低于基线拦截转人工
+  enforceQualityGate    Boolean  @default(false)
+  updatedAt             DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// 积分发放台账：市场链路（ChapterUpdateJob.baseCredits）之外的贡献发放记录
+// （JIT/客户端队列首译等）。capDailyEarn 日上限的第二聚合源——不发记账行的
+// 发放会游离在日上限之外，形成刷分口子。
+// 删除语义：账号删除（/v1/user/delete，Go 单写者）= 全量抹除（GDPR-style erasure），
+// 资金台账随用户物理级联删除而非匿名化——这是既定设计取舍；如需合规审计链，
+// 应将删除流改为匿名化保留台账，而非改外键为 Restrict（会破坏账号删除功能）。
+// ─────────────────────────────────────────────────────────────
+model CreditGrantLedger {
+  id           String   @id @default(cuid())
+  userId       String
+  /// 发放来源标识（lib/schemas/credit-grant.ts 的 CreditGrantSource）
+  source       String
+  amount       Int
+  repositoryId String?
+  path         String?
+  createdAt    DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository Repository? @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([repositoryId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 待解冻贡献积分流水（分阶段归属 Vesting Model）：
+// 教程审核通过公开时，初始比例（如 30%）即时入账 User.creditBalance，
+// 剩余贡献积分（如 70%）作为待解冻记录锁定于此。
+// 满期（unlockAt <= now()）自动解冻入账；期内下架则标记为 CANCELLED 自动作废。
+// ─────────────────────────────────────────────────────────────
+model PendingCreditGrant {
+  id           String    @id @default(cuid())
+  userId       String
+  repositoryId String
+  amount       Int
+  source       String    @default("IMPORT_CONTRIBUTION")
+  status       String    @default("PENDING") // PENDING | UNLOCKED | CANCELLED
+  unlockAt     DateTime
+  unlockedAt   DateTime?
+  cancelledAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([repositoryId, status])
+  @@index([status, unlockAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// GitHub 配额埋点（Phase 3 #2）：统一客户端采样写入，admin 看板聚合
+// 各 token 的 remaining 水位/reset 倒计时曲线。fingerprint 仅存尾 4 位
+// （可辨识多 token 轮询、不泄露凭据）。
+// ─────────────────────────────────────────────────────────────
+model GithubQuotaLog {
+  id            BigInt    @id @default(autoincrement())
+  fingerprint   String // token 尾 4 位；"anon" = 匿名请求
+  remaining     Int
+  resetAt       DateTime?
+  endpointClass String    @default("api-core") // api-core | raw | archive | search
+  status        Int       @default(200)
+  createdAt     DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([fingerprint, createdAt])
+}
+
+model DocumentChunk {
+  // 双归属过渡期：legacy 行挂 documentId；内容层行只挂 contentRef（documentId 为空，
+  // legacy 按 documentId 的读取天然不可见，避免同内容双份命中）
+  id         String  @id @default(cuid())
+  documentId String?
+  // 内容层指针（Phase 2）：chunk 归属内容层后 searchVector 随之上收；
+  // 双写过渡期 documentId 保留，读切换后检索 JOIN 走本列
+  contentId  String?
+
+  heading      String?
+  headingPath  String?
+  semVerLabel  String?
+  contentType  String                   @default("prose")
+  content      String                   @db.Text
+  // 文档内顺序序号（入库时按 chunk 生成序写入；存量数据为 null，可跑 backfill-rechunk 刷新）
+  order        Int?
+  // FTS 生成列（GENERATED ALWAYS AS to_tsvector('simple', heading||' '||content) STORED）：
+  // 值由数据库自动维护、Prisma 不读不写；此处声明仅为让 db push / migrate 知道它存在，
+  // 否则会被当作漂移整列删除（审计矩阵 9.1 / db push 地雷，迁移 20260827120100_reconcile_companion_ddl）。
+  // dbgenerated 默认值 = PG 目录里生成表达式的镜像（缺它 diff 会反复要求 DROP DEFAULT）
+  searchVector Unsupported("tsvector")? @default(dbgenerated("to_tsvector('simple'::regconfig, ((COALESCE(heading, ''::text) || ' '::text) || COALESCE(content, ''::text)))"))
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  document   Document?        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  contentRef DocumentContent? @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([contentId])
+  @@index([semVerLabel])
+  @@index([contentType])
+  // 伴生检索索引（迁移 20260827120100）：map 保留迁移原名，防止 db push 重命名
+  // 破坏 entrypoint 幂等脚本的 CREATE INDEX IF NOT EXISTS 同名约定
+  @@index([searchVector], map: "idx_chunk_fts", type: Gin)
+  @@index([content(ops: raw("gin_trgm_ops"))], map: "idx_chunk_trgm_content", type: Gin)
+  @@index([heading(ops: raw("gin_trgm_ops"))], map: "idx_chunk_trgm_heading", type: Gin)
+}
+
+model ConversationMessage {
+  id               String   @id @default(cuid())
+  conversationId   String
+  userId           String
+  role             String // "user", "assistant", "system"
+  content          String   @db.Text
+  tokens           Int      @default(0)
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  model            String?
+  toolInvocations  Json?
+  createdAt        DateTime @default(now())
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  tokenUsageLogs TokenUsageLog[]
+
+  @@index([conversationId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model EpisodicEvent {
+  id           String   @id @default(cuid())
+  userId       String
+  pageUrl      String
+  eventType    String // e.g., "PAGE_VIEW", "SECTION_FOCUS", "TEXT_HIGHLIGHT", "QUIZ_INTERACTION", "CODE_COPY", "RAGE_CLICK", "IDLE_ZONEOUT", "CONTENT_SKIP"
+  targetId     String? // Optional: ID of the interacted element (e.g., heading ID, quiz ID)
+  duration     Int? // Optional: Duration in milliseconds
+  metadata     Json? // Optional: Extra context (e.g., highlighted text, quiz result)
+  // 关联仓库（阅读深度/测验参与等仓级信号的地基；客户端优先携带，服务端按 pageUrl 兜底解析）
+  repositoryId String?
+  createdAt    DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository Repository? @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([eventType])
+  @@index([repositoryId, eventType])
+  @@index([repositoryId])
+}
+
+// 前端自研监控事件（报错/卡死/性能）：与 EpisodicEvent（产品旅程分析）刻意分表——
+// 消费者是运维排障而非漏斗分析（CDC），错误聚合走 fingerprint 索引而非 JSON 字段。
+// append-only 事实源，读侧聚合零物化；持久化由 Go worker-sidecar 单写者独占（/v1/monitor/events）。
+// userId/repositoryId 刻意不建外键：监控流水是弱关联账本，为匿名流量监控留演化缝。
+model MonitorEvent {
+  id           String   @id @default(cuid())
+  sessionId    String // 客户端 crypto.randomUUID()，一个页面加载一个会话
+  kind         String // MONITOR_EVENT_KINDS 注册表：JS_ERROR / RESOURCE_ERROR / PROMISE_REJECTION / RENDER_ERROR / FREEZE / WEB_VITALS / SESSION_START / SESSION_END
+  pageUrl      String
+  userId       String? // v1 仅登录态上报；可空字段为匿名流量预留
+  repositoryId String? // 服务端按 pageUrl 兜底解析（与 EpisodicEvent 同款 telemetryRepoRegex 归因）
+  fingerprint  String? // 错误指纹（服务端归一化计算）：message 模板 + stack 顶部帧 → sha256[:16]
+  severity     String? // freeze: long(≥50ms)/severe(≥250ms)；错误类留空
+  payload      Json? // kind 专属结构化负载（Zod discriminated union 网关校验后透传）
+  createdAt    DateTime @default(now())
+
+  @@index([kind, createdAt])
+  @@index([fingerprint, createdAt])
+  @@index([sessionId])
+}
+
+model Conversation {
+  id           String   @id @default(cuid())
+  userId       String
+  repositoryId String
+  title        String   @default("New Chat")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository     Repository            @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  messages       ConversationMessage[]
+  tokenUsageLogs TokenUsageLog[]
+
+  @@index([userId, repositoryId])
+}
+
+model TokenUsageLog {
+  id               String   @id @default(cuid())
+  userId           String
+  repositoryId     String?
+  conversationId   String?
+  messageId        String?
+  model            String
+  provider         String   @default("unknown")
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  cachedTokens     Int      @default(0)
+  reasoningTokens  Int      @default(0)
+  source           String   @default("chat") // "chat", "tutor_explanation", "dissect", "diagnostic", "indexer"
+  // 花销归属（Phase 2 #7 预算熔断地基）：platform=平台 key 计入日预算；
+  // user=BYOK 用户自有 key，豁免预算。存量行默认 platform（保守口径）。
+  keyOrigin        String   @default("platform")
+  // Prompt eval 捕获侧（Phase 3 v1）：网关生成记账携带 purpose 与编译时 prompt 版本，
+  // 支撑"版本 ↔ 质量"回溯；存量行为 NULL，不影响既有查询。
+  purpose          String?
+  promptVersion    Int?
+  createdAt        DateTime @default(now())
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository   Repository?          @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+  conversation Conversation?        @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  message      ConversationMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([userId, repositoryId])
+  @@index([userId, source])
+  @@index([createdAt])
+  @@index([keyOrigin, createdAt])
+  @@index([conversationId])
+}
+
+model McpBundle {
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  slug         String       @unique
+  badge        String?      @default("❖ 官方精选")
+  isPinned     Boolean      @default(true)
+  displayOrder Int          @default(0)
+  repositories Repository[] @relation("BundleRepositories")
+  useCount     Int          @default(0)
+  callLogs     McpCallLog[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([slug])
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  MAINTAINER
+  AUDITOR
+}
+
+model AdminUser {
+  id          String          @id @default(cuid())
+  email       String          @unique
+  name        String?
+  role        AdminRole       @default(MAINTAINER)
+  isActive    Boolean         @default(true)
+  lastLoginAt DateTime?
+  auditLogs   AdminAuditLog[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model AdminAuditLog {
+  id          String     @id @default(cuid())
+  adminUserId String?
+  adminUser   AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+  action      String
+  target      String?
+  detailsJson Json?
+  ipAddress   String?
+  createdAt   DateTime   @default(now())
+
+  @@index([action])
+  @@index([adminUserId])
+  @@index([createdAt])
+}
+
+/// 网关安全中心策略（admin 热配置单行表；client 网关/任务层经 lib/gateway/policy 读取器消费，
+/// 进程内 TTL 微缓存，DB 不可用时降级默认值 fail-open）
+model GatewayPolicyConfig {
+  id                  String   @id @default("singleton")
+  /// 紧急只读熔断：暂停后台重任务认领与新重任务提交，保住主站阅读与 MCP 读工具
+  emergencyReadOnly   Boolean  @default(false)
+  /// Web 匿名公共接口全局 RPM（按 IP 滑动窗口，proxy.ts 执行）
+  webApiRpm           Int      @default(120)
+  /// 恶意扫描器 UA 拦截开关
+  scannerBlockEnabled Boolean  @default(true)
+  /// 空 User-Agent 拦截开关（默认关；心跳/容器互调路径永久豁免）
+  blockEmptyUserAgent Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+}
+
+/// 网关 IP 黑名单（proxy.ts 全站 API 生效；admin 控制台维护，TTL 缓存同步）
+model GatewayBlockedIp {
+  ipAddress String   @id
+  reason    String?
+  createdBy String?
+  createdAt DateTime @default(now())
+}
+
+/// 网关安全事件流水（扫描器 403 / IP 封禁命中 / Web 全局 429 / 空 UA 拦截），
+/// admin「网关拦截流水」的真实数据源；保留期由 retention.gatewayEventDays 清理
+model GatewaySecurityEvent {
+  id        String   @id @default(cuid())
+  kind      String
+  ipAddress String?
+  path      String
+  userAgent String?
+  detail    Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([kind, createdAt])
+}
+
+model DissectionCache {
+  id          String   @id @default(cuid())
+  codeHash    String   @unique
+  mermaidCode String   @db.Text
+  language    String?
+  tierUsed    Int      @default(1)
+  hitCount    Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([codeHash])
+}
+
+model PlatformPromotion {
+  id           String    @id @default(cuid())
+  title        String
+  subtitle     String?
+  targetUrl    String?
+  badge        String    @default("🔥 热门推荐")
+  isPinned     Boolean   @default(true)
+  displayOrder Int       @default(0)
+  // 公告扩展（kind=promotion 推荐位 / announcement 全站横幅公告）
+  kind         String    @default("promotion") // promotion / announcement
+  startsAt     DateTime?
+  endsAt       DateTime?
+  dismissible  Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([isPinned, displayOrder])
+  @@index([kind, startsAt, endsAt])
+}
+
+model GlobalMcpToolPolicy {
+  id                String   @id @default(cuid())
+  toolName          String   @unique
+  isEnabled         Boolean  @default(true)
+  tokenBudget       Int      @default(4000)
+  customDescription String?  @db.Text
+  tierRequirement   String   @default("FREE")
+  updatedAt         DateTime @updatedAt
+}
+
+/// 标签词表种类：category=单选分类（严格封闭，LLM 只能从中选）；tag=多值标签（受控扩展）
+enum TagKind {
+  CATEGORY
+  TAG
+}
+
+/// 全站标签/分类注册表：管理端维护基础词表，AI 探测从中选择；词表外的新值
+/// 在导入入库时受控登记（source=ai），管理端可编辑/停用，防止标签无限膨胀
+model TagRegistry {
+  id        String   @id @default(cuid())
+  /// 规范值（唯一允许写入 Repository.category / Repository.tags 的形态）
+  value     String   @unique
+  kind      TagKind  @default(TAG)
+  /// 同义别名（AI 输出或存量数据中出现过的形式，写入时归一到 value）
+  aliases   String[] @default([])
+  /// 来源：seed（初始词表）| ai（LLM 探测新建）| admin（管理员手工）| legacy（存量归一）
+  source    String   @default("seed")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([kind, isActive])
+}
+
+model McpOpenDoc {
+  id          String    @id @default(cuid())
+  version     Int       @default(1)
+  status      String    @default("DRAFT") // DRAFT | PENDING_REVIEW | PUBLISHED | ARCHIVED
+  title       String    @default("OpenGits MCP 网关开放文档")
+  markdown    String    @db.Text
+  changelog   String?
+  authorEmail String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, version])
+}
+
+model TutorialConceptNode {
+  id                String   @id @default(cuid())
+  repositoryId      String
+  documentId        String?
+  // 溯源锚点：概念 ↔ 原文 Chunk（chunkId + headingPath 由入库时反查 DocumentChunk 回填，best-effort）
+  chunkId           String?
+  headingPath       String?
+  conceptName       String
+  slug              String
+  // 仓内归并层（L1）：canonicalKey = normalizeHeadingKey(conceptName)，同仓同 key 的节点
+  // 视为同一概念组（共享邻居/依赖/目录名额）；canonicalName = 组内代表性显示名（频次最高，
+  // 同频取更短者、再取字典序最小，确定性可重放）。均为 nullable：未回填的存量节点按未归并处理。
+  canonicalKey      String?
+  canonicalName     String?
+  category          String   @default("architecture") // architecture | workflow | principle | reflection
+  principlesText    String?  @db.Text
+  authorReflections String?  @db.Text
+  sopSteps          String[] @default([])
+  summary           String?  @db.Text
+  subTopics         String[] @default([])
+  tags              String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  repository    Repository     @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  // 删文档时级联删除其概念节点：避免孤儿概念（documentId 被置 null 却仍参与共现/邻居查询）污染全仓拓扑。
+  // 关联边 sourceNode/targetNode 为 Cascade（自动清理）。
+  document      Document?      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  // 跨仓对齐：同义概念归并到唯一 GlobalConcept（FTS + 名称归一化，无 embedding）。nullable=未对齐。
+  globalConcept GlobalConcept? @relation(fields: [globalConceptId], references: [id], onDelete: SetNull)
+
+  // 概念图边（TutorialConceptEdge）两侧引用
+  outgoingEdges TutorialConceptEdge[] @relation("edgeSource")
+  incomingEdges TutorialConceptEdge[] @relation("edgeTarget")
+
+  // 跨仓对齐 FK（见 globalConcept 关系）
+  globalConceptId String?
+
+  @@unique([repositoryId, slug])
+  @@index([repositoryId, category])
+  @@index([conceptName])
+  @@index([repositoryId, canonicalKey])
+  @@index([chunkId])
+  @@index([globalConceptId])
+}
+
+/**
+ * 全局概念（跨仓对齐层，设计规范 §3.3）。
+ * 把多仓里同义的概念节点（如各仓的"事件循环"）归并到一个 canonical GlobalConcept，
+ * 供 concept_search 跨仓归并、recommend_tutorial/skill_coverage 跨仓精确匹配。
+ * 对齐方式：normalizeHeadingKey 归一化 + FTS 召回（明确不做 embedding）。aliases 累积变体名。
+ */
+model GlobalConcept {
+  id            String   @id @default(cuid())
+  canonicalName String   @unique
+  aliases       String[] @default([])
+  description   String?  @db.Text
+
+  concepts TutorialConceptNode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([canonicalName])
+}
+
+/**
+ * 教程知识图谱边
+ * 把 TutorialConceptNode 从「概念目录」升级为「真图」的关系载体。
+ * type 语义：
+ * prerequisite - 前置依赖：理解 target 需先掌握 source
+ * related      - 语义相关：同一主题域内相邻概念（当前主要由文档/Chunk 共现产生）
+ * part_of      - 组成关系：source 是 target 的组成部分
+ * successor    - 递进关系：教程推荐学习顺序中 source 先于 target
+ * source 证据来源（确定性优先）：
+ * cooccurrence     - 文档/Chunk 共现（确定性，当前已落地）
+ * curriculum_order - 教程大纲教学顺序（确定性，基于 navTree 顺序）
+ * code_dep         - 符号依赖图（确定性，待真实 AST 解析接入，见设计文档）
+ * llm_extracted    - LLM 提炼（带幻觉风险，后续阶段）
+ */
+model TutorialConceptEdge {
+  id           String @id @default(cuid())
+  repositoryId String
+  sourceId     String
+  targetId     String
+  type         String @default("related")
+  weight       Float  @default(1.0) // 证据强度 0~1
+  source       String @default("cooccurrence")
+  meta         Json? // 证据明细：chunkId / documentId / 提取理由
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sourceNode TutorialConceptNode @relation("edgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetNode TutorialConceptNode @relation("edgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  repository Repository          @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, targetId, type])
+  @@index([repositoryId, type])
+  @@index([targetId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 章节随堂测验（结构化）：转录 manifest 的 quizzes 原样落库。
+// 与概念 reflections 折叠文本并存（Web 语义不变，能力不倒退）；
+// MCP explore_concept(action="quiz") 与回填脚本消费。
+// ─────────────────────────────────────────────────────────────
+model ChapterQuiz {
+  id           String   @id @default(cuid())
+  documentId   String
+  repositoryId String
+  question     String
+  options      String[]
+  correctIndex Int
+  explanation  String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  document   Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, order])
+  @@index([repositoryId])
+}
+
+model SystemPrompt {
+  id         String          @id @default(cuid())
+  key        String          @unique
+  name       String
+  module     String
+  currentVer Int             @default(1)
+  versions   PromptVersion[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model PromptVersion {
+  id           String       @id @default(cuid())
+  promptId     String
+  version      Int
+  promptSchema Json
+  modelConfig  Json?
+  isDefault    Boolean      @default(false)
+  prompt       SystemPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+
+  @@index([promptId, version])
+}
+
+model McpActiveSession {
+  id         String   @id @default(cuid())
+  userId     String
+  clientName String
+  clientVer  String?
+  ipAddress  String?
+  lastSeenAt DateTime @default(now())
+  status     String   @default("ACTIVE")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clientName])
+  @@index([userId, lastSeenAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// MCP 接入层：API Token（供 Cursor/Claude Code/Codex 等无浏览器
+// Cookie 的智能体客户端经 Authorization: Bearer 调用）
+// ─────────────────────────────────────────────────────────────
+model McpApiToken {
+  id             String    @id @default(cuid())
+  userId         String
+  name           String // Token 用途名（如 "Cursor"、"Claude Code"）
+  tokenHash      String    @unique // sha256(token)，用于鉴权校验
+  encryptedToken String? // AES-256-GCM 加密密文，用于用户本人在向导中快速复制
+  prefix         String // 明文前 8 位，用于列表展示识别
+  lastUsedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  revokedAt      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// MCP 调用观测（隐私安全版）：仅工具名/仓库/状态/耗时/命中数，
+// 不存查询词、不关联用户——取代已移除的 McpQueryLog（含原始查询词）。
+// ─────────────────────────────────────────────────────────────
+model McpCallLog {
+  id               String   @id @default(cuid())
+  toolName         String
+  /// 调用者（token 解析所得；匿名/session 兜底或历史行为 null）——用户隔离查询的依据
+  userId           String?
+  /// 发起调用的 MCP 客户端名（归一化后，与 McpActiveSession.clientName 同口径）；历史行为 null
+  clientName       String?
+  repositoryId     String?
+  bundleId         String?
+  dimension        String?
+  status           String   @default("SUCCESS") // SUCCESS / BLIND_SPOT / ERROR
+  resultCount      Int      @default(0)
+  responseTimeMs   Int      @default(0)
+  /// 端点/入参显式请求的讲法或版本（回退观测：requested≠resolved 即发生静默回退）
+  requestedEdition String?
+  /// 实际服务的讲法 key（'' = 基础讲法；归因与回退率统计）
+  resolvedEdition  String?
+  /// 解析回退标记（请求的讲法/版本未命中回退基础行时 true；fail-loud 警告的同源信号）
+  isFallback       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  repository Repository? @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+  bundle     McpBundle?  @relation(fields: [bundleId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([repositoryId, createdAt])
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@index([userId, clientName, createdAt])
+  @@index([bundleId])
+  @@index([isFallback, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// MCP 用量账本（配额地基）：按用户按日计数。
+// 与隐私安全版 McpCallLog（无用户关联）互补——本表仅存聚合计数，
+// 不含查询词、工具名明细等敏感维度，可安全用于配额与用量展示。
+// ─────────────────────────────────────────────────────────────
+model McpUsageLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  day       String // YYYY-MM-DD（UTC）
+  mcpCalls  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 教程编排层（REPO_INGEST_REDESIGN §10）
+// 编排层与内容层解耦：TutorialOutline/Part/Chapter/Node 是"结构/位置"，
+// Document/DocumentChunk 是"实际文本内容"。重新编排只删/建编排层，内容层零改动。
+// ─────────────────────────────────────────────────────────────
+
+/// 一套教程编排大纲（支持多版本 + 激活切换 = 编排可逆）
+model TutorialOutline {
+  id           String     @id @default(cuid())
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  mode         String     @default("tutorial") // 'tutorial' | 'explorer'
+  version      Int        @default(1)
+  isActive     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  parts    OutlinePart[]
+  chapters OutlineChapter[]
+
+  @@unique([repositoryId, version])
+  @@index([repositoryId, isActive])
+}
+
+/// 大类（可选：章数 > 6 才聚合；≤ 6 时 chapters 直接挂 outline，partId 为 null）
+model OutlinePart {
+  id            String          @id @default(cuid())
+  outlineId     String
+  outline       TutorialOutline @relation(fields: [outlineId], references: [id], onDelete: Cascade)
+  title         String
+  summary       String?
+  teachingOrder Int
+
+  chapters OutlineChapter[]
+
+  @@index([outlineId])
+}
+
+/// 章（教学单元）
+model OutlineChapter {
+  id            String          @id @default(cuid())
+  outlineId     String
+  outline       TutorialOutline @relation(fields: [outlineId], references: [id], onDelete: Cascade)
+  partId        String?
+  part          OutlinePart?    @relation(fields: [partId], references: [id], onDelete: SetNull)
+  title         String
+  summary       String?
+  chapterType   String          @default("mixed") // 'doc' | 'code' | 'mixed'
+  moduleName    String? // 巨型仓子系统模块名归属（与 ModuleMapEntry.moduleName 直连，消除脆弱正则标题反查）
+  teachingOrder Int
+
+  nodes OutlineNode[]
+
+  @@index([outlineId])
+  @@index([partId])
+}
+
+/// 节（编排最细单元：不存内容，只是"指向哪个 Document 的哪个 heading"的编排指针）
+model OutlineNode {
+  id            String         @id @default(cuid())
+  chapterId     String
+  chapter       OutlineChapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  documentId    String? // 关联内容层（Document）；编排时 Document 可能未建，可空
+  document      Document?      @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  headingPath   String? // Document 内 heading 定位（节 < 文件时）
+  title         String
+  nodeType      String         @default("doc") // 'doc' | 'code'
+  teachingOrder Int
+
+  @@index([chapterId])
+  @@index([documentId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 巨型仓探索器模型（REPO_INGEST_REDESIGN §10.4）
+// mode=explorer 专属：一个巨型仓一篇架构综述全文 + N 个顶级子系统模块地图卡片
+// ─────────────────────────────────────────────────────────────
+
+/// 巨型仓探索器架构综述（系统全景、Mermaid 交互拓扑图、核心类型与推荐路径）
+/// 全局大模型服务商与端点配置（Admin 控制台动态配置，客户端实时拉取）
+model GlobalModelProvider {
+  id           String   @id @default(cuid())
+  providerKey  String   @unique // 如 "google", "deepseek", "zhipu", "dashscope", "openai", "anthropic", "custom"
+  name         String // 如 "Google Gemini", "DeepSeek", "智谱 GLM"
+  label        String // 如 "Google Gemini (AI Studio)", "DeepSeek API"
+  badgeLabel   String // 如 "🔴 Google Gemini", "🔵 DeepSeek"
+  baseUrl      String // 如 "https://generativelanguage.googleapis.com/v1beta/openai"
+  apiFormat    String   @default("openai") // "openai" | "anthropic"
+  defaultModel String // 如 "gemini-3.7-flash"
+  models       String[] @default([]) // 如 ["gemini-3.7-flash", "gemini-3.1-pro"]
+  isEnabled    Boolean  @default(true)
+  isDefault    Boolean  @default(false)
+  displayOrder Int      @default(0)
+  description  String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isEnabled, displayOrder])
+}
+
+/// 用户服务商聚合配置（同一个厂商统一在一个记录中管理多个模型与 API Key）
+model UserModelProvider {
+  id            String    @id @default(cuid())
+  userId        String
+  providerKey   String // 如 "dashscope", "google", "deepseek", "zhipu", "openai", "anthropic", "custom"
+  name          String // 如 "阿里百炼", "Google Gemini", "DeepSeek API"
+  baseUrl       String // 端点 URL
+  apiKey        String // 该厂商的 API Key——AES-256-GCM 密文落库（enc:v1:...，lib/crypto/api-key-cipher）；
+  // 写入路径 encryptApiKey（model-providers 路由），读取路径 tryDecryptApiKey（user-model-resolver）
+  apiFormat     String    @default("openai") // "openai" | "anthropic"
+  models        String[]  @default([]) // 该厂商下包含的所有模型列表
+  selectedModel String // 该厂商当前选中的主模型 (如 "qwen3.6-flash")
+  isActive      Boolean   @default(false) // 是否为当前全局激活使用的默认厂商 (全局唯一)
+  healthStatus  String    @default("unknown") // "healthy" | "unhealthy" | "unknown"
+  latencyMs     Int? // 最近测速耗时
+  lastError     String? // 最近错误说明
+  lastTestedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerKey])
+  @@index([userId, isActive])
+}
+
+// ─────────────────────────────────────────────────────────────
+// OAuth 2.1 协议层：动态客户端注册（RFC 7591 / MCP 规范）
+// ─────────────────────────────────────────────────────────────
+model OAuthClient {
+  id           String   @id // client_id (opgts-client-xxx)
+  name         String // client_name (例如 "Cursor", "Claude Code")
+  redirectUris String[] // redirect_uris 白名单列表
+  createdAt    DateTime @default(now())
+
+  authCodes OAuthAuthCode[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// OAuth 2.1 协议层：授权码（一次性、5 分钟有效、落库防重启即丢）
+// ─────────────────────────────────────────────────────────────
+model OAuthAuthCode {
+  code          String   @id // 授权码主键（一次性高熵随机串）
+  clientId      String
+  userId        String
+  codeChallenge String // PKCE S256 challenge
+  redirectUri   String
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+
+  client OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 遗留表区已清（迁移 20261112000000_open_source_hardening）：早期商业化实验的
+// PlatformCommercialConfig / RedeemCode / RedeemRecord / Subscription 四表
+// 确认代码零引用后，按「先归档 → 删模型 → 显式迁移」流程物理删除。
+// ─────────────────────────────────────────────────────────────
+
+/// Go daemon 任务运行台账（每轮一条汇总行——宪章公理 5：禁止逐事件写放大）。
+/// 写者唯一：Go runner.runOnce 单点埋表；Node 只读（admin 观测面）。
+/// task-health-alert 任务按「连续 failed ≥ 3」窗口判定并推送 webhook。
+model DaemonTaskRun {
+  id         String   @id
+  task       String
+  status     String // ok | failed
+  durationMs Int
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([task, createdAt])
+}

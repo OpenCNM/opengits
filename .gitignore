@@ -1,0 +1,107 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules/
+**/node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+coverage/
+**/coverage/
+
+# next.js build outputs
+.next/
+**/.next/
+out/
+**/out/
+build/
+**/build/
+
+# misc
+.DS_Store
+*.pem
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+
+# env files
+.env*
+# 模板文件必须随仓库分发（已确认无真实密钥）
+!.env.example
+
+# vercel
+.vercel/
+**/.vercel/
+
+# typescript
+*.tsbuildinfo
+**/*.tsbuildinfo
+next-env.d.ts
+**/next-env.d.ts
+
+# Ingestion Data, Storage, Assets & Cache (转录产物、本地缓存与下载资源)
+# 注意：必须精确锚定运行时数据路径，严禁使用裸 storage/ 或 **/storage/，否则源码目录 apps/client/src/lib/storage 会被误吞！
+.data/
+**/.data/
+/storage/
+/apps/client/storage/
+/apps/worker/storage/
+public/assets/
+**/public/assets/
+config.json
+**/config.json
+chrome/
+**/chrome/
+.zcode/
+**/.zcode/
+
+# Temporary Scratch Scripts & Output
+scratch/
+**/scratch/
+# AI collaboration artifacts (kept local only)
+CLAUDE.md
+AGENTS.md
+**/AGENTS.md
+AGENTS.zh.md
+.agents/
+# 数据库备份产物（含用户数据，绝不入库）
+/backups/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# 内部架构记录与开发草稿文档（纯本地开发辅助）
+/docs/
+/doc/
+/apps/client/doc/
+
+# Go sidecar 本地构建产物
+services/archive-sidecar/*.exe
+
+
+# Go sidecar 本地构建产物
+services/worker-sidecar/worker-sidecar*
+services/worker-sidecar/sidecar*
+services/worker-sidecar/mcp-sidecar*
+dev-worker-go*
+dev-worker-sidecar*
+.dev-logs/
+
+# Git Worktrees
+.worktrees/
+
+
+
+# worker-sidecar 运行时归档/图谱/树缓存（真实流量产物，勿入库）
+/services/worker-sidecar/storage/

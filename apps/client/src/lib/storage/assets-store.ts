@@ -1,0 +1,28 @@
+import { getStorageDriver } from './driver';
+
+/**
+ * assets 领域封装：owner/repo/relPath 三元组 ⇄ 对象键的唯一定义点。
+ * key 布局 assets/{owner}/{repo}/{rel} 与历史本地目录结构同构
+ * （local 驱动下旧文件可直接读，mc mirror 可直迁 s3）。
+ */
+
+export function assetObjectKey(owner: string, repo: string, relPath: string): string {
+  return `assets/${owner}/${repo}/${relPath}`;
+}
+
+export async function putAsset(owner: string, repo: string, relPath: string, data: Buffer): Promise<void> {
+  await getStorageDriver().put(assetObjectKey(owner, repo, relPath), data);
+}
+
+export async function getAsset(owner: string, repo: string, relPath: string): Promise<Buffer | null> {
+  return getStorageDriver().get(assetObjectKey(owner, repo, relPath));
+}
+
+export async function assetExists(owner: string, repo: string, relPath: string): Promise<boolean> {
+  return getStorageDriver().exists(assetObjectKey(owner, repo, relPath));
+}
+
+/** 当前激活驱动名（同步；调用方以此判 local 特有分支，如 CDN 302 直出） */
+export function activeStorageDriverName(): string {
+  return getStorageDriver().name;
+}

@@ -1,0 +1,30 @@
+# 压测用覆盖文件：把 web/sidecar-go 容器限到小规格 VPS 水平
+#
+# 背景：本地高性能开发机上压测得到的绝对数字是「上界」，测不出生产小机的真实瓶颈。
+# 用法（先停掉现有栈再用组合命令拉起，结束后原样恢复）：
+#   docker compose -f docker-compose.yml -f docker-compose.loadtest.yml up -d
+#
+# 方法论：同一压测脚本跑两轮——
+#   1. 不限速（本文件不生效）→ 容量上界（服务逻辑天花板）
+#   2. 限 1 核/1G（本文件）→ 近似小规格 VPS 的保守值
+# 取两轮区间作为容量估计。
+#
+# 说明：docker compose v2 对非 swarm 部署同样应用 deploy.resources.limits。
+services:
+  web:
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1g
+
+  # mcp-go 已并入 sidecar-go（全功能 worker），服务键随基础 compose 改名；
+  # 64m 是纯 MCP 容器时代的值，全功能 worker 下直接 OOM，校准为 1g 小机档。
+  # mem_limit 与 deploy 双写，对齐基础 compose 的声明方式避免合并冲突
+  sidecar-go:
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1g
+    mem_limit: 1g

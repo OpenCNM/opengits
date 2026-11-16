@@ -1,0 +1,760 @@
+{
+  "version": 1,
+  "fileGroundingCases": [
+    {
+      "name": "exact-match-paths",
+      "input": {
+        "claimedFiles": [
+          "src/main.ts",
+          "src/lib/db.ts"
+        ],
+        "index": {
+          "paths": [
+            "src/main.ts",
+            "src/lib/db.ts",
+            "src/models/user.ts",
+            "packages/core/src/util.ts",
+            "packages/api/src/util.ts"
+          ],
+          "symbolsByFile": {
+            "src/main.ts": [
+              {
+                "name": "main",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 20,
+                "exported": true
+              }
+            ],
+            "src/lib/db.ts": [
+              {
+                "name": "db",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 5,
+                "exported": true
+              },
+              {
+                "name": "connect",
+                "kind": "function",
+                "startLine": 6,
+                "endLine": 25,
+                "exported": true
+              }
+            ],
+            "src/models/user.ts": [
+              {
+                "name": "User",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 15,
+                "exported": true
+              }
+            ],
+            "packages/core/src/util.ts": [
+              {
+                "name": "helperCore",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ],
+            "packages/api/src/util.ts": [
+              {
+                "name": "helperApi",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "valid": true,
+        "groundedFiles": [
+          "src/main.ts",
+          "src/lib/db.ts"
+        ],
+        "hallucinatedFiles": [],
+        "adjustedSourceFiles": [
+          "src/main.ts",
+          "src/lib/db.ts"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "name": "fuzzy-unique-suffix-match",
+      "input": {
+        "claimedFiles": [
+          "db.ts",
+          "user.ts"
+        ],
+        "index": {
+          "paths": [
+            "src/main.ts",
+            "src/lib/db.ts",
+            "src/models/user.ts",
+            "packages/core/src/util.ts",
+            "packages/api/src/util.ts"
+          ],
+          "symbolsByFile": {
+            "src/main.ts": [
+              {
+                "name": "main",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 20,
+                "exported": true
+              }
+            ],
+            "src/lib/db.ts": [
+              {
+                "name": "db",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 5,
+                "exported": true
+              },
+              {
+                "name": "connect",
+                "kind": "function",
+                "startLine": 6,
+                "endLine": 25,
+                "exported": true
+              }
+            ],
+            "src/models/user.ts": [
+              {
+                "name": "User",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 15,
+                "exported": true
+              }
+            ],
+            "packages/core/src/util.ts": [
+              {
+                "name": "helperCore",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ],
+            "packages/api/src/util.ts": [
+              {
+                "name": "helperApi",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "valid": true,
+        "groundedFiles": [
+          "src/lib/db.ts",
+          "src/models/user.ts"
+        ],
+        "hallucinatedFiles": [],
+        "adjustedSourceFiles": [
+          "src/lib/db.ts",
+          "src/models/user.ts"
+        ],
+        "warnings": [
+          "Fuzzy-aligned 'db.ts' to grounded path 'src/lib/db.ts'.",
+          "Fuzzy-aligned 'user.ts' to grounded path 'src/models/user.ts'."
+        ]
+      }
+    },
+    {
+      "name": "ambiguous-deterministic-disambiguation",
+      "input": {
+        "claimedFiles": [
+          "util.ts"
+        ],
+        "index": {
+          "paths": [
+            "src/main.ts",
+            "src/lib/db.ts",
+            "src/models/user.ts",
+            "packages/core/src/util.ts",
+            "packages/api/src/util.ts"
+          ],
+          "symbolsByFile": {
+            "src/main.ts": [
+              {
+                "name": "main",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 20,
+                "exported": true
+              }
+            ],
+            "src/lib/db.ts": [
+              {
+                "name": "db",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 5,
+                "exported": true
+              },
+              {
+                "name": "connect",
+                "kind": "function",
+                "startLine": 6,
+                "endLine": 25,
+                "exported": true
+              }
+            ],
+            "src/models/user.ts": [
+              {
+                "name": "User",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 15,
+                "exported": true
+              }
+            ],
+            "packages/core/src/util.ts": [
+              {
+                "name": "helperCore",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ],
+            "packages/api/src/util.ts": [
+              {
+                "name": "helperApi",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "valid": true,
+        "groundedFiles": [
+          "packages/api/src/util.ts"
+        ],
+        "hallucinatedFiles": [],
+        "adjustedSourceFiles": [
+          "packages/api/src/util.ts"
+        ],
+        "warnings": [
+          "Ambiguous 'util.ts' deterministically aligned to 'packages/api/src/util.ts'."
+        ]
+      }
+    },
+    {
+      "name": "hallucinated-paths-rejected",
+      "input": {
+        "claimedFiles": [
+          "src/main.ts",
+          "ghost/module.ts",
+          "fake.ts"
+        ],
+        "index": {
+          "paths": [
+            "src/main.ts",
+            "src/lib/db.ts",
+            "src/models/user.ts",
+            "packages/core/src/util.ts",
+            "packages/api/src/util.ts"
+          ],
+          "symbolsByFile": {
+            "src/main.ts": [
+              {
+                "name": "main",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 20,
+                "exported": true
+              }
+            ],
+            "src/lib/db.ts": [
+              {
+                "name": "db",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 5,
+                "exported": true
+              },
+              {
+                "name": "connect",
+                "kind": "function",
+                "startLine": 6,
+                "endLine": 25,
+                "exported": true
+              }
+            ],
+            "src/models/user.ts": [
+              {
+                "name": "User",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 15,
+                "exported": true
+              }
+            ],
+            "packages/core/src/util.ts": [
+              {
+                "name": "helperCore",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ],
+            "packages/api/src/util.ts": [
+              {
+                "name": "helperApi",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "valid": false,
+        "groundedFiles": [
+          "src/main.ts"
+        ],
+        "hallucinatedFiles": [
+          "ghost/module.ts",
+          "fake.ts"
+        ],
+        "adjustedSourceFiles": [
+          "src/main.ts"
+        ],
+        "warnings": [
+          "Hallucinated path 'ghost/module.ts' rejected: not present in repository graph.",
+          "Hallucinated path 'fake.ts' rejected: not present in repository graph."
+        ]
+      }
+    }
+  ],
+  "symbolGroundingCases": [
+    {
+      "name": "valid-symbols-and-line-range",
+      "input": {
+        "claims": [
+          {
+            "file": "src/lib/db.ts",
+            "symbol": "connect",
+            "line": 10
+          },
+          {
+            "file": "src/models/user.ts",
+            "symbol": "User"
+          }
+        ],
+        "index": {
+          "paths": [
+            "src/main.ts",
+            "src/lib/db.ts",
+            "src/models/user.ts",
+            "packages/core/src/util.ts",
+            "packages/api/src/util.ts"
+          ],
+          "symbolsByFile": {
+            "src/main.ts": [
+              {
+                "name": "main",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 20,
+                "exported": true
+              }
+            ],
+            "src/lib/db.ts": [
+              {
+                "name": "db",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 5,
+                "exported": true
+              },
+              {
+                "name": "connect",
+                "kind": "function",
+                "startLine": 6,
+                "endLine": 25,
+                "exported": true
+              }
+            ],
+            "src/models/user.ts": [
+              {
+                "name": "User",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 15,
+                "exported": true
+              }
+            ],
+            "packages/core/src/util.ts": [
+              {
+                "name": "helperCore",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ],
+            "packages/api/src/util.ts": [
+              {
+                "name": "helperApi",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "groundedSymbols": [
+          {
+            "file": "src/lib/db.ts",
+            "symbol": "connect",
+            "line": 10,
+            "resolvedFile": "src/lib/db.ts"
+          },
+          {
+            "file": "src/models/user.ts",
+            "symbol": "User",
+            "resolvedFile": "src/models/user.ts"
+          }
+        ],
+        "hallucinatedSymbols": [],
+        "warnings": []
+      }
+    },
+    {
+      "name": "out-of-range-and-missing-symbols",
+      "input": {
+        "claims": [
+          {
+            "file": "src/lib/db.ts",
+            "symbol": "connect",
+            "line": 99
+          },
+          {
+            "file": "src/lib/db.ts",
+            "symbol": "unknownFunc"
+          },
+          {
+            "file": "ghost/file.ts",
+            "symbol": "anySymbol"
+          },
+          {
+            "file": "",
+            "symbol": "emptyFile"
+          }
+        ],
+        "index": {
+          "paths": [
+            "src/main.ts",
+            "src/lib/db.ts",
+            "src/models/user.ts",
+            "packages/core/src/util.ts",
+            "packages/api/src/util.ts"
+          ],
+          "symbolsByFile": {
+            "src/main.ts": [
+              {
+                "name": "main",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 20,
+                "exported": true
+              }
+            ],
+            "src/lib/db.ts": [
+              {
+                "name": "db",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 5,
+                "exported": true
+              },
+              {
+                "name": "connect",
+                "kind": "function",
+                "startLine": 6,
+                "endLine": 25,
+                "exported": true
+              }
+            ],
+            "src/models/user.ts": [
+              {
+                "name": "User",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 15,
+                "exported": true
+              }
+            ],
+            "packages/core/src/util.ts": [
+              {
+                "name": "helperCore",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ],
+            "packages/api/src/util.ts": [
+              {
+                "name": "helperApi",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "groundedSymbols": [],
+        "hallucinatedSymbols": [
+          {
+            "file": "src/lib/db.ts",
+            "symbol": "connect",
+            "line": 99
+          },
+          {
+            "file": "src/lib/db.ts",
+            "symbol": "unknownFunc"
+          },
+          {
+            "file": "ghost/file.ts",
+            "symbol": "anySymbol"
+          },
+          {
+            "file": "",
+            "symbol": "emptyFile"
+          }
+        ],
+        "warnings": [
+          "Line 99 for 'connect' falls outside its declaration range [6, 25] in 'src/lib/db.ts'.",
+          "Symbol 'unknownFunc' is not declared in grounded file 'src/lib/db.ts'.",
+          "Symbol claim 'anySymbol' rejected: file 'ghost/file.ts' is not grounded.",
+          "Symbol claim 'emptyFile' rejected: empty file reference."
+        ]
+      }
+    }
+  ],
+  "factGroundingCases": [
+    {
+      "name": "full-fact-grounding-mixed",
+      "input": {
+        "claimedFiles": [
+          "src/main.ts",
+          "db.ts",
+          "missing/file.ts"
+        ],
+        "symbolClaims": [
+          {
+            "file": "src/lib/db.ts",
+            "symbol": "connect",
+            "line": 10
+          },
+          {
+            "file": "src/models/user.ts",
+            "symbol": "NotFound"
+          }
+        ],
+        "index": {
+          "paths": [
+            "src/main.ts",
+            "src/lib/db.ts",
+            "src/models/user.ts",
+            "packages/core/src/util.ts",
+            "packages/api/src/util.ts"
+          ],
+          "symbolsByFile": {
+            "src/main.ts": [
+              {
+                "name": "main",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 20,
+                "exported": true
+              }
+            ],
+            "src/lib/db.ts": [
+              {
+                "name": "db",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 5,
+                "exported": true
+              },
+              {
+                "name": "connect",
+                "kind": "function",
+                "startLine": 6,
+                "endLine": 25,
+                "exported": true
+              }
+            ],
+            "src/models/user.ts": [
+              {
+                "name": "User",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 15,
+                "exported": true
+              }
+            ],
+            "packages/core/src/util.ts": [
+              {
+                "name": "helperCore",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ],
+            "packages/api/src/util.ts": [
+              {
+                "name": "helperApi",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 10,
+                "exported": true
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "valid": false,
+        "groundedFiles": [
+          "src/main.ts",
+          "src/lib/db.ts"
+        ],
+        "hallucinatedFiles": [
+          "missing/file.ts"
+        ],
+        "adjustedSourceFiles": [
+          "src/main.ts",
+          "src/lib/db.ts"
+        ],
+        "warnings": [
+          "Fuzzy-aligned 'db.ts' to grounded path 'src/lib/db.ts'.",
+          "Hallucinated path 'missing/file.ts' rejected: not present in repository graph.",
+          "Symbol 'NotFound' is not declared in grounded file 'src/models/user.ts'."
+        ],
+        "groundedSymbols": [
+          {
+            "file": "src/lib/db.ts",
+            "symbol": "connect",
+            "line": 10,
+            "resolvedFile": "src/lib/db.ts"
+          }
+        ],
+        "hallucinatedSymbols": [
+          {
+            "file": "src/models/user.ts",
+            "symbol": "NotFound"
+          }
+        ],
+        "ambiguousAlignments": []
+      }
+    }
+  ],
+  "extractClaimsCases": [
+    {
+      "name": "mdx-markers-and-fences",
+      "input": {
+        "mdxContent": "# Chapter 1\nProse mentions src/docs/readme.md should not be extracted.\n## 📄 `db.ts` <!-- path: src/lib/db.ts -->\n```ts // src/app/main.ts\nconsole.log(1);\n```\n```python # src/api/server.py\nprint(2)\n```\n```go\n// not in header\n```"
+      },
+      "expected": [
+        "src/lib/db.ts",
+        "src/app/main.ts",
+        "src/api/server.py"
+      ]
+    }
+  ],
+  "feedbackCases": [
+    {
+      "name": "feedback-with-violations",
+      "input": {
+        "report": {
+          "valid": false,
+          "groundedFiles": [
+            "src/main.ts",
+            "src/lib/db.ts"
+          ],
+          "hallucinatedFiles": [
+            "missing/file.ts"
+          ],
+          "adjustedSourceFiles": [
+            "src/main.ts",
+            "src/lib/db.ts"
+          ],
+          "warnings": [
+            "Fuzzy-aligned 'db.ts' to grounded path 'src/lib/db.ts'.",
+            "Hallucinated path 'missing/file.ts' rejected: not present in repository graph.",
+            "Symbol 'NotFound' is not declared in grounded file 'src/models/user.ts'."
+          ],
+          "groundedSymbols": [
+            {
+              "file": "src/lib/db.ts",
+              "symbol": "connect",
+              "line": 10,
+              "resolvedFile": "src/lib/db.ts"
+            }
+          ],
+          "hallucinatedSymbols": [
+            {
+              "file": "src/models/user.ts",
+              "symbol": "NotFound"
+            }
+          ],
+          "ambiguousAlignments": []
+        }
+      },
+      "expected": "### FACT-GROUNDING VIOLATIONS (your previous draft referenced repository facts that do not exist)\nRewrite using ONLY the grounded references listed below.\n- REJECTED file path: 'missing/file.ts' does not exist in the repository.\n- REJECTED symbol: 'NotFound' is not declared in 'src/models/user.ts'.\n- Grounded file paths you may reference: src/main.ts, src/lib/db.ts"
+    },
+    {
+      "name": "feedback-clean-report",
+      "input": {
+        "report": {
+          "valid": true,
+          "groundedFiles": [
+            "src/main.ts"
+          ],
+          "hallucinatedFiles": [],
+          "adjustedSourceFiles": [
+            "src/main.ts"
+          ],
+          "warnings": [],
+          "groundedSymbols": [],
+          "hallucinatedSymbols": [],
+          "ambiguousAlignments": []
+        }
+      },
+      "expected": null
+    }
+  ]
+}

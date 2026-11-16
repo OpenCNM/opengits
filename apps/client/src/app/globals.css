@@ -1,0 +1,1923 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+/* ---break--- 
+*/
+@custom-variant dark (&:is([data-theme="dark"] *, .dark *));
+
+@source "../../node_modules/fumadocs-ui/dist/**/*.js";
+
+/* 1. Multi-Theme Scoped Custom CSS Variables (Standard Cascading, 0 !important) */
+:root,
+[data-theme="vercel"] {
+  --color-theme-bg: #ffffff;
+  --color-theme-surface: #fafafa;
+  --color-theme-foreground: #0a0a0a;
+  --color-theme-muted: #666666;
+  --color-theme-border: rgba(0, 0, 0, 0.08);
+  --color-theme-primary: #000000;
+  --color-theme-primary-fg: #ffffff;
+  --color-theme-primary-foreground: #ffffff;
+  --color-theme-accent: #dc2626;
+
+
+  --font-heading: var(--font-sans);
+
+  /* Code Block Multi-Theme Tokens */
+  --color-code-bg: #fafafa;
+  --color-code-header: #f4f4f5;
+  --color-code-border: rgba(0, 0, 0, 0.08);
+  --color-code-btn-bg: #ffffff;
+  --color-code-btn-hover: #e4e4e7;
+  --color-code-btn-border: rgba(0, 0, 0, 0.1);
+  --color-code-ornament: #52525b;
+  --color-code-badge-fg: #18181b;
+  --color-code-sepia-muted: #71717a;
+  --color-code-btn-fg: #27272a;
+  --color-code-btn-fg-hover: #09090b;
+  --color-code-ink: #18181b;
+
+  /* Fumadocs & Shadcn UI Integration */
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --fd-background: #ffffff;
+  --fd-foreground: #0a0a0a;
+  --fd-card: #fafafa;
+  --fd-border: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"],
+.dark {
+  --color-theme-bg: #09090b;
+  --color-theme-surface: #141416;
+  --color-theme-foreground: #ededed;
+  --color-theme-muted: #a1a1aa;
+  --color-theme-border: rgba(255, 255, 255, 0.1);
+  --color-theme-primary: #ffffff;
+  --color-theme-primary-fg: #000000;
+  --color-theme-primary-foreground: #000000;
+  --color-theme-accent: #ef4444;
+
+
+  /* Code Block Multi-Theme Tokens */
+  --color-code-bg: #121214;
+  --color-code-header: #1c1c1e;
+  --color-code-border: rgba(255, 255, 255, 0.1);
+  --color-code-btn-bg: #27272a;
+  --color-code-btn-hover: #3f3f46;
+  --color-code-btn-border: rgba(255, 255, 255, 0.12);
+  --color-code-ornament: #a1a1aa;
+  --color-code-badge-fg: #e4e4e7;
+  --color-code-sepia-muted: #a1a1aa;
+  --color-code-btn-fg: #d4d4d8;
+  --color-code-btn-fg-hover: #ffffff;
+  --color-code-ink: #ededed;
+
+  --font-heading: var(--font-sans);
+
+  /* Fumadocs & Shadcn UI Integration */
+  --background: #09090b;
+  --foreground: #ededed;
+  --fd-background: #09090b;
+  --fd-foreground: #ededed;
+  --fd-card: #141416;
+  --fd-border: rgba(255, 255, 255, 0.1);
+}
+
+/* 2. Tailwind v4 Theme Directive Registration (generates utilities; vercel defaults as no-theme fallback) */
+@theme {
+  --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", "WenQuanYi Micro Hei", sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", SimSun, "Noto Serif", Georgia, serif;
+
+  /* Neutral Theme Tokens (vercel defaults; overridden per-theme by the [data-theme] blocks above) */
+  --color-theme-bg: #ffffff;
+  --color-theme-surface: #fafafa;
+  --color-theme-foreground: #0a0a0a;
+  --color-theme-muted: #666666;
+  --color-theme-border: rgba(0, 0, 0, 0.08);
+  --color-theme-primary: #000000;
+  --color-theme-primary-fg: #ffffff;
+  --color-theme-primary-foreground: #ffffff;
+  --color-theme-accent: #dc2626;
+
+  /* Legacy Backward-Compatibility Mapping (vercel defaults) */
+
+  /* Terminal / Sandbox Dark Theme */
+
+  /* Highlighting & Annotations */
+
+  /* Editorial Card Gradients */
+  --color-theme-surface-dark-from: #1c1917;
+  --color-theme-surface-dark-to: #292524;
+  --color-theme-surface-warm-from: #3f2015;
+  --color-theme-surface-warm-to: #29160e;
+
+  /* Editorial Font Scales -> Standardized readable rem baseline (min 12px / 0.75rem) */
+  --text-nano: 0.75rem;
+  --text-micro: 0.75rem;
+  --text-compact: 0.75rem;
+  --text-caption: 0.8125rem;
+}
+
+/* 3. Global Theme Invariant: Fail-Safe Primary Contrast Contract
+   保证任何使用 bg-theme-primary / hover:bg-theme-primary 的容器与按钮，在所有主题（特别是 Dark 模式）下
+   绝不发生白底白字隐形，统一强制映射到对应的主题前景色，彻底杜绝文字对比度丢失。 */
+.bg-theme-primary {
+  color: var(--color-theme-primary-fg) !important;
+}
+
+.bg-theme-primary.text-white,
+.bg-theme-primary .text-white,
+.bg-theme-primary :is(.text-white, svg:not([class*="text-"])) {
+  color: var(--color-theme-primary-fg) !important;
+}
+
+.bg-theme-primary svg {
+  stroke: currentColor;
+}
+
+.hover\:bg-theme-primary:hover {
+  color: var(--color-theme-primary-fg) !important;
+}
+
+/* 4. Global Theme Invariant: Fail-Safe Foreground Contrast Contract
+   当容器或按钮使用 bg-theme-foreground（浅色下为深色 #0a0a0a，Dark 下为浅灰白 #ededed）时，
+   内部文字必须强制映射为 var(--color-theme-bg)（浅色下为白，Dark 下为深黑 #0a0a0a），
+   彻底防止误配 text-white 在 Dark 模式下白底白字隐形。 */
+.bg-theme-foreground {
+  color: var(--color-theme-bg);
+}
+
+.bg-theme-foreground.text-white,
+.bg-theme-foreground .text-white,
+.bg-theme-foreground :is(.text-white, svg:not([class*="text-"])) {
+  color: var(--color-theme-bg) !important;
+}
+
+.bg-theme-foreground svg {
+  stroke: currentColor;
+}
+
+@layer base {
+  h1, h2, h3 {
+    font-family: var(--font-heading) !important;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* 移除所有正文标题内部锚点链接的下划线与超链接着色，还原本真标题风格 */
+h1, h2, h3, h4, h5, h6,
+.prose :where(h1, h2, h3, h4, h5, h6),
+.mdx-content-container :where(h1, h2, h3, h4, h5, h6) {
+  text-decoration: none !important;
+}
+
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a,
+.prose :where(h1, h2, h3, h4, h5, h6) a,
+.mdx-content-container :where(h1, h2, h3, h4, h5, h6) a,
+article :where(h1, h2, h3, h4, h5, h6) a {
+  color: inherit !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  cursor: inherit !important;
+}
+
+h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover,
+.prose :where(h1, h2, h3, h4, h5, h6) a:hover,
+.mdx-content-container :where(h1, h2, h3, h4, h5, h6) a:hover,
+article :where(h1, h2, h3, h4, h5, h6) a:hover {
+  color: inherit !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+/* Warm Editorial: Typography & Depth Polish */
+.prose h2 {
+  margin-top: 2.5rem !important;
+  margin-bottom: 1rem !important;
+}
+.prose h3 {
+  margin-top: 2rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Add subtle depth to the main prose area */
+main .prose {
+  box-shadow: 0 4px 60px rgba(0, 0, 0, 0.03);
+  border-radius: 0.5rem;
+  padding: 1.5rem 2rem;
+  background: var(--color-theme-surface);
+}
+
+/* Markdown / MDX Table Invariant & Cell Edge Spacing Polish
+   修复 @tailwindcss/typography 将 thead th:first-child / tbody td:first-child
+   的 padding-inline-start 强制归零，导致文档表格首列紧贴左边框、无呼吸感边距的严重缺陷；
+   同时修复尾列 padding-inline-end 归零、提供平滑行悬浮交互与统一内边距。 */
+.prose :where(table):not(:where([class~="not-prose"], [class~="not-prose"] *)),
+.prose table,
+.mdx-content-container table,
+.gfm-fallback-container table {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.prose table thead th,
+.prose table tbody td,
+.prose table tfoot td,
+.mdx-content-container table thead th,
+.mdx-content-container table tbody td,
+.mdx-content-container table tfoot td,
+.gfm-fallback-container table th,
+.gfm-fallback-container table td {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  padding-inline-start: 1rem !important;
+  padding-inline-end: 1rem !important;
+}
+
+/* 首列与尾列：保留充裕的横向呼吸空间（特别配合圆角与外边框，彻底杜绝贴边） */
+.prose table thead th:first-child,
+.prose table tbody td:first-child,
+.prose table tfoot td:first-child,
+.mdx-content-container table thead th:first-child,
+.mdx-content-container table tbody td:first-child,
+.mdx-content-container table tfoot td:first-child,
+.gfm-fallback-container table th:first-child,
+.gfm-fallback-container table td:first-child {
+  padding-left: 1.25rem !important;
+  padding-inline-start: 1.25rem !important;
+}
+
+.prose table thead th:last-child,
+.prose table tbody td:last-child,
+.prose table tfoot td:last-child,
+.mdx-content-container table thead th:last-child,
+.mdx-content-container table tbody td:last-child,
+.mdx-content-container table tfoot td:last-child,
+.gfm-fallback-container table th:last-child,
+.gfm-fallback-container table td:last-child {
+  padding-right: 1.25rem !important;
+  padding-inline-end: 1.25rem !important;
+}
+
+/* 表格表头字体与权重强化 */
+.prose table thead th,
+.mdx-content-container table thead th,
+.gfm-fallback-container table th {
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+  color: var(--color-theme-foreground) !important;
+}
+
+/* 表格行悬浮交互与平滑过渡 */
+.prose table tbody tr,
+.mdx-content-container table tbody tr,
+.gfm-fallback-container table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.prose table tbody tr:hover,
+.mdx-content-container table tbody tr:hover,
+.gfm-fallback-container table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--color-theme-foreground) 3.5%, transparent) !important;
+}
+
+/* 单元格内代码标签微调：防止在表格内高度撑破或缺乏内衬 */
+.prose table td code,
+.mdx-content-container table td code,
+.gfm-fallback-container table td code {
+  font-size: 0.8125rem !important;
+  padding: 0.15rem 0.375rem !important;
+  white-space: break-spaces;
+  word-break: break-word;
+}
+
+/* High Contrast Prose Readability for Dark Mode (WCAG AAA Compliant) */
+[data-theme="dark"] main .prose,
+.dark main .prose,
+[data-theme="dark"] .prose,
+.dark .prose {
+  color: #ededed !important;
+  --tw-prose-body: #ededed;
+  --tw-prose-headings: #ffffff;
+  --tw-prose-lead: #d4d4d8;
+  --tw-prose-links: #ffffff;
+  --tw-prose-bold: #ffffff;
+  --tw-prose-code: #ffffff;
+}
+
+[data-theme="dark"] .prose p,
+.dark .prose p,
+[data-theme="dark"] .prose li,
+.dark .prose li {
+  color: #ededed;
+}
+
+/* Multi-Theme WASM Syntax Highlighting Semantic Token Mapping */
+.shiki span {
+  color: var(--shiki-light, inherit);
+}
+
+[data-theme="dark"] .shiki span,
+.dark .shiki span {
+  color: var(--shiki-dark, inherit);
+}
+
+[data-theme="parchment"] .shiki span {
+  color: var(--shiki-parchment, var(--shiki-light, inherit));
+}
+
+[data-theme="vercel"] .shiki span {
+  color: var(--shiki-vercel, var(--shiki-light, inherit));
+}
+
+/* Zero-Materialization Code Viewport & Pure CSS Line Numbers */
+.shiki code {
+  display: grid;
+  counter-reset: line;
+}
+
+.shiki .line {
+  counter-increment: line;
+  display: inline-block;
+  width: 100%;
+  padding-left: 0.125rem;
+  padding-right: 0.5rem;
+  border-left: 2px solid transparent;
+  scroll-margin-top: 5rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.shiki .line::before {
+  content: counter(line);
+  display: inline-block;
+  width: var(--line-gutter-width, 1.75rem);
+  margin-right: 0.75rem;
+  text-align: right;
+  color: var(--color-theme-muted);
+  opacity: 0.38;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.shiki .line:hover::before {
+  opacity: 0.85;
+  color: var(--color-theme-foreground);
+}
+
+.shiki .line:target,
+.shiki .line.is-active-line {
+  background-color: color-mix(in srgb, var(--color-theme-primary) 8%, transparent);
+  border-left-color: var(--color-theme-primary);
+}
+
+.shiki .line:target::before,
+.shiki .line.is-active-line::before {
+  opacity: 1;
+  font-weight: 600;
+  color: var(--color-theme-primary);
+}
+
+/* 🎯 Precise Fumadocs Sidebar Chapter Active State (Crystal-Clear Selected Chapter Indicator) */
+aside a[data-active="true"],
+#nd-sidebar a[data-active="true"],
+#nd-sidebar-mobile a[data-active="true"],
+aside a:has([data-chapter-active="true"]),
+#nd-sidebar a:has([data-chapter-active="true"]),
+#nd-sidebar-mobile a:has([data-chapter-active="true"]),
+div[data-sidebar-placeholder] a[data-active="true"],
+div[data-sidebar-placeholder] a:has([data-chapter-active="true"]),
+div[data-sidebar-panel] a[data-active="true"],
+div[data-sidebar-panel] a:has([data-chapter-active="true"]) {
+  position: relative !important;
+  font-weight: 600 !important;
+  border-radius: 0.625rem !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+/* 1. Light Mode (vercel / default) */
+:root aside a[data-active="true"],
+:root #nd-sidebar a[data-active="true"],
+:root #nd-sidebar-mobile a[data-active="true"],
+:root aside a:has([data-chapter-active="true"]),
+:root #nd-sidebar a:has([data-chapter-active="true"]),
+:root #nd-sidebar-mobile a:has([data-chapter-active="true"]),
+[data-theme="vercel"] aside a[data-active="true"],
+[data-theme="vercel"] #nd-sidebar a[data-active="true"],
+[data-theme="vercel"] #nd-sidebar-mobile a[data-active="true"],
+[data-theme="vercel"] aside a:has([data-chapter-active="true"]),
+[data-theme="vercel"] #nd-sidebar a:has([data-chapter-active="true"]),
+[data-theme="vercel"] #nd-sidebar-mobile a:has([data-chapter-active="true"]) {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: var(--color-theme-foreground) !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* 2. Dark Mode */
+[data-theme="dark"] aside a[data-active="true"],
+[data-theme="dark"] #nd-sidebar a[data-active="true"],
+[data-theme="dark"] #nd-sidebar-mobile a[data-active="true"],
+[data-theme="dark"] aside a:has([data-chapter-active="true"]),
+[data-theme="dark"] #nd-sidebar a:has([data-chapter-active="true"]),
+[data-theme="dark"] #nd-sidebar-mobile a:has([data-chapter-active="true"]),
+.dark aside a[data-active="true"],
+.dark #nd-sidebar a[data-active="true"],
+.dark #nd-sidebar-mobile a[data-active="true"],
+.dark aside a:has([data-chapter-active="true"]),
+.dark #nd-sidebar a:has([data-chapter-active="true"]),
+.dark #nd-sidebar-mobile a:has([data-chapter-active="true"]) {
+  background-color: rgba(255, 255, 255, 0.09) !important;
+  color: var(--color-theme-foreground) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 3. Disable left vertical spine indicator on active items per design request */
+aside a[data-active="true"]::before,
+#nd-sidebar a[data-active="true"]::before,
+#nd-sidebar-mobile a[data-active="true"]::before,
+aside a:has([data-chapter-active="true"])::before,
+#nd-sidebar a:has([data-chapter-active="true"])::before,
+#nd-sidebar-mobile a:has([data-chapter-active="true"])::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* 4. Active Chapter Inner Elements Highlighting */
+a[data-active="true"] .sidebar-chapter-index,
+a:has([data-chapter-active="true"]) .sidebar-chapter-index,
+.sidebar-chapter-active .sidebar-chapter-index {
+  color: var(--color-theme-primary) !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+a[data-active="true"] .sidebar-chapter-title,
+a:has([data-chapter-active="true"]) .sidebar-chapter-title,
+.sidebar-chapter-active .sidebar-chapter-title {
+  color: var(--color-theme-foreground) !important;
+  font-weight: 600 !important;
+}
+
+a[data-active="true"] .sidebar-chapter-score,
+a:has([data-chapter-active="true"]) .sidebar-chapter-score,
+.sidebar-chapter-active .sidebar-chapter-score {
+  color: var(--color-theme-primary) !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+/* 🎯 Precise Fumadocs Right-Hand TOC Active Item Refinement (Targeting #nd-toc & [data-toc-popover]) */
+#nd-toc a[data-active="true"],
+[data-toc-popover] a[data-active="true"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+/* 1. vercel (亮色) - 柔和炭黑 */
+:root #nd-toc a[data-active="true"],
+[data-theme="vercel"] #nd-toc a[data-active="true"],
+:root [data-toc-popover] a[data-active="true"],
+[data-theme="vercel"] [data-toc-popover] a[data-active="true"] {
+  color: #18181b !important;
+}
+:root #nd-toc svg path.stroke-fd-primary,
+[data-theme="vercel"] #nd-toc svg path.stroke-fd-primary,
+:root [data-toc-popover] svg path.stroke-fd-primary,
+[data-theme="vercel"] [data-toc-popover] svg path.stroke-fd-primary {
+  stroke: #18181b !important;
+  opacity: 0.5 !important;
+}
+:root #nd-toc svg circle.fill-fd-primary,
+[data-theme="vercel"] #nd-toc svg circle.fill-fd-primary,
+:root [data-toc-popover] svg circle.fill-fd-primary,
+[data-theme="vercel"] [data-toc-popover] svg circle.fill-fd-primary,
+:root #nd-toc .bg-fd-primary,
+[data-theme="vercel"] #nd-toc .bg-fd-primary,
+:root [data-toc-popover] .bg-fd-primary,
+[data-theme="vercel"] [data-toc-popover] .bg-fd-primary {
+  fill: #18181b !important;
+  background-color: #18181b !important;
+  opacity: 0.6 !important;
+}
+
+
+
+
+
+/* 3. dark (暗色) - 极客亮白 */
+[data-theme="dark"] #nd-toc a[data-active="true"],
+[data-theme="dark"] [data-toc-popover] a[data-active="true"] {
+  color: #ededed !important;
+}
+[data-theme="dark"] #nd-toc svg path.stroke-fd-primary,
+[data-theme="dark"] [data-toc-popover] svg path.stroke-fd-primary {
+  stroke: #ededed !important;
+  opacity: 0.65 !important;
+}
+[data-theme="dark"] #nd-toc svg circle.fill-fd-primary,
+[data-theme="dark"] [data-toc-popover] svg circle.fill-fd-primary,
+[data-theme="dark"] #nd-toc .bg-fd-primary,
+[data-theme="dark"] [data-toc-popover] .bg-fd-primary {
+  fill: #ededed !important;
+  background-color: #ededed !important;
+  opacity: 0.75 !important;
+}
+
+/* 完全隐藏滚动条 (No Scrollbar) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* 极简不显眼滚动条 (Inconspicuous / Ghost Scrollbar) */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+  border: none;
+}
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 113, 108, 0.4);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 方案3：代码块静止时 100% 隐形滚动条，只有鼠标 hover 移入代码块时才优雅浮现 */
+.code-scroll::-webkit-scrollbar-thumb,
+.code-frame ::-webkit-scrollbar-thumb,
+div.overflow-x-auto::-webkit-scrollbar-thumb,
+pre::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  transition: background-color 0.2s ease;
+}
+
+.code-scroll:hover::-webkit-scrollbar-thumb,
+.code-frame:hover ::-webkit-scrollbar-thumb,
+div.overflow-x-auto:hover::-webkit-scrollbar-thumb,
+pre:hover::-webkit-scrollbar-thumb {
+  background: rgba(120, 113, 108, 0.3) !important;
+  border-radius: 9999px;
+}
+
+.code-scroll:hover::-webkit-scrollbar-thumb:hover,
+.code-frame:hover ::-webkit-scrollbar-thumb:hover,
+div.overflow-x-auto:hover::-webkit-scrollbar-thumb:hover,
+pre:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 113, 108, 0.6) !important;
+}
+
+/* 兼容 Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 113, 108, 0.2) transparent;
+}
+
+/* Sidebar Section Flattening: 
+   Hide arrows/icons for folder nodes in sidebar and make them unclickable so they act like section headers 
+*/
+.fd-sidebar button svg {
+  display: none !important;
+}
+.fd-sidebar .fd-folder {
+  pointer-events: none;
+}
+.fd-sidebar .fd-folder > button {
+  pointer-events: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+}
+
+/* Override Tldraw background for Global Annotation Mode */
+.tldraw-transparent-bg .tl-container {
+  background-color: transparent !important;
+}
+/* ---break--- 
+*/
+@theme inline {
+  --animate-skeleton: skeleton 2s -1s infinite linear;
+  --font-heading: var(--font-heading, ui-sans-serif, system-ui, sans-serif);
+  --animate-caret-blink: 1s ease-out infinite caret-blink;
+  --animate-toast-success-odd: toast-success-odd 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-success-even: toast-success-even 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-error-odd: toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-error-even: toast-error-even 0.28s cubic-bezier(0.5, 1, 0.89, 1);
+  --font-mono: var(--font-mono);
+  --font-sans: var(--font-sans);
+  --color-code-highlight: var(--code-highlight);
+  --code-foreground: var(--code-foreground);
+  --color-code: var(--code);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  @keyframes skeleton {
+  to {
+    background-position: -200% 0;
+    }
+  }
+  @keyframes caret-blink {
+  0%, 70%, to {
+    opacity: 1;
+    }
+  20%, 50% {
+    opacity: 0;
+    }
+  }
+  @keyframes toast-success-odd {
+  0% {
+    scale: 1;
+    }
+  30% {
+    scale: 1.025;
+    }
+  60% {
+    scale: 0.99;
+    }
+  100% {
+    scale: 1;
+    }
+  }
+  @keyframes toast-error-odd {
+  0% {
+    translate: 0 0;
+    }
+  25% {
+    translate: -3px 0;
+    }
+  50% {
+    translate: 3px 0;
+    }
+  75% {
+    translate: -3px 0;
+    }
+  100% {
+    translate: 0 0;
+    }
+  }
+  @keyframes toast-success-even {
+  0% {
+    scale: 1;
+    }
+  30% {
+    scale: 1.025;
+    }
+  60% {
+    scale: 0.99;
+    }
+  100% {
+    scale: 1;
+    }
+  }
+  @keyframes toast-error-even {
+  0% {
+    translate: 0 0;
+    }
+  25% {
+    translate: -3px 0;
+    }
+  50% {
+    translate: 3px 0;
+    }
+  75% {
+    translate: -3px 0;
+    }
+  100% {
+    translate: 0 0;
+    }
+  }
+}
+/* ---break--- 
+*/
+:root {
+  --destructive-foreground: var(--color-red-700);
+  --info: var(--color-blue-500);
+  --info-foreground: var(--color-blue-700);
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-700);
+  --warning: var(--color-amber-500);
+  --warning-foreground: var(--color-amber-700);
+  --card: var(--color-white);
+  --card-foreground: var(--color-neutral-800);
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-neutral-800);
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  --primary: var(--color-neutral-800);
+  --primary-foreground: var(--color-neutral-50);
+  --secondary: --alpha(var(--color-black) / 4%);
+  --secondary-foreground: var(--color-neutral-800);
+  --muted: --alpha(var(--color-black) / 4%);
+  --muted-foreground: color-mix(in srgb, var(--color-neutral-500) 90%, var(--color-black));
+  --accent: --alpha(var(--color-black) / 4%);
+  --accent-foreground: var(--color-neutral-800);
+  --destructive: var(--color-red-500);
+  --border: --alpha(var(--color-black) / 8%);
+  --input: --alpha(var(--color-black) / 10%);
+  --ring: var(--color-neutral-400);
+  --chart-1: var(--color-orange-600);
+  --chart-2: var(--color-teal-600);
+  --chart-3: var(--color-cyan-900);
+  --chart-4: var(--color-amber-400);
+  --chart-5: var(--color-amber-500);
+  --radius: 0.625rem;
+  --sidebar: var(--color-theme-surface);
+  --sidebar-foreground: color-mix(in srgb, var(--color-theme-foreground) 80%, var(--sidebar));
+  --sidebar-primary: var(--color-theme-foreground);
+  --sidebar-primary-foreground: var(--color-theme-bg);
+  --sidebar-accent: rgba(45, 42, 38, 0.04);
+  --sidebar-accent-foreground: var(--color-theme-foreground);
+  --sidebar-border: var(--color-theme-border);
+  --sidebar-ring: var(--color-theme-primary);
+  --code: var(--color-white);
+  --code-foreground: var(--foreground);
+  --code-highlight: --alpha(var(--color-black) / 4%);
+}
+/* ---break--- 
+*/
+.dark {
+  --destructive-foreground: var(--color-red-400);
+  --info: var(--color-blue-500);
+  --info-foreground: var(--color-blue-400);
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-400);
+  --warning: var(--color-amber-500);
+  --warning-foreground: var(--color-amber-400);
+  --background: color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white));
+  --foreground: var(--color-neutral-100);
+  --card: color-mix(in srgb, var(--background) 98%, var(--color-white));
+  --card-foreground: var(--color-neutral-100);
+  --popover: color-mix(in srgb, var(--background) 98%, var(--color-white));
+  --popover-foreground: var(--color-neutral-100);
+  --primary: var(--color-neutral-100);
+  --primary-foreground: var(--color-neutral-800);
+  --secondary: --alpha(var(--color-white) / 4%);
+  --secondary-foreground: var(--color-neutral-100);
+  --muted: --alpha(var(--color-white) / 4%);
+  --muted-foreground: color-mix(in srgb, var(--color-neutral-500) 90%, var(--color-white));
+  --accent: --alpha(var(--color-white) / 4%);
+  --accent-foreground: var(--color-neutral-100);
+  --destructive: color-mix(in srgb, var(--color-red-500) 90%, var(--color-white));
+  --border: --alpha(var(--color-white) / 6%);
+  --input: --alpha(var(--color-white) / 8%);
+  --ring: var(--color-neutral-500);
+  --chart-1: var(--color-blue-700);
+  --chart-2: var(--color-emerald-500);
+  --chart-3: var(--color-amber-500);
+  --chart-4: var(--color-purple-500);
+  --chart-5: var(--color-rose-500);
+  --sidebar: color-mix(in srgb, var(--color-neutral-950) 97%, var(--color-white));
+  --sidebar-foreground: color-mix(in srgb, var(--color-neutral-100) 64%, var(--sidebar));
+  --sidebar-primary: var(--color-neutral-100);
+  --sidebar-primary-foreground: var(--color-neutral-800);
+  --sidebar-accent: --alpha(var(--color-white) / 4%);
+  --sidebar-accent-foreground: var(--color-neutral-100);
+  --sidebar-border: --alpha(var(--color-white) / 5%);
+  --sidebar-ring: var(--color-neutral-400);
+  --code: color-mix(in srgb, var(--background) 98%, var(--color-white));
+  --code-foreground: var(--foreground);
+  --code-highlight: --alpha(var(--color-white) / 4%);
+
+  .dark {
+    --background: var(--color-theme-bg);
+    --foreground: var(--color-theme-foreground);
+    --card: var(--color-theme-bg);
+    --card-foreground: var(--color-theme-foreground);
+    --popover: var(--color-theme-bg);
+    --popover-foreground: var(--color-theme-foreground);
+    --primary: var(--color-theme-foreground);
+    --primary-foreground: var(--color-theme-bg);
+    --secondary: var(--color-theme-surface);
+    --secondary-foreground: var(--color-theme-foreground);
+    --muted: var(--color-theme-surface);
+    --muted-foreground: var(--color-theme-muted);
+    --accent: var(--color-theme-surface);
+    --accent-foreground: var(--color-theme-foreground);
+    --destructive: var(--color-red-500);
+    --border: var(--color-theme-border);
+    --input: --alpha(var(--color-white) / 8%);
+    --ring: var(--color-neutral-500);
+    --chart-1: var(--color-blue-700);
+    --chart-2: var(--color-emerald-600);
+    --chart-3: var(--color-orange-600);
+    --chart-4: var(--color-purple-500);
+    --chart-5: var(--color-pink-500);
+    --sidebar-background: var(--color-theme-bg);
+    --sidebar-foreground: var(--color-theme-foreground);
+    --sidebar-primary: var(--color-theme-foreground);
+    --sidebar-primary-foreground: var(--color-theme-bg);
+    --sidebar-accent: var(--color-theme-surface);
+    --sidebar-accent-foreground: var(--color-theme-foreground);
+    --sidebar-border: var(--color-theme-border);
+    --sidebar-ring: var(--color-neutral-500);
+  }
+}
+/* ---break--- 
+*/
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.025;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+  }
+  code, kbd, samp, pre {
+    font-family: var(--font-mono);
+  }
+  html {
+    scrollbar-gutter: stable;
+    @apply font-sans;
+  }
+}
+
+/* Prose-Scoped Font Size Scaling ("正文字号": 紧凑 / 标准 / 舒适)
+   Keep 1rem invariant on <html> so sidebars, AI split pane, and grid tracks
+   never swell or deform when switching reading font sizes, while still
+   respecting OS-level text scaling on the root element. */
+:root,
+html.font-size-medium {
+  --reader-prose-font-size: 1rem;
+  --reader-prose-line-height: 1.75;
+}
+html.font-size-small {
+  --reader-prose-font-size: 0.9375rem;
+  --reader-prose-line-height: 1.65;
+}
+html.font-size-large {
+  --reader-prose-font-size: 1.125rem;
+  --reader-prose-line-height: 1.85;
+}
+
+#nd-page .prose,
+#nd-page .mdx-content-container,
+#doc-content-area,
+.gfm-fallback-container {
+  font-size: var(--reader-prose-font-size, 1rem);
+  line-height: var(--reader-prose-line-height, 1.75);
+}
+
+#doc-content-area .prose-sm {
+  font-size: calc(var(--reader-prose-font-size, 1rem) * 0.875);
+  line-height: 1.65;
+}
+
+#nd-page .docs-page-title {
+  font-size: clamp(1.35rem, 2.8cqi, calc(var(--reader-prose-font-size, 1rem) * 1.65));
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* Align pagination footer width with document content */
+.fd-page-nav,
+nav[aria-label="Page Navigation"],
+div[class*="page-nav"] {
+  max-width: var(--fd-content-width, 980px) !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Warm Editorial override for MicroQuiz */
+.warm-themed-quiz {
+  border-color: var(--color-stone-200) !important;
+  background-color: var(--color-theme-surface) !important;
+  
+  /* Skeletons */
+  .bg-blue-200\/60,
+  .bg-blue-200\/50,
+  .bg-blue-100\/20,
+  .bg-blue-100\/50,
+  .bg-blue-50\/20 {
+    background-color: var(--color-stone-100) !important;
+    border-color: var(--color-stone-200) !important;
+  }
+  
+  /* Header */
+  .bg-blue-100\/50,
+  div[class*="bg-blue-100"],
+  .border-b {
+    background-color: var(--color-stone-100) !important;
+    border-color: var(--color-stone-200) !important;
+  }
+  
+  /* Text and Icons */
+  .text-blue-600,
+  .text-blue-900,
+  .text-blue-800,
+  span[class*="text-blue-900"],
+  svg[class*="text-blue-600"] {
+    color: var(--color-amber-800) !important;
+  }
+  
+  /* Buttons and interactive elements */
+  .bg-blue-600,
+  button[class*="bg-blue-600"],
+  .hover\:bg-blue-700:hover {
+    background-color: var(--color-amber-800) !important;
+    color: #FDFBF7 !important;
+    &:hover {
+      background-color: var(--color-amber-900) !important;
+    }
+  }
+  
+  /* Difficulty selector active state */
+  .text-blue-600.bg-white,
+  button[class*="text-blue-600"][class*="bg-white"] {
+    color: var(--color-amber-800) !important;
+    background-color: #FDFBF7 !important;
+  }
+  
+  /* Option buttons unselected */
+  .hover\:border-blue-300:hover {
+    border-color: rgba(180, 83, 9, 0.4) !important;
+  }
+  
+  /* Option buttons selected */
+  .bg-blue-100.border-blue-400,
+  .bg-blue-100.border-blue-600 {
+    background-color: rgba(180, 83, 9, 0.08) !important; /* amber-700/8 */
+    border-color: rgba(180, 83, 9, 0.6) !important; /* amber-700/60 */
+    color: var(--color-amber-900) !important;
+    &.ring-2, &.ring-blue-500\/20 {
+      --tw-ring-color: rgba(180, 83, 9, 0.15) !important;
+      box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.15) !important;
+    }
+  }
+
+  .animate-spin.text-blue-500 {
+    color: var(--color-amber-800) !important;
+  }
+  .text-blue-600\/80 {
+    color: var(--color-stone-600) !important;
+  }
+  .hover\:border-blue-300:hover {
+    border-color: rgba(180, 83, 9, 0.4) !important;
+  }
+  .bg-blue-900\/20,
+  .border-blue-500\/50 {
+    background-color: rgba(180, 83, 9, 0.05) !important;
+    border-color: rgba(180, 83, 9, 0.4) !important;
+  }
+  .bg-blue-500,
+  .border-blue-500 {
+    background-color: var(--color-amber-800) !important;
+    border-color: var(--color-amber-800) !important;
+  }
+  .bg-blue-50,
+  .border-blue-200 {
+    background-color: rgba(180, 83, 9, 0.06) !important;
+    border-color: rgba(180, 83, 9, 0.2) !important;
+  }
+  
+  /* Completed summary panels */
+  .bg-blue-50\/50 {
+    background-color: #fbf9f3 !important;
+    border-color: var(--color-stone-200) !important;
+  }
+  .text-blue-800 {
+    color: var(--color-stone-700) !important;
+  }
+}
+
+/* =========================================
+   Advanced Classical Aesthetics (Phase 1-4)
+   ========================================= */
+
+/* Phase 1: Spine Crease for Sidebar & Page Shadow */
+aside#nd-sidebar,
+.fd-sidebar,
+aside[aria-label="Sidebar"],
+[data-sidebar="true"] {
+  background-color: var(--color-theme-surface) !important;
+  box-shadow: inset -4px 0 12px rgba(45, 42, 38, 0.03) !important;
+  border-right: 1px solid var(--color-theme-border) !important;
+}
+
+/* Sidebar Header Title Link: Expand to fill space between left edge and collapse button */
+aside#nd-sidebar header > a,
+.fd-sidebar header > a,
+aside[aria-label="Sidebar"] header > a,
+[data-sidebar="true"] header > a,
+aside#nd-sidebar div.flex > a,
+.fd-sidebar div.flex > a,
+[data-sidebar="true"] div.flex > a,
+aside#nd-sidebar a.me-auto,
+.fd-sidebar a.me-auto,
+[data-sidebar="true"] a.me-auto {
+  display: flex !important;
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin-inline-end: 0 !important;
+}
+
+:root {
+  --fd-content-width: 980px !important;
+}
+
+main.fd-article, article, .mdx-content-container {
+  box-shadow: none !important;
+}
+
+/* Phase 2: Drop Caps & Justified Text */
+.mdx-content > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-serif);
+  font-size: 3.2em;
+  line-height: 0.85;
+  padding-right: 0.08em;
+  margin-top: 0.05em;
+  color: var(--color-theme-primary);
+  font-weight: 600;
+}
+
+.mdx-content p {
+  text-align: justify;
+  hyphens: auto;
+  word-break: break-word;
+}
+
+/* Phase 3: Double-line Dividers & Quotes */
+hr, .themed-divider {
+  border: none;
+  border-top: 3px double var(--color-theme-border) !important;
+  margin: 2.5rem 0 !important;
+}
+
+.mdx-content {
+  quotes: "「" "」" "『" "』";
+}
+
+.mdx-content blockquote {
+  border-left: none !important;
+  padding-left: 1.5rem !important;
+  position: relative;
+  background: transparent !important;
+}
+
+.mdx-content blockquote::before {
+  content: "「";
+  position: absolute;
+  left: 0;
+  top: -0.1em;
+  font-size: 1.5em;
+  color: var(--color-theme-muted);
+  font-family: var(--font-serif);
+}
+
+/* Phase 4: Ink-based hover effects */
+
+/* Secondary Variant - Subtle hover for cancel/skip buttons */
+
+/* =========================================
+   Modern Chinese Minimalism (Phase 5)
+   ========================================= */
+
+/* 1. Ornamental Divider (纹章分割线) */
+.themed-ornament-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 3rem 0;
+}
+.themed-ornament-divider::before,
+.themed-ornament-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-theme-border), transparent);
+}
+.themed-ornament-divider span {
+  padding: 0 1rem;
+  color: var(--color-theme-foreground);
+  font-family: var(--font-serif);
+  user-select: none;
+}
+
+
+
+/* 2. Bracket Tag (半包围留白标签) */
+.themed-bracket-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--font-serif);
+  font-size: 0.6875rem; /* 11px */
+  letter-spacing: 0.1em;
+  color: var(--color-theme-muted);
+  background: transparent;
+}
+.themed-bracket-tag::before,
+.themed-bracket-tag::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background-color: var(--color-theme-border);
+  transition: all 0.3s ease;
+}
+.themed-bracket-tag::before { top: 0; }
+.themed-bracket-tag::after { bottom: 0; }
+.themed-bracket-tag:hover {
+  color: var(--color-theme-foreground);
+}
+.themed-bracket-tag:hover::before,
+.themed-bracket-tag:hover::after {
+  background-color: var(--color-theme-muted);
+  left: 5%;
+  right: 5%;
+}
+
+/* 3. Active Tab Indicator (古典页签印记 - 一级) */
+.themed-bookmark-indicator {
+  position: relative;
+  color: var(--color-theme-primary) !important;
+}
+.themed-bookmark-indicator::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: -9px;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-theme-primary) 0%,
+    var(--color-theme-primary) calc(50% - 12px),
+    transparent calc(50% - 12px),
+    transparent calc(50% + 12px),
+    var(--color-theme-primary) calc(50% + 12px),
+    var(--color-theme-primary) 100%
+  );
+  border-radius: 1px;
+}
+.themed-bookmark-indicator::after {
+  content: '❖'; /* elegant 4-point classical diamond */
+  position: absolute;
+  left: 50%;
+  bottom: -14px; 
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--color-theme-accent);
+  background: transparent;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+/* 3.1 Secondary Tab Indicator (二级过滤印记 - 双瓣/双点) */
+.themed-tab-secondary {
+  position: relative;
+  color: var(--color-theme-foreground) !important;
+  font-weight: 600;
+}
+.themed-tab-secondary::before {
+  content: '';
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: -9px; /* Aligns exactly with the bottom padding of the text */
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    var(--color-theme-primary) 0%,
+    var(--color-theme-primary) calc(50% - 8px),
+    transparent calc(50% - 8px),
+    transparent calc(50% + 8px),
+    var(--color-theme-primary) calc(50% + 8px),
+    var(--color-theme-primary) 100%
+  );
+  opacity: 0.6; /* Visible but softer than primary */
+}
+.themed-tab-secondary::after {
+  content: '••'; /* 2 simplified petals/dots */
+  position: absolute;
+  left: 50%;
+  bottom: -14px; /* Perfectly centers the dots vertically over the line */
+  transform: translateX(-50%);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--color-theme-accent);
+  background: transparent;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+/* 3.2 Tertiary Tab Indicator (三级微签 - 一抹金痕) */
+.themed-tab-tertiary {
+  position: relative;
+  color: var(--color-theme-foreground) !important;
+  font-weight: 600;
+}
+.themed-tab-tertiary::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -9px;
+  height: 2px;
+  background: var(--color-theme-primary);
+  border-radius: 1px;
+}
+
+/* =========================================
+   Publishing-Grade Book Cover Craftsmanship
+   ========================================= */
+
+/* Metallic Gold Deboss Foil Text */
+.metallic-gold-text {
+  background: linear-gradient(135deg, #fffbeb 0%, #fde047 35%, #eab308 70%, #ca8a04 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0px 1.5px 2px rgba(0, 0, 0, 0.85));
+}
+
+/* Metallic Silver Deboss Foil Text */
+.metallic-silver-text {
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 50%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0px 1.5px 2px rgba(0, 0, 0, 0.85));
+}
+
+/* Metallic Copper Deboss Foil Text */
+.metallic-copper-text {
+  background: linear-gradient(135deg, #ffedd5 0%, #fb923c 50%, #c2410c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0px 1.5px 2px rgba(0, 0, 0, 0.85));
+}
+
+/* Physical Book Vignette Shadow */
+.book-vignette-shadow {
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Spine Crease Line & Organic Channel Shadow */
+.spine-crease-left {
+  box-shadow: inset -4px 0 8px rgba(0, 0, 0, 0.45), 2px 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 4. Hollow Watermark Seal (镂空印鉴角标) */
+.themed-watermark-seal {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  font-family: var(--font-serif);
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--color-theme-accent);
+  opacity: 0.03;
+  user-select: none;
+  pointer-events: none;
+  transform: rotate(-15deg);
+  border: 4px double var(--color-theme-accent);
+  padding: 0.5rem;
+  border-radius: 0.2rem;
+  line-height: 1;
+  z-index: 0;
+}
+
+/* =========================================
+   Expanded Classical UI Toolkit (Phase 6)
+   ========================================= */
+
+/* 5. Ledger-style Input & Coss UI Theme Integration (账本罫线与 Coss UI 输入框) */
+.theme-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-theme-border);
+  border-radius: 0.625rem;
+  background-color: var(--color-theme-surface);
+  padding: 0.125rem 0.75rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-input-wrapper:hover {
+  border-color: var(--color-theme-muted);
+}
+
+.theme-input-wrapper:focus-within {
+  border-color: var(--color-theme-primary);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.themed-input-ledger {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0.4rem 0.25rem !important;
+  color: var(--color-theme-foreground) !important;
+  font-family: var(--font-heading) !important;
+  font-size: 0.875rem !important;
+  caret-color: var(--color-theme-primary) !important;
+  transition: all 0.25s ease !important;
+}
+
+.themed-input-ledger:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: 0 0 #000 !important;
+}
+
+.themed-input-ledger::placeholder {
+  color: var(--color-theme-muted) !important;
+  font-family: var(--font-heading) !important;
+  opacity: 0.75;
+  transition: opacity 0.3s ease;
+}
+
+.theme-input-wrapper:hover .themed-input-ledger::placeholder {
+  opacity: 0.95;
+}
+.theme-input-wrapper:hover .themed-input-ledger::placeholder {
+  opacity: 0.95;
+}
+
+/* 6. Annotation Alerts & Tooltips (朱批提示框 / 眉批浮窗) */
+.themed-alert-annotation {
+  background-color: transparent !important;
+  border: none !important;
+  border-left: 2px solid var(--color-theme-accent) !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.5rem !important;
+  color: var(--color-theme-foreground) !important;
+  font-family: var(--font-sans) !important;
+  box-shadow: none !important;
+  position: relative;
+}
+.themed-alert-annotation::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-theme-accent);
+  opacity: 0.03;
+  z-index: -1;
+}
+
+.themed-tooltip-marginalia {
+  background-color: var(--color-theme-bg) !important;
+  border: 1px solid var(--color-theme-border) !important;
+  border-radius: 0 !important;
+  padding: 0.5rem 1rem !important;
+  color: var(--color-theme-foreground) !important;
+  font-family: var(--font-serif) !important;
+  font-size: 0.75rem !important;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.05) !important; /* Extremely flat offset shadow, no blur */
+}
+
+/* 7. Bamboo-slip Table (竹简流线表单) */
+.themed-table-bamboo {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+}
+.themed-table-bamboo th {
+  font-family: var(--font-serif);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  color: var(--color-theme-muted);
+  border-bottom: 2px double var(--color-theme-border);
+  padding: 1rem 0.5rem;
+  text-align: left;
+}
+.themed-table-bamboo td {
+  padding: 1rem 0.5rem;
+  border-bottom: 1px solid var(--color-theme-border);
+  color: var(--color-theme-foreground);
+  font-size: 0.875rem;
+}
+.themed-table-bamboo tr:last-child td {
+  border-bottom: none;
+}
+.themed-table-bamboo tr:hover td {
+  background-color: rgba(0,0,0,0.01);
+}
+
+/* 8. Letterpress Cards & Dialogs (信笺式卡片) */
+.theme-surface-letterpress {
+  border-radius: 0 !important;
+  padding: 2.5rem !important; /* Generous padding */
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.01) !important; /* Subtle inner vignette instead of drop shadow */
+  position: relative;
+}
+.theme-surface-letterpress::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* 9. Ink-wash Progress (水墨进度条) */
+.themed-progress-container {
+  height: 2px;
+  background-color: var(--color-theme-border);
+  border-radius: 0;
+  overflow: hidden;
+  position: relative;
+}
+.themed-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--color-theme-foreground), transparent);
+  animation: ink-flow 2s infinite ease-in-out;
+  transform-origin: left;
+}
+@keyframes ink-flow {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+/* 10. String-instrument Accordion (琴弦式折叠面板) */
+.themed-accordion-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-theme-border);
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  color: var(--color-theme-foreground);
+  cursor: pointer;
+  transition: padding-left 0.3s ease, color 0.3s ease;
+}
+.themed-accordion-trigger:hover {
+  padding-left: 0.5rem;
+  color: var(--color-theme-primary);
+}
+.themed-accordion-trigger[data-state="open"] {
+  border-bottom-color: transparent;
+}
+.themed-accordion-icon {
+  font-weight: 300;
+  transition: transform 0.3s ease;
+  color: var(--color-theme-muted);
+}
+.themed-accordion-trigger[data-state="open"] .themed-accordion-icon {
+  transform: rotate(45deg); /* Turns + into x softly */
+}
+.themed-accordion-content {
+  padding: 0 0 1.5rem 0.5rem;
+  border-bottom: 1px solid var(--color-theme-border);
+  font-family: var(--font-sans);
+  color: var(--color-theme-muted);
+  line-height: 1.8;
+}
+
+/* 11. Warm Editorial Manuscript Code Block (多主题代码手稿与终端) */
+.code-frame {
+  background-color: var(--color-code-bg) !important;
+  border: 1px solid var(--color-code-border) !important;
+  border-radius: 0.875rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.05) !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.code-header {
+  background-color: var(--color-code-header);
+  border-bottom: 1px solid var(--color-code-border);
+}
+
+.code-border {
+  border-color: var(--color-code-border);
+}
+
+.code-bg {
+  background-color: var(--color-code-bg);
+}
+
+.themed-code-btn-bg {
+  background-color: var(--color-code-btn-bg);
+}
+
+.themed-code-btn-hover:hover {
+  background-color: var(--color-code-btn-hover);
+}
+
+.text-themed-amber-ornament {
+  color: var(--color-code-ornament);
+}
+
+.text-themed-amber-badge {
+  color: var(--color-code-badge-fg);
+}
+
+.text-themed-sepia-muted {
+  color: var(--color-code-sepia-muted);
+}
+
+.text-theme-foreground-btn {
+  color: var(--color-code-btn-fg);
+}
+
+.text-theme-foreground-btn-hover:hover {
+  color: var(--color-code-btn-fg-hover);
+}
+
+.themed-code-btn-border {
+  border-color: var(--color-code-btn-border);
+}
+
+.text-themed-code-ink {
+  color: var(--color-code-ink);
+}
+
+/* 极客级：彻底镇压所有可能的代码块滚动条 (Nuclear Hover-Only Scrollbars) */
+.code-scroll::-webkit-scrollbar,
+.code-frame ::-webkit-scrollbar,
+pre::-webkit-scrollbar,
+figure::-webkit-scrollbar,
+.fd-scroll-container::-webkit-scrollbar,
+.fd-code-block::-webkit-scrollbar {
+  height: 4px !important;
+  width: 4px !important;
+}
+
+.code-scroll::-webkit-scrollbar-track,
+.code-frame ::-webkit-scrollbar-track,
+pre::-webkit-scrollbar-track,
+figure::-webkit-scrollbar-track,
+.fd-scroll-container::-webkit-scrollbar-track,
+.fd-code-block::-webkit-scrollbar-track {
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* 核心：默认 100% 透明 */
+.code-scroll::-webkit-scrollbar-thumb,
+.code-frame ::-webkit-scrollbar-thumb,
+pre::-webkit-scrollbar-thumb,
+figure::-webkit-scrollbar-thumb,
+.fd-scroll-container::-webkit-scrollbar-thumb,
+.fd-code-block::-webkit-scrollbar-thumb {
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 9999px !important;
+}
+
+/* Hover 时全部显示 */
+.code-scroll:hover::-webkit-scrollbar-thumb,
+.code-frame:hover ::-webkit-scrollbar-thumb,
+pre:hover::-webkit-scrollbar-thumb,
+figure:hover::-webkit-scrollbar-thumb,
+.fd-scroll-container:hover::-webkit-scrollbar-thumb,
+.fd-code-block:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 113, 108, 0.35) !important;
+  background: rgba(120, 113, 108, 0.35) !important;
+}
+
+.code-scroll:hover::-webkit-scrollbar-thumb:hover,
+.code-frame:hover ::-webkit-scrollbar-thumb:hover,
+pre:hover::-webkit-scrollbar-thumb:hover,
+figure:hover::-webkit-scrollbar-thumb:hover,
+.fd-scroll-container:hover::-webkit-scrollbar-thumb:hover,
+.fd-code-block:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(120, 113, 108, 0.65) !important;
+  background: rgba(120, 113, 108, 0.65) !important;
+}
+
+/* Firefox scrollbar styling - Prevent layout jump by keeping width constant */
+.code-scroll, .code-frame * {
+  scrollbar-width: thin !important;
+  scrollbar-color: transparent transparent !important;
+  transition: scrollbar-color 0.2s ease;
+}
+.code-scroll:hover, .code-frame:hover * {
+  scrollbar-color: rgba(120, 113, 108, 0.35) transparent !important;
+}
+
+/* Replace Fumadocs primitive theme toggle with full Multi-Theme Switcher */
+.fd-theme-toggle,
+[aria-label*="Toggle Theme"],
+[aria-label*="Toggle theme"],
+[data-theme-toggle] {
+  display: none !important;
+}
+
+/* Force standard Fumadocs & Shiki code blocks into Multi-Theme Scoped Code Frame */
+figure[data-rehype-pretty-code-figure],
+.fd-code-block {
+  background-color: var(--color-code-bg) !important;
+  border: 1px solid var(--color-code-border) !important;
+  border-radius: 0.875rem !important;
+  overflow: hidden !important;
+  color: var(--color-code-ink) !important;
+  box-shadow: none !important;
+}
+
+figure[data-rehype-pretty-code-figure] pre,
+.fd-code-block pre {
+  background-color: var(--color-code-bg) !important;
+  color: var(--color-code-ink) !important;
+  padding: 1rem !important;
+}
+
+/* Ensure code text inside pre has high ink contrast */
+.code-frame pre,
+.code-frame pre code,
+.fd-code-block pre code {
+  background-color: var(--color-code-bg) !important;
+  color: var(--color-code-ink) !important;
+  font-family: var(--font-mono) !important;
+  line-height: 1.7 !important;
+}
+
+.code-frame code span,
+.fd-code-block code span {
+  background-color: transparent !important;
+}
+
+
+
+
+
+
+
+/* ======================================================== */
+/* 📚 LAYOUT OPTIMIZATION: WARM EDITORIAL (Option 1 + 3)    */
+/* ======================================================== */
+
+/* 1. Constrain the total workspace so the TOC doesn't float too far right */
+/* This tightens the "justify-between" layout in Fumadocs on wide screens */
+.fd-layout-page {
+  max-width: 1240px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Override the default Fumadocs container max-width if applied on main or article wrappers */
+main > .container,
+#nd-docs-layout > .container {
+  max-width: 1240px !important;
+}
+
+/* 2. Slightly widen the main prose text block for better code/table readability */
+/* Default prose is 65ch (~700px), we widen to ~860px for a more spacious feel */
+.prose,
+.mdx-content-container,
+#nd-page,
+#nd-page .prose {
+  max-width: 860px !important;
+  min-width: 0;
+}
+
+#nd-page,
+main .prose {
+  overflow-wrap: break-word;
+}
+
+/* 3. Bring the TOC visually closer to the text */
+/* We enforce a tighter margin/gap to prevent the TOC from drifting to the screen edge */
+.fd-toc-container,
+aside[class*="toc"] {
+  padding-left: 1rem !important;
+}
+
+/* 4. Container-Query Responsive Adaptation for Docked AI Split-Canvas
+   Responds to the docs workspace's ACTUAL remaining inline-size (docs-shell),
+   not just viewport width, preventing layout crush when the AI pane opens. */
+@container docs-shell (width < 1180px) {
+  #nd-docs-layout:has(#nd-toc),
+  #nd-docs-layout:has(#nd-toc-placeholder) {
+    --fd-toc-width: 0px !important;
+  }
+
+  #nd-docs-layout:has([data-toc-popover]) {
+    --fd-toc-popover-height: 2.5rem !important;
+  }
+
+  #nd-toc,
+  #nd-toc-placeholder {
+    display: none !important;
+  }
+
+  [data-toc-popover] {
+    display: block !important;
+  }
+}
+
+@container docs-shell (width < 940px) {
+  #nd-docs-layout:has([data-sidebar-placeholder]) {
+    --fd-sidebar-width: 228px !important;
+  }
+
+  #nd-page {
+    padding-inline: 1.25rem !important;
+    padding-top: 1.5rem !important;
+  }
+
+  main .prose {
+    padding: 1.25rem !important;
+  }
+
+  [data-card-cols="3"],
+  [data-card-cols="4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@container docs-shell (width < 600px) {
+  [data-card-cols="2"],
+  [data-card-cols="3"],
+  [data-card-cols="4"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@container docs-shell (width < 768px) {
+  #nd-docs-layout:has([data-sidebar-placeholder]) {
+    --fd-sidebar-width: 0px !important;
+  }
+
+  #nd-docs-layout:has(#nd-subnav) {
+    --fd-header-height: 3.5rem !important;
+  }
+
+  [data-sidebar-placeholder],
+  [data-sidebar-panel] {
+    display: none !important;
+  }
+
+  #nd-subnav {
+    display: flex !important;
+  }
+
+  #nd-page {
+    padding-inline: 1rem !important;
+    padding-top: 1.25rem !important;
+  }
+
+  main .prose {
+    padding: 1rem !important;
+  }
+}
+
+/* ======================================================== */
+/* 📊 MERMAID DIAGRAMS: DUAL-THEME HIGH-CONTRAST SYSTEM     */
+/* ======================================================== */
+
+.group\/mermaid,
+.mermaid-lightbox-viewport {
+  color: var(--color-theme-foreground);
+}
+
+.group\/mermaid svg,
+.mermaid-lightbox-viewport svg {
+  overflow: visible;
+  max-width: 100%;
+}
+
+.group\/mermaid svg foreignObject,
+.mermaid-lightbox-viewport svg foreignObject {
+  overflow: visible;
+}
+
+/* 隔离 Mermaid 节点与文本，避免 prose !important 造成白字灰底对比度丢失 */
+[data-theme="dark"] .group\/mermaid svg foreignObject .nodeLabel,
+.dark .group\/mermaid svg foreignObject .nodeLabel,
+[data-theme="dark"] .mermaid-lightbox-viewport svg foreignObject .nodeLabel,
+.dark .mermaid-lightbox-viewport svg foreignObject .nodeLabel {
+  color: #ededed !important;
+}
+
+:root:not([data-theme="dark"]):not(.dark) .group\/mermaid svg foreignObject .nodeLabel,
+[data-theme="vercel"] .group\/mermaid svg foreignObject .nodeLabel,
+:root:not([data-theme="dark"]):not(.dark) .mermaid-lightbox-viewport svg foreignObject .nodeLabel,
+[data-theme="vercel"] .mermaid-lightbox-viewport svg foreignObject .nodeLabel {
+  color: #0a0a0a !important;
+}
+
+/* 边标签与连线说明文字 */
+[data-theme="dark"] .group\/mermaid svg .edgeLabel,
+.dark .group\/mermaid svg .edgeLabel,
+[data-theme="dark"] .mermaid-lightbox-viewport svg .edgeLabel,
+.dark .mermaid-lightbox-viewport svg .edgeLabel {
+  color: #ededed !important;
+  background-color: var(--color-theme-surface) !important;
+}
+
+:root:not([data-theme="dark"]):not(.dark) .group\/mermaid svg .edgeLabel,
+[data-theme="vercel"] .group\/mermaid svg .edgeLabel,
+:root:not([data-theme="dark"]):not(.dark) .mermaid-lightbox-viewport svg .edgeLabel,
+[data-theme="vercel"] .mermaid-lightbox-viewport svg .edgeLabel {
+  color: #0a0a0a !important;
+  background-color: #ffffff !important;
+}
+
+/* SVG <text> 原生矢量文字兜底 */
+[data-theme="dark"] .group\/mermaid svg text,
+.dark .group\/mermaid svg text,
+[data-theme="dark"] .mermaid-lightbox-viewport svg text,
+.dark .mermaid-lightbox-viewport svg text {
+  fill: #ededed !important;
+}
+
+:root:not([data-theme="dark"]):not(.dark) .group\/mermaid svg text,
+[data-theme="vercel"] .group\/mermaid svg text,
+:root:not([data-theme="dark"]):not(.dark) .mermaid-lightbox-viewport svg text,
+[data-theme="vercel"] .mermaid-lightbox-viewport svg text {
+  fill: #0a0a0a !important;
+}
+

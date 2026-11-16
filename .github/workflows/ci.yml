@@ -1,0 +1,142 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Type check & lint gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify (i18n compile + tsc + lint gates)
+        run: npm run verify:fast
+
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run unit tests
+        run: npm run test:unit
+
+  build:
+    name: Next.js production build gate
+    runs-on: ubuntu-latest
+    needs: [verify]
+    env:
+      NEXTAUTH_SECRET: ci-build-placeholder-secret
+      DATABASE_URL: postgresql://opengits:opengits_local_dev@localhost:5433/opengits_db?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Restore Next.js cache
+        uses: actions/cache@v4
+        with:
+          path: apps/client/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('apps/client/src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Compile i18n
+        run: npm run i18n:compile
+      - name: Build Next.js Web Client
+        run: npm run build:client
+
+  integration:
+    name: Integration tests (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: opengits
+          POSTGRES_PASSWORD: opengits_local_dev
+          POSTGRES_DB: opengits_db
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U opengits -d opengits_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://opengits:opengits_local_dev@localhost:5433/opengits_db?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+      - name: Run integration tests
+        run: npm run test:integration
+
+  go-sidecar:
+    name: Go sidecars (build & test)
+    runs-on: ubuntu-latest
+    strategy:
+      # archive-sidecar / mcp-sidecar 已并入 worker-sidecar（cmd/mcp-sidecar 单二进制）
+      matrix:
+        module: [services/worker-sidecar]
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+    services:
+      # 真实 PostgreSQL：激活集成测试（unnest 批插/advisory 锁/聚合 SQL 的
+      # 行为只有真库可验证；未注入 WORKER_TEST_DATABASE_URL 时本地自动 skip）
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: opengits
+          POSTGRES_PASSWORD: opengits_local_dev
+          POSTGRES_DB: opengits_db
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U opengits -d opengits_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      WORKER_TEST_DATABASE_URL: postgresql://opengits:opengits_local_dev@localhost:5433/opengits_db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          # 须与 services/worker-sidecar/go.mod 的 go 指令对齐（GOTOOLCHAIN=local
+          # 语义下低版本直接构建失败；容器侧同见 Dockerfile golang:1.26-alpine）
+          go-version: '1.26'
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+      - name: Vet & build
+        run: go vet ./... && go build ./...
+      - name: Test
+        run: go test ./...

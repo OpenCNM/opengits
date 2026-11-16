@@ -1,0 +1,2617 @@
+[
+ {
+  "name": "textbook-full",
+  "nodes": [
+   {
+    "path": "book/ch1.md",
+    "type": "blob",
+    "size": 4000
+   },
+   {
+    "path": "book/ch2.md",
+    "type": "blob",
+    "size": 4000
+   },
+   {
+    "path": "book/ch3.md",
+    "type": "blob",
+    "size": 4000
+   },
+   {
+    "path": "book/ch4.md",
+    "type": "blob",
+    "size": 4000
+   },
+   {
+    "path": "book/ch5.md",
+    "type": "blob",
+    "size": 4000
+   },
+   {
+    "path": "book/ch6.md",
+    "type": "blob",
+    "size": 4000
+   },
+   {
+    "path": "book/ch7.md",
+    "type": "blob",
+    "size": 4000
+   },
+   {
+    "path": "book/ch8.md",
+    "type": "blob",
+    "size": 4000
+   },
+   {
+    "path": "book/思考题参考答案.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "book/guide-zh.pdf",
+    "type": "blob",
+    "size": 921600
+   },
+   {
+    "path": "lessons/lab1",
+    "type": "tree"
+   },
+   {
+    "path": "lessons/lab2",
+    "type": "tree"
+   },
+   {
+    "path": "lessons/lab3",
+    "type": "tree"
+   },
+   {
+    "path": "lessons/lab4",
+    "type": "tree"
+   },
+   {
+    "path": "lessons/lab1/main.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "lessons/lab2/main.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "lessons/lab3/main.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "lessons/lab4/main.py",
+    "type": "blob",
+    "size": 100
+   }
+  ],
+  "truncated": false,
+  "ingestMode": {
+   "mode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 9,
+    "codeFiles": 4,
+    "otherFiles": 1,
+    "totalFiles": 18,
+    "ratio": 0.6923,
+    "codeExtensions": {
+     ".py": 4
+    },
+    "docExtensions": {
+     ".md": 9
+    }
+   }
+  },
+  "scale": {
+   "scale": "normal",
+   "confidence": "high",
+   "reason": "有效文件数 (14) 与目录深度 (3) 适中，适合生成结构化线性教程",
+   "totalFiles": 14,
+   "maxDepth": 3
+  },
+  "profile": {
+   "tier": "B",
+   "repoType": "docs",
+   "ingestMode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 9,
+    "codeFiles": 4,
+    "otherFiles": 1,
+    "totalFiles": 18,
+    "ratio": 0.6923,
+    "codeExtensions": {
+     ".py": 4
+    },
+    "docExtensions": {
+     ".md": 9
+    }
+   },
+   "isTreeTruncated": false,
+   "textRoot": null,
+   "labRoots": [],
+   "chapterCount": 0,
+   "globalAssets": {
+    "pdfs": [
+     {
+      "path": "book/guide-zh.pdf",
+      "size": 921600,
+      "lang": "zh-CN"
+     }
+    ],
+    "translations": [],
+    "buildScripts": [],
+    "misc": []
+   },
+   "answerFile": "book/思考题参考答案.md",
+   "hasTranslations": false,
+   "translationRoots": [],
+   "excludeFromNav": [
+    "book/思考题参考答案.md",
+    "book/guide-zh.pdf",
+    "book/guide-zh.md"
+   ],
+   "semanticTags": {
+    "book/思考题参考答案.md": "answer"
+   }
+  }
+ },
+ {
+  "name": "code-only",
+  "nodes": [
+   {
+    "path": "README.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/main.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/util.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/a/b/c/d/e.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/a/b/c/d/f.ts",
+    "type": "blob",
+    "size": 100
+   }
+  ],
+  "truncated": false,
+  "ingestMode": {
+   "mode": "code_only",
+   "docCodeRatio": {
+    "docFiles": 1,
+    "codeFiles": 4,
+    "otherFiles": 0,
+    "totalFiles": 5,
+    "ratio": 0.2,
+    "codeExtensions": {
+     ".ts": 4
+    },
+    "docExtensions": {
+     ".md": 1
+    }
+   }
+  },
+  "scale": {
+   "scale": "ambiguous",
+   "confidence": "low",
+   "reason": "处于规模灰区 (5 文件, 深度 6, 深层占比 40%)，建议结合顶层子系统分布进行智能分析或由用户按需选择",
+   "totalFiles": 5,
+   "maxDepth": 6
+  },
+  "profile": {
+   "tier": "D",
+   "repoType": "codebase",
+   "ingestMode": "code_only",
+   "docCodeRatio": {
+    "docFiles": 1,
+    "codeFiles": 4,
+    "otherFiles": 0,
+    "totalFiles": 5,
+    "ratio": 0.2,
+    "codeExtensions": {
+     ".ts": 4
+    },
+    "docExtensions": {
+     ".md": 1
+    }
+   },
+   "isTreeTruncated": false,
+   "textRoot": null,
+   "labRoots": [],
+   "chapterCount": 0,
+   "globalAssets": {
+    "pdfs": [],
+    "translations": [],
+    "buildScripts": [],
+    "misc": []
+   },
+   "answerFile": null,
+   "hasTranslations": false,
+   "translationRoots": [],
+   "excludeFromNav": [],
+   "semanticTags": {}
+  }
+ },
+ {
+  "name": "hybrid",
+  "nodes": [
+   {
+    "path": "docs/guide0.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/guide1.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/guide2.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/guide3.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/guide4.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/guide5.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/mod0.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/mod1.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/mod2.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/mod3.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/mod4.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "src/mod5.ts",
+    "type": "blob",
+    "size": 100
+   }
+  ],
+  "truncated": false,
+  "ingestMode": {
+   "mode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 6,
+    "codeFiles": 6,
+    "otherFiles": 0,
+    "totalFiles": 12,
+    "ratio": 0.5,
+    "codeExtensions": {
+     ".ts": 6
+    },
+    "docExtensions": {
+     ".md": 6
+    }
+   }
+  },
+  "scale": {
+   "scale": "normal",
+   "confidence": "high",
+   "reason": "有效文件数 (12) 与目录深度 (2) 适中，适合生成结构化线性教程",
+   "totalFiles": 12,
+   "maxDepth": 2
+  },
+  "profile": {
+   "tier": "B",
+   "repoType": "docs",
+   "ingestMode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 6,
+    "codeFiles": 6,
+    "otherFiles": 0,
+    "totalFiles": 12,
+    "ratio": 0.5,
+    "codeExtensions": {
+     ".ts": 6
+    },
+    "docExtensions": {
+     ".md": 6
+    }
+   },
+   "isTreeTruncated": false,
+   "textRoot": "docs/",
+   "labRoots": [],
+   "chapterCount": 0,
+   "globalAssets": {
+    "pdfs": [],
+    "translations": [],
+    "buildScripts": [],
+    "misc": []
+   },
+   "answerFile": null,
+   "hasTranslations": false,
+   "translationRoots": [],
+   "excludeFromNav": [],
+   "semanticTags": {}
+  }
+ },
+ {
+  "name": "docs-root-protect",
+  "nodes": [
+   {
+    "path": "docs/page0.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/page1.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/page2.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/page3.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/page4.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/page5.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/page6.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/page7.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo0.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo1.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo2.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo3.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo4.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo5.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo6.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo7.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo8.py",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "examples/demo9.py",
+    "type": "blob",
+    "size": 100
+   }
+  ],
+  "truncated": false,
+  "ingestMode": {
+   "mode": "hybrid",
+   "docCodeRatio": {
+    "docFiles": 8,
+    "codeFiles": 10,
+    "otherFiles": 0,
+    "totalFiles": 18,
+    "ratio": 0.4444,
+    "codeExtensions": {
+     ".py": 10
+    },
+    "docExtensions": {
+     ".md": 8
+    }
+   }
+  },
+  "scale": {
+   "scale": "normal",
+   "confidence": "high",
+   "reason": "有效文件数 (18) 与目录深度 (2) 适中，适合生成结构化线性教程",
+   "totalFiles": 18,
+   "maxDepth": 2
+  },
+  "profile": {
+   "tier": "B",
+   "repoType": "docs",
+   "ingestMode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 8,
+    "codeFiles": 10,
+    "otherFiles": 0,
+    "totalFiles": 18,
+    "ratio": 0.4444,
+    "codeExtensions": {
+     ".py": 10
+    },
+    "docExtensions": {
+     ".md": 8
+    }
+   },
+   "isTreeTruncated": false,
+   "textRoot": "docs/",
+   "labRoots": [],
+   "chapterCount": 0,
+   "globalAssets": {
+    "pdfs": [],
+    "translations": [],
+    "buildScripts": [],
+    "misc": []
+   },
+   "answerFile": null,
+   "hasTranslations": false,
+   "translationRoots": [],
+   "excludeFromNav": [],
+   "semanticTags": {}
+  }
+ },
+ {
+  "name": "translations",
+  "nodes": [
+   {
+    "path": "README.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/a.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/b.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "i18n/ja/README.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "translations/zh-cn/docs/a.md",
+    "type": "blob",
+    "size": 100
+   }
+  ],
+  "truncated": false,
+  "ingestMode": {
+   "mode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 4,
+    "codeFiles": 0,
+    "otherFiles": 1,
+    "totalFiles": 5,
+    "ratio": 1,
+    "codeExtensions": {},
+    "docExtensions": {
+     ".md": 4
+    }
+   }
+  },
+  "scale": {
+   "scale": "normal",
+   "confidence": "high",
+   "reason": "有效文件数 (4) 与目录深度 (4) 适中，适合生成结构化线性教程",
+   "totalFiles": 4,
+   "maxDepth": 4
+  },
+  "profile": {
+   "tier": "B",
+   "repoType": "docs",
+   "ingestMode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 4,
+    "codeFiles": 0,
+    "otherFiles": 1,
+    "totalFiles": 5,
+    "ratio": 1,
+    "codeExtensions": {},
+    "docExtensions": {
+     ".md": 4
+    }
+   },
+   "isTreeTruncated": false,
+   "textRoot": null,
+   "labRoots": [],
+   "chapterCount": 0,
+   "globalAssets": {
+    "pdfs": [],
+    "translations": [
+     {
+      "lang": "ja",
+      "dir": "i18n/ja/"
+     }
+    ],
+    "buildScripts": [],
+    "misc": []
+   },
+   "answerFile": null,
+   "hasTranslations": true,
+   "translationRoots": [
+    "i18n/ja/"
+   ],
+   "excludeFromNav": [],
+   "semanticTags": {}
+  }
+ },
+ {
+  "name": "non-content-noise",
+  "nodes": [
+   {
+    "path": "docs/x.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/y.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "assets/logo.png",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "LICENSE",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": ".github/workflows/ci.yml",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "node_modules/pkg/index.js",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file0.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file1.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file2.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file3.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file4.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file5.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file6.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file7.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file8.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file9.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file10.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file11.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file12.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file13.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file14.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file15.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file16.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file17.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file18.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file19.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file20.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file21.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file22.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file23.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file24.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file25.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file26.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file27.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file28.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file29.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file30.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file31.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file32.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file33.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file34.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file35.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file36.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file37.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file38.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file39.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file40.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file41.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file42.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file43.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file44.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file45.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file46.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file47.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file48.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file49.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file50.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file51.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file52.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file53.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file54.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file55.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file56.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file57.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file58.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file59.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file60.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file61.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file62.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file63.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file64.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file65.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file66.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file67.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file68.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file69.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file70.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file71.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file72.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file73.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file74.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file75.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file76.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file77.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file78.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file79.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file80.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file81.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file82.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file83.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file84.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file85.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file86.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file87.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file88.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file89.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file90.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file91.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file92.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file93.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file94.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file95.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file96.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file97.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file98.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file99.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file100.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file101.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file102.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file103.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file104.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file105.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file106.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file107.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file108.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file109.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file110.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file111.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file112.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file113.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file114.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file115.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file116.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file117.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file118.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file119.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file120.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file121.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file122.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file123.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file124.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file125.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file126.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file127.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file128.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file129.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file130.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file131.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file132.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file133.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file134.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file135.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file136.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file137.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file138.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file139.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file140.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file141.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file142.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file143.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file144.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file145.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file146.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file147.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file148.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file149.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file150.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file151.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file152.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file153.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file154.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file155.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file156.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file157.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file158.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file159.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file160.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file161.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file162.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file163.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file164.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file165.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file166.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file167.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file168.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file169.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file170.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file171.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file172.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file173.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file174.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file175.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file176.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file177.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file178.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file179.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file180.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file181.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file182.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file183.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file184.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file185.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file186.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file187.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file188.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file189.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file190.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file191.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file192.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file193.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file194.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file195.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file196.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file197.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file198.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file199.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file200.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file201.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file202.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file203.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file204.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file205.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file206.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file207.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file208.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file209.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file210.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file211.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file212.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file213.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file214.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file215.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file216.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file217.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file218.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file219.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file220.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file221.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file222.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file223.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file224.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file225.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file226.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file227.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file228.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file229.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file230.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file231.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file232.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file233.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file234.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file235.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file236.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file237.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file238.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file239.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file240.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file241.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file242.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file243.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file244.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file245.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file246.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file247.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file248.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file249.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file250.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file251.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file252.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file253.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file254.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file255.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file256.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file257.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file258.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file259.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file260.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file261.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file262.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file263.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file264.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file265.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file266.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file267.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file268.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file269.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file270.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file271.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file272.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file273.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file274.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file275.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file276.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file277.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file278.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file279.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file280.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file281.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file282.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file283.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file284.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file285.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file286.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file287.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file288.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file289.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file290.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file291.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file292.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file293.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file294.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file295.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file296.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file297.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file298.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file299.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file300.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file301.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file302.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file303.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file304.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file305.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file306.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file307.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file308.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file309.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file310.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file311.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file312.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file313.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file314.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file315.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file316.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file317.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file318.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file319.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file320.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file321.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file322.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file323.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file324.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file325.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file326.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file327.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file328.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file329.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file330.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file331.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file332.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file333.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file334.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file335.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file336.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file337.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file338.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file339.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file340.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file341.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file342.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file343.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file344.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file345.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file346.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file347.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file348.ts",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "deep/a/b/c/d/e/file349.ts",
+    "type": "blob",
+    "size": 100
+   }
+  ],
+  "truncated": true,
+  "ingestMode": {
+   "mode": "code_only",
+   "docCodeRatio": {
+    "docFiles": 2,
+    "codeFiles": 350,
+    "otherFiles": 4,
+    "totalFiles": 356,
+    "ratio": 0.0057,
+    "codeExtensions": {
+     ".ts": 350
+    },
+    "docExtensions": {
+     ".md": 2
+    }
+   }
+  },
+  "scale": {
+   "scale": "giant",
+   "confidence": "high",
+   "reason": "有效文件数 (352) 庞大或目录极深 (7)，自动分流至网状架构探索器形态",
+   "totalFiles": 352,
+   "maxDepth": 7
+  },
+  "profile": {
+   "tier": "C",
+   "repoType": "notebook",
+   "ingestMode": "code_only",
+   "docCodeRatio": {
+    "docFiles": 2,
+    "codeFiles": 350,
+    "otherFiles": 4,
+    "totalFiles": 356,
+    "ratio": 0.0057,
+    "codeExtensions": {
+     ".ts": 350
+    },
+    "docExtensions": {
+     ".md": 2
+    }
+   },
+   "isTreeTruncated": true,
+   "textRoot": null,
+   "labRoots": [],
+   "chapterCount": 0,
+   "globalAssets": {
+    "pdfs": [],
+    "translations": [],
+    "buildScripts": [],
+    "misc": []
+   },
+   "answerFile": null,
+   "hasTranslations": false,
+   "translationRoots": [],
+   "excludeFromNav": [],
+   "semanticTags": {}
+  }
+ },
+ {
+  "name": "build-scripts-answers",
+  "nodes": [
+   {
+    "path": "Makefile",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "install.sh",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/a.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "docs/b.md",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "exercises/answers.md",
+    "type": "blob",
+    "size": 100
+   }
+  ],
+  "truncated": false,
+  "ingestMode": {
+   "mode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 3,
+    "codeFiles": 0,
+    "otherFiles": 2,
+    "totalFiles": 5,
+    "ratio": 1,
+    "codeExtensions": {},
+    "docExtensions": {
+     ".md": 3
+    }
+   }
+  },
+  "scale": {
+   "scale": "normal",
+   "confidence": "high",
+   "reason": "有效文件数 (5) 与目录深度 (2) 适中，适合生成结构化线性教程",
+   "totalFiles": 5,
+   "maxDepth": 2
+  },
+  "profile": {
+   "tier": "C",
+   "repoType": "notebook",
+   "ingestMode": "text_only",
+   "docCodeRatio": {
+    "docFiles": 3,
+    "codeFiles": 0,
+    "otherFiles": 2,
+    "totalFiles": 5,
+    "ratio": 1,
+    "codeExtensions": {},
+    "docExtensions": {
+     ".md": 3
+    }
+   },
+   "isTreeTruncated": false,
+   "textRoot": null,
+   "labRoots": [
+    "exercises/"
+   ],
+   "chapterCount": 0,
+   "globalAssets": {
+    "pdfs": [],
+    "translations": [],
+    "buildScripts": [],
+    "misc": []
+   },
+   "answerFile": "exercises/answers.md",
+   "hasTranslations": false,
+   "translationRoots": [],
+   "excludeFromNav": [
+    "exercises/answers.md"
+   ],
+   "semanticTags": {
+    "exercises/answers.md": "answer"
+   }
+  }
+ },
+ {
+  "name": "small-notebook",
+  "nodes": [
+   {
+    "path": "note1.ipynb",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "note2.ipynb",
+    "type": "blob",
+    "size": 100
+   },
+   {
+    "path": "setup.py",
+    "type": "blob",
+    "size": 100
+   }
+  ],
+  "truncated": false,
+  "ingestMode": {
+   "mode": "code_only",
+   "docCodeRatio": {
+    "docFiles": 0,
+    "codeFiles": 1,
+    "otherFiles": 2,
+    "totalFiles": 3,
+    "ratio": 0,
+    "codeExtensions": {
+     ".py": 1
+    },
+    "docExtensions": {}
+   }
+  },
+  "scale": {
+   "scale": "normal",
+   "confidence": "high",
+   "reason": "有效文件数 (3) 与目录深度 (1) 适中，适合生成结构化线性教程",
+   "totalFiles": 3,
+   "maxDepth": 1
+  },
+  "profile": {
+   "tier": "D",
+   "repoType": "codebase",
+   "ingestMode": "code_only",
+   "docCodeRatio": {
+    "docFiles": 0,
+    "codeFiles": 1,
+    "otherFiles": 2,
+    "totalFiles": 3,
+    "ratio": 0,
+    "codeExtensions": {
+     ".py": 1
+    },
+    "docExtensions": {}
+   },
+   "isTreeTruncated": false,
+   "textRoot": null,
+   "labRoots": [],
+   "chapterCount": 0,
+   "globalAssets": {
+    "pdfs": [],
+    "translations": [],
+    "buildScripts": [],
+    "misc": []
+   },
+   "answerFile": null,
+   "hasTranslations": false,
+   "translationRoots": [],
+   "excludeFromNav": [],
+   "semanticTags": {}
+  }
+ }
+]

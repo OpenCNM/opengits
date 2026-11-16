@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "name": "three-way-diff-add-update-remove",
+      "input": {
+        "currentUrls": {
+          "https://x.com/a": "2026-01-01",
+          "https://x.com/b": "2026-02-02",
+          "https://x.com/new": "2026-03-03"
+        },
+        "prevSitemap": {
+          "https://x.com/a": "2026-01-01",
+          "https://x.com/b": "2026-01-01",
+          "https://x.com/gone": "2025-12-01"
+        },
+        "newEtag": "W/\"etag-v2\"",
+        "rootUrl": "https://x.com"
+      },
+      "expected": {
+        "hasChanges": true,
+        "etag": "W/\"etag-v2\"",
+        "totalPages": 3,
+        "pagesToAdd": [
+          "https://x.com/new"
+        ],
+        "pagesToUpdate": [
+          "https://x.com/b"
+        ],
+        "pagesToRemove": [
+          "https://x.com/gone"
+        ],
+        "totalChanged": 3,
+        "sitemapLastModMap": {
+          "https://x.com/a": "2026-01-01",
+          "https://x.com/b": "2026-02-02",
+          "https://x.com/new": "2026-03-03"
+        }
+      }
+    },
+    {
+      "name": "zero-changes-identical",
+      "input": {
+        "currentUrls": {
+          "https://x.com/doc1": "2026-01-01",
+          "https://x.com/doc2": "2026-01-02"
+        },
+        "prevSitemap": {
+          "https://x.com/doc1": "2026-01-01",
+          "https://x.com/doc2": "2026-01-02"
+        },
+        "newEtag": "W/\"etag-same\"",
+        "rootUrl": "https://x.com"
+      },
+      "expected": {
+        "hasChanges": false,
+        "etag": "W/\"etag-same\"",
+        "totalPages": 2,
+        "pagesToAdd": [],
+        "pagesToUpdate": [],
+        "pagesToRemove": [],
+        "totalChanged": 0,
+        "sitemapLastModMap": {
+          "https://x.com/doc1": "2026-01-01",
+          "https://x.com/doc2": "2026-01-02"
+        }
+      }
+    },
+    {
+      "name": "all-pages-new",
+      "input": {
+        "currentUrls": {
+          "https://x.com/intro": "2026-01-01",
+          "https://x.com/guide": "2026-01-02",
+          "https://x.com/api": "2026-01-03"
+        },
+        "prevSitemap": {},
+        "newEtag": "W/\"etag-first\"",
+        "rootUrl": "https://x.com"
+      },
+      "expected": {
+        "hasChanges": true,
+        "etag": "W/\"etag-first\"",
+        "totalPages": 3,
+        "pagesToAdd": [
+          "https://x.com/api",
+          "https://x.com/guide",
+          "https://x.com/intro"
+        ],
+        "pagesToUpdate": [],
+        "pagesToRemove": [],
+        "totalChanged": 3,
+        "sitemapLastModMap": {
+          "https://x.com/intro": "2026-01-01",
+          "https://x.com/guide": "2026-01-02",
+          "https://x.com/api": "2026-01-03"
+        }
+      }
+    },
+    {
+      "name": "all-pages-removed",
+      "input": {
+        "currentUrls": {},
+        "prevSitemap": {
+          "https://x.com/old1": "2026-01-01",
+          "https://x.com/old2": "2026-01-02"
+        },
+        "newEtag": "W/\"etag-empty\"",
+        "rootUrl": "https://x.com"
+      },
+      "expected": {
+        "hasChanges": true,
+        "etag": "W/\"etag-empty\"",
+        "totalPages": 0,
+        "pagesToAdd": [
+          "https://x.com"
+        ],
+        "pagesToUpdate": [],
+        "pagesToRemove": [],
+        "totalChanged": 1,
+        "sitemapLastModMap": {}
+      }
+    },
+    {
+      "name": "empty-sitemap-fallback-root",
+      "input": {
+        "currentUrls": {},
+        "prevSitemap": {},
+        "newEtag": "",
+        "rootUrl": "https://x.com/docs"
+      },
+      "expected": {
+        "hasChanges": true,
+        "etag": "",
+        "totalPages": 0,
+        "pagesToAdd": [
+          "https://x.com/docs"
+        ],
+        "pagesToUpdate": [],
+        "pagesToRemove": [],
+        "totalChanged": 1,
+        "sitemapLastModMap": {}
+      }
+    }
+  ],
+  "xmlCases": [
+    {
+      "name": "standard-urlset-xml",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <url>\n    <loc>https://example.com/docs/intro</loc>\n    <lastmod>2026-01-01</lastmod>\n  </url>\n  <url>\n    <loc>https://example.com/docs/guide</loc>\n    <lastmod>2026-02-01</lastmod>\n  </url>\n</urlset>",
+      "expectedUrls": {
+        "https://example.com/docs/intro": "2026-01-01",
+        "https://example.com/docs/guide": "2026-02-01"
+      },
+      "expectedChildSitemaps": []
+    },
+    {
+      "name": "standard-sitemapindex-xml",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <sitemap>\n    <loc>https://example.com/sub1.xml</loc>\n    <lastmod>2026-03-01</lastmod>\n  </sitemap>\n  <sitemap>\n    <loc>https://example.com/sub2.xml</loc>\n  </sitemap>\n</sitemapindex>",
+      "expectedUrls": {},
+      "expectedChildSitemaps": [
+        "https://example.com/sub1.xml",
+        "https://example.com/sub2.xml"
+      ]
+    }
+  ]
+}

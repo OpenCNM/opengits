@@ -1,0 +1,444 @@
+[
+  {
+    "name": "handle-resolution-and-hallucination-drop",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "zh-CN",
+      "candidateFiles": [
+        {
+          "handle": 1,
+          "path": "README.md",
+          "isDoc": true,
+          "weight": 25
+        },
+        {
+          "handle": 2,
+          "path": "src/main.ts",
+          "isDoc": false,
+          "role": "entry_point",
+          "weight": 15
+        },
+        {
+          "handle": 3,
+          "path": "docs/guide.md",
+          "isDoc": true,
+          "weight": 10
+        }
+      ],
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/main.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/guide.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/helper.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ],
+      "chapters": [
+        {
+          "name": "起步与指南",
+          "summary": "起步说明",
+          "files": [
+            {
+              "handle": 2,
+              "path": "",
+              "shortTitle": "主入口"
+            },
+            {
+              "handle": 3,
+              "path": "",
+              "shortTitle": ""
+            },
+            {
+              "path": "src/fake_hallucinated.ts",
+              "shortTitle": "不存在"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "sanitized": [
+        {
+          "name": "起步与指南",
+          "summary": "起步说明",
+          "files": [
+            {
+              "path": "README.md",
+              "shortTitle": "项目概览与入门指南"
+            },
+            {
+              "path": "src/main.ts",
+              "shortTitle": "主入口"
+            },
+            {
+              "path": "docs/guide.md",
+              "shortTitle": "guide"
+            }
+          ]
+        }
+      ],
+      "droppedPaths": [
+        "src/fake_hallucinated.ts"
+      ]
+    }
+  },
+  {
+    "name": "tail-match-disambiguation-via-candidates",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "en",
+      "candidateFiles": [
+        {
+          "handle": 1,
+          "path": "packages/core/src/index.ts",
+          "isDoc": false,
+          "role": "entry_point",
+          "weight": 15
+        }
+      ],
+      "nodes": [
+        {
+          "path": "packages/core/src/index.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/cli/src/index.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ],
+      "chapters": [
+        {
+          "name": "Core",
+          "summary": "Core Module",
+          "files": [
+            {
+              "path": "index.ts",
+              "shortTitle": "Entry"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "sanitized": [
+        {
+          "name": "Core",
+          "summary": "Core Module",
+          "files": [
+            {
+              "path": "packages/core/src/index.ts",
+              "shortTitle": "Entry"
+            }
+          ]
+        }
+      ],
+      "droppedPaths": []
+    }
+  },
+  {
+    "name": "same-chapter-dir-affinity-disambiguation",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "en",
+      "candidateFiles": [],
+      "nodes": [
+        {
+          "path": "pkg/alpha/util.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "pkg/beta/util.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "pkg/beta/service.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ],
+      "chapters": [
+        {
+          "name": "Beta Services",
+          "summary": "Beta service overview",
+          "files": [
+            {
+              "path": "pkg/beta/service.ts",
+              "shortTitle": "Service"
+            },
+            {
+              "path": "util.ts",
+              "shortTitle": "Utility"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "sanitized": [
+        {
+          "name": "Beta Services",
+          "summary": "Beta service overview",
+          "files": [
+            {
+              "path": "pkg/beta/service.ts",
+              "shortTitle": "Service"
+            },
+            {
+              "path": "pkg/beta/util.ts",
+              "shortTitle": "Utility"
+            }
+          ]
+        }
+      ],
+      "droppedPaths": []
+    }
+  },
+  {
+    "name": "shortest-depth-disambiguation-fallback",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "en",
+      "candidateFiles": [],
+      "nodes": [
+        {
+          "path": "deep/nested/sub/folder/helper.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/helper.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ],
+      "chapters": [
+        {
+          "name": "Helpers",
+          "summary": "Helper utils",
+          "files": [
+            {
+              "path": "helper.ts",
+              "shortTitle": "Helper"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "sanitized": [
+        {
+          "name": "Helpers",
+          "summary": "Helper utils",
+          "files": [
+            {
+              "path": "src/helper.ts",
+              "shortTitle": "Helper"
+            }
+          ]
+        }
+      ],
+      "droppedPaths": []
+    }
+  },
+  {
+    "name": "prune-empty-chapters-and-pin-readme",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "ja",
+      "candidateFiles": [],
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/index.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ],
+      "chapters": [
+        {
+          "name": "完全に無効な章",
+          "summary": "すべて幻覚ファイル",
+          "files": [
+            {
+              "path": "completely_hallucinated.ts",
+              "shortTitle": "虚構"
+            }
+          ]
+        },
+        {
+          "name": "有効な章",
+          "summary": "実在ファイル",
+          "files": [
+            {
+              "path": "src/index.ts",
+              "shortTitle": "エントリ"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "sanitized": [
+        {
+          "name": "有効な章",
+          "summary": "実在ファイル",
+          "files": [
+            {
+              "path": "README.md",
+              "shortTitle": "プロジェクト概要とクイックスタートガイド"
+            },
+            {
+              "path": "src/index.ts",
+              "shortTitle": "エントリ"
+            }
+          ]
+        }
+      ],
+      "droppedPaths": [
+        "completely_hallucinated.ts"
+      ]
+    }
+  },
+  {
+    "name": "prefix-scoping-subpackage-resolution",
+    "input": {
+      "prefix": "packages/core",
+      "targetLanguage": "en",
+      "candidateFiles": [
+        {
+          "handle": 1,
+          "path": "packages/core/src/index.ts",
+          "isDoc": false,
+          "role": "entry_point",
+          "weight": 15
+        }
+      ],
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/core/README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/core/src/index.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "packages/cli/src/index.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ],
+      "chapters": [
+        {
+          "name": "Core Module",
+          "summary": "Core implementation",
+          "files": [
+            {
+              "path": "src/index.ts",
+              "shortTitle": "Index"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "sanitized": [
+        {
+          "name": "Core Module",
+          "summary": "Core implementation",
+          "files": [
+            {
+              "path": "packages/core/README.md",
+              "shortTitle": "Project Overview & Quickstart"
+            },
+            {
+              "path": "packages/core/src/index.ts",
+              "shortTitle": "Index"
+            }
+          ]
+        }
+      ],
+      "droppedPaths": []
+    }
+  }
+]

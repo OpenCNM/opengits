@@ -1,0 +1,189 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "headingPath": [
+    {
+      "name": "explicit-heading-path",
+      "input": {
+        "heading": "Intro",
+        "headingPath": "H1 > H2",
+        "docPath": "docs/a.md"
+      },
+      "expected": "H1 > H2"
+    },
+    {
+      "name": "default-path-hash-heading",
+      "input": {
+        "heading": "Intro",
+        "headingPath": null,
+        "docPath": "docs/a.md"
+      },
+      "expected": "docs/a.md#Intro"
+    },
+    {
+      "name": "no-docpath-bare-heading",
+      "input": {
+        "heading": "Intro",
+        "headingPath": null,
+        "docPath": ""
+      },
+      "expected": "Intro"
+    },
+    {
+      "name": "mdx-path-marker-extracted",
+      "input": {
+        "heading": "📄 `src/index.ts` <!-- path: src/index.ts -->",
+        "headingPath": null,
+        "docPath": "docs/a.md"
+      },
+      "expected": "src/index.ts"
+    },
+    {
+      "name": "file-emoji-prefix-fallback-docpath",
+      "input": {
+        "heading": "📄 `src/index.ts`",
+        "headingPath": null,
+        "docPath": "docs/a.md"
+      },
+      "expected": "docs/a.md"
+    },
+    {
+      "name": "empty-heading-with-docpath",
+      "input": {
+        "heading": "",
+        "headingPath": null,
+        "docPath": "docs/a.md"
+      },
+      "expected": "docs/a.md#"
+    }
+  ],
+  "versionLabel": [
+    {
+      "name": "semver-wins",
+      "input": {
+        "semVerLabel": "v2.1.0",
+        "branch": "dev",
+        "defaultBranch": "main"
+      },
+      "expected": "v2.1.0"
+    },
+    {
+      "name": "non-default-branch-fallback",
+      "input": {
+        "semVerLabel": null,
+        "branch": "dev",
+        "defaultBranch": "main"
+      },
+      "expected": "dev"
+    },
+    {
+      "name": "default-branch-empty",
+      "input": {
+        "semVerLabel": null,
+        "branch": "main",
+        "defaultBranch": "main"
+      },
+      "expected": null
+    },
+    {
+      "name": "all-empty",
+      "input": {
+        "semVerLabel": null,
+        "branch": null,
+        "defaultBranch": "main"
+      },
+      "expected": null
+    }
+  ],
+  "classify": [
+    {
+      "name": "mermaid",
+      "input": {
+        "name": "mermaid",
+        "content": "```mermaid\ngraph TD\n  Client --> Gateway\n```",
+        "headingPath": "",
+        "blueprintRole": ""
+      },
+      "expected": "architecture_diagram"
+    },
+    {
+      "name": "warning-callout",
+      "input": {
+        "name": "warning-callout",
+        "content": "> [!WARNING]\n> Modifying this directly causes issues.",
+        "headingPath": "",
+        "blueprintRole": ""
+      },
+      "expected": "warning"
+    },
+    {
+      "name": "docusaurus-warning",
+      "input": {
+        "name": "docusaurus-warning",
+        "content": ":::warning\nBe careful with this operation\n:::",
+        "headingPath": "",
+        "blueprintRole": ""
+      },
+      "expected": "warning"
+    },
+    {
+      "name": "code-ratio-half",
+      "input": {
+        "name": "code-ratio-half",
+        "content": "Intro:\n```typescript\nfunction add(a: number, b: number) { return a + b; }\n```",
+        "headingPath": "",
+        "blueprintRole": ""
+      },
+      "expected": "code"
+    },
+    {
+      "name": "markdown-table-api-reference",
+      "input": {
+        "name": "markdown-table-api-reference",
+        "content": "| Param | Type | Description |\n| --- | --- | --- |\n| id | string | User ID |",
+        "headingPath": "",
+        "blueprintRole": ""
+      },
+      "expected": "api_reference"
+    },
+    {
+      "name": "physical-code-beats-blueprint",
+      "input": {
+        "name": "physical-code-beats-blueprint",
+        "content": "```typescript\nexport function auth() { return true; }\n```",
+        "headingPath": "",
+        "blueprintRole": "architecture"
+      },
+      "expected": "code"
+    },
+    {
+      "name": "blueprint-role-fallback",
+      "input": {
+        "name": "blueprint-role-fallback",
+        "content": "Generic text without code blocks.",
+        "headingPath": "",
+        "blueprintRole": "architecture"
+      },
+      "expected": "architecture_diagram"
+    },
+    {
+      "name": "heading-keyword-fallback",
+      "input": {
+        "name": "heading-keyword-fallback",
+        "content": "System topology discussion.",
+        "headingPath": "Docs > Architecture Overview",
+        "blueprintRole": ""
+      },
+      "expected": "architecture_diagram"
+    },
+    {
+      "name": "prose-default",
+      "input": {
+        "name": "prose-default",
+        "content": "Welcome to the project! This guide will help you get started.",
+        "headingPath": "",
+        "blueprintRole": ""
+      },
+      "expected": "prose"
+    }
+  ]
+}

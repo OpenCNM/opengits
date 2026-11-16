@@ -1,0 +1,540 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { GitBranch, Search } from 'lucide-react';
+import { DisplayRepo, EditionChip } from '@/lib/home-data';
+import { UpdatePlanDialog } from '@/components/update/UpdatePlanDialog';
+import { UpdateWorkbenchModal } from '@/components/update/UpdateWorkbenchModal';
+import { EditionDrawer } from '@/components/repo/EditionChips';
+import { McpConnectWizardDialog } from '@/components/mcp-connect/McpConnectWizardDialog';
+import { useImportWizard } from '@/components/ImportWizard/ImportWizardContext';
+import { requireApiKey } from '@/lib/api-key-guard';
+import { WEB_DOC_OWNER } from '@/lib/constants';
+import { DashboardResumeCard } from './dashboard/DashboardResumeCard';
+import { DashboardSidebarRepoList } from './dashboard/DashboardSidebarRepoList';
+import { DashboardMcpClientsPanel } from './dashboard/DashboardMcpClientsPanel';
+import { DashboardFeedSection } from './dashboard/DashboardFeedSection';
+import { TutorialDetailDialog } from './dashboard/TutorialDetailDialog';
+import { ManageProjectsDialog } from './dashboard/ManageProjectsDialog';
+import { DashboardSearchHub } from './dashboard/DashboardSearchHub';
+import { DashboardSourceFilterPills } from './dashboard/DashboardSourceFilterPills';
+import { calculateSourceTypeCounts, type DashboardSourceType } from '@/lib/search/smart-repo-search';
+import { HomeFooter } from './HomeFooter';
+import * as m from '@/paraglide/messages';
+
+import { useDashboardQueryParams, type DashboardFeedTab } from '../hooks/useDashboardQueryParams';
+import { useDashboardMcpClients } from '../hooks/useDashboardMcpClients';
+import { useDashboardRepoActions } from '../hooks/useDashboardRepoActions';
+import { useDashboardFeed } from '../hooks/useDashboardFeed';
+import {
+  dashboardKeepAliveStore,
+  getDashboardSnapshot,
+  saveDashboardSnapshot,
+} from '@/lib/stores/dashboard-keepalive-store';
+
+export type { DashboardFeedTab };
+
+interface UserDashboardViewProps {
+  repos: DisplayRepo[];
+  myRepos?: DisplayRepo[];
+  filteredRepos: DisplayRepo[];
+  categories: string[];
+  selectedCategory: string;
+  setSelectedCategory: (cat: string) => void;
+  inputUrl: string;
+  setInputUrl: (url: string) => void;
+  handleImportSubmit: (e?: React.FormEvent, customUrl?: string) => void;
+  handleToggleSave: (repo: DisplayRepo, autoFollow?: boolean) => Promise<void> | void;
+  handleRemoveRepo?: (repo: DisplayRepo) => Promise<void> | void;
+  setMcpDialogRepo: (repo: { owner: string; repo: string; title?: string } | null) => void;
+  /** 登录态（接力工作台的认领引导消费；缺省 false） */
+  isLoggedIn?: boolean;
+  initialActiveTab?: string;
+  initialSort?: string;
+  searchQuery?: string;
+  setSearchQuery?: (q: string) => void;
+  sourceType?: DashboardSourceType;
+  setSourceType?: (s: DashboardSourceType) => void;
+  highlightRepo?: string | null;
+  onEditionDeleted?: (editionId: string) => void;
+}
+
+export function UserDashboardView({
+  repos,
+  myRepos = [],
+  filteredRepos,
+  categories,
+  selectedCategory,
+  setSelectedCategory,
+  inputUrl,
+  setInputUrl,
+  handleImportSubmit,
+  handleToggleSave,
+  handleRemoveRepo,
+  setMcpDialogRepo,
+  isLoggedIn = false,
+  initialActiveTab,
+  initialSort,
+  searchQuery = '',
+  setSearchQuery,
+  sourceType: propSourceType = 'all',
+  setSourceType: propSetSourceType,
+  highlightRepo = null,
+  onEditionDeleted,
+}: UserDashboardViewProps) {
+  const router = useRouter();
+
+  // Query parameters, sorting & pagination hook
+  const {
+    activeTab,
+    setActiveTab,
+    currentSort,
+    handleSortChange,
+    sourceType: querySourceType,
+    setSourceType: querySetSourceType,
+    currentPage,
+    setCurrentPage,
+  } = useDashboardQueryParams({
+    initialActiveTab,
+    initialSort,
+    selectedCategory,
+    initialSourceType: propSourceType,
+  });
+
+  const effectiveSourceType = propSourceType ?? querySourceType;
+  const handleSelectSourceType = (type: DashboardSourceType) => {
+    querySetSourceType(type);
+    propSetSourceType?.(type);
+  };
+  const sourceCounts = React.useMemo(() => calculateSourceTypeCounts(repos), [repos]);
+  const matchedFirstRepo = filteredRepos.length > 0 ? filteredRepos[0] : null;
+
+  // MCP active clients hook
+  const { activeClients } = useDashboardMcpClients();
+
+  // Repo actions & web-sync polling hook
+  const {
+    updateTarget,
+    setUpdateTarget,
+    checkingRepoId,
+    editionSavedOverrides,
+    followOverrides,
+    pinnedOverrides,
+    updateStatusOverrides,
+    handleEditionSavedChange,
+    handleTogglePin,
+    handleToggleFollow,
+    handleCheckAndUpdate,
+  } = useDashboardRepoActions();
+
+  const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
+  const [personalSearch, setPersonalSearch] = useState('');
+  const [detailRepo, setDetailRepo] = useState<DisplayRepo | null>(null);
+  const [relayTarget, setRelayTarget] = useState<DisplayRepo | null>(null);
+  const [editionDrawer, setEditionDrawer] = useState<{
+    editions: EditionChip[];
+    owner: string;
+    repo: string;
+  } | null>(null);
+  const [isMcpWizardOpen, setIsMcpWizardOpen] = useState(false);
+  const { openWizardForEdition, openWizard, setUrl } = useImportWizard();
+
+  const handleSearchTag = React.useCallback(
+    (tag: string) => {
+      setSearchQuery?.(tag);
+      const params = new URLSearchParams(window.location.search);
+      params.set('q', tag);
+      params.delete('highlight');
+      const qs = params.toString();
+      router.replace(qs ? `/?${qs}` : '/', { scroll: false });
+    },
+    [setSearchQuery, router]
+  );
+
+  // 🎯 Vue 级 KeepAlive 滚动位置记忆与恢复
+  const mainCanvasRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // 异步在首帧渲染与子元素排版稳定后恢复滚动
+    const raf = requestAnimationFrame(() => {
+      try {
+        const snapshot = getDashboardSnapshot();
+        if (snapshot.scrollOffset > 0) {
+          if (mainCanvasRef.current && mainCanvasRef.current.scrollHeight > mainCanvasRef.current.clientHeight) {
+            mainCanvasRef.current.scrollTop = snapshot.scrollOffset;
+          } else if (typeof window !== 'undefined') {
+            window.scrollTo({ top: snapshot.scrollOffset, behavior: 'instant' as ScrollBehavior });
+          }
+        }
+      } catch {
+        // Fail-closed
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const saveCurrentScroll = () => {
+      try {
+        const offset =
+          mainCanvasRef.current && mainCanvasRef.current.scrollTop > 0
+            ? mainCanvasRef.current.scrollTop
+            : typeof window !== 'undefined'
+            ? window.scrollY || document.documentElement.scrollTop
+            : 0;
+        if (offset >= 0) {
+          saveDashboardSnapshot({ scrollOffset: offset });
+        }
+      } catch {
+        // Fail-closed: 保护路由切页/组件卸载时的生命周期，防止状态持久化异常阻断页面跳转
+      }
+    };
+
+    const handleScroll = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(saveCurrentScroll, 120);
+    };
+
+    const el = mainCanvasRef.current;
+    if (el) {
+      el.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      saveCurrentScroll();
+      if (el) {
+        el.removeEventListener('scroll', handleScroll);
+      }
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const [personalSourceType, setPersonalSourceType] = useState<DashboardSourceType>('all');
+
+  // Domain Feed & Search Orchestrator Hook
+  const {
+    allPersonalRepos,
+    personalRepos,
+    personalSourceCounts,
+    displayFeedRepos,
+    paginatedFeedRepos,
+    recentResumeRepo,
+    totalItems,
+    totalPages,
+    safeCurrentPage,
+    pageSize,
+  } = useDashboardFeed({
+    repos,
+    myRepos,
+    filteredRepos,
+    activeTab,
+    currentPage,
+    personalSearch,
+    personalSourceType,
+    pinnedOverrides,
+  });
+
+  const editionsOf = (repo: DisplayRepo): EditionChip[] | undefined => {
+    let editions = repo.editionGroup?.editions;
+    if (!editions || editions.length <= 1) {
+      const key = `${(repo.owner || '').toLowerCase()}/${(repo.repo || '').toLowerCase()}`;
+      const partner = [...myRepos, ...repos].find(
+        (r) =>
+          r.id !== repo.id &&
+          `${(r.owner || '').toLowerCase()}/${(r.repo || '').toLowerCase()}` === key &&
+          (r.editionGroup?.editions?.length ?? 0) > 1
+      );
+      if (partner?.editionGroup?.editions) {
+        editions = partner.editionGroup.editions;
+      }
+    }
+    if (!editions || editions.length <= 1) return undefined;
+    return editions.map((e) => ({
+      ...e,
+      isSaved: editionSavedOverrides[e.id] ?? e.isSaved,
+      hasUpdate: updateStatusOverrides[e.id] ?? e.hasUpdate,
+    }));
+  };
+
+  return (
+    <main className="w-full h-full flex flex-col md:flex-row items-stretch select-none md:overflow-hidden">
+      {/* ⬅️ Left Fixed/Docked Navigation Sidebar */}
+      <aside className="w-full md:w-80 md:min-w-[20rem] md:max-w-[20rem] lg:w-[21rem] lg:min-w-[21rem] lg:max-w-[21rem] shrink-0 bg-theme-bg py-6 px-4 sm:px-6 lg:pl-8 lg:pr-6 flex flex-col justify-between md:h-full md:min-h-0 md:overflow-hidden space-y-4">
+        <div className="flex-1 min-h-0 flex flex-col space-y-3.5 overflow-hidden">
+          {/* Header */}
+          <div className="shrink-0 flex items-center justify-between pb-1">
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-xs uppercase tracking-wider text-theme-foreground/90 flex items-center gap-1.5">
+                <GitBranch className="w-3.5 h-3.5 text-theme-foreground/70" />
+                {m.dashboard_my_projects()}
+              </span>
+              <span className="text-micro font-mono text-theme-muted">({personalRepos.length})</span>
+            </div>
+            {allPersonalRepos.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsManageDialogOpen(true)}
+                className="text-xs px-2 py-0.5 rounded-md font-sans transition-all cursor-pointer text-theme-muted hover:text-theme-foreground hover:bg-theme-surface"
+              >
+                {m.dashboard_manage_projects()}
+              </button>
+            )}
+          </div>
+
+          {/* Search Filter */}
+          <div className="shrink-0 relative">
+            <Search className="w-3.5 h-3.5 text-theme-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={personalSearch}
+              onChange={(e) => setPersonalSearch(e.target.value)}
+              placeholder={m.placeholder_search()}
+              className="w-full h-9 pl-8 pr-2.5 bg-theme-bg border border-theme-border/80 rounded-lg text-xs font-sans text-theme-foreground outline-none focus:border-theme-primary transition-colors placeholder:text-theme-muted/50"
+            />
+          </div>
+
+          {/* GitHub / Doc Source Filter Switcher */}
+          {allPersonalRepos.length > 0 && (
+            <DashboardSourceFilterPills
+              compact
+              sourceType={personalSourceType}
+              onSelectSourceType={setPersonalSourceType}
+              counts={personalSourceCounts}
+            />
+          )}
+
+          {/* Personal Repositories List */}
+          <DashboardSidebarRepoList
+            repos={personalRepos}
+            editionsOf={editionsOf}
+            isFiltered={personalSourceType !== 'all' || Boolean(personalSearch.trim())}
+            checkingRepoId={checkingRepoId}
+            onOpenEditionDrawer={setEditionDrawer}
+            onOpenUpdateDialog={setUpdateTarget}
+            onCheckUpdate={handleCheckAndUpdate}
+            onTogglePin={handleTogglePin}
+            onEditionSavedChange={handleEditionSavedChange}
+            onCreateEdition={(owner, repo) => requireApiKey(() => openWizardForEdition(owner, repo))}
+            onOpenDetail={setDetailRepo}
+          />
+        </div>
+
+        {/* MCP Gateway Panel at Bottom of Sidebar */}
+        <div className="shrink-0 pt-2">
+          <DashboardMcpClientsPanel
+            clients={activeClients}
+            onOpenWizard={() => setIsMcpWizardOpen(true)}
+          />
+        </div>
+      </aside>
+
+      {/* 🎯 Right Main Canvas */}
+      <div
+        ref={mainCanvasRef}
+        className="flex-1 min-w-0 md:h-full md:overflow-y-auto py-6 px-5 sm:px-6 lg:px-8 flex flex-col space-y-8 bg-theme-bg"
+      >
+        <div className="space-y-6">
+          {/* Top Split Section: Search & Import Hub (Left) + Resume Reading Section (Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left Omnibox Search & Import Hub */}
+            <div className="lg:col-span-7 xl:col-span-8">
+              <DashboardSearchHub
+                searchQuery={searchQuery}
+                setSearchQuery={(q) => {
+                  setSearchQuery?.(q);
+                  setInputUrl(q);
+                }}
+                onClearSearch={() => {
+                  setSearchQuery?.('');
+                  setInputUrl('');
+                  const params = new URLSearchParams(window.location.search);
+                  params.delete('q');
+                  params.delete('highlight');
+                  const qs = params.toString();
+                  router.replace(qs ? `/?${qs}` : '/', { scroll: false });
+                }}
+                onSearchSubmit={(e) => {
+                  e?.preventDefault();
+                  const feedEl = document.getElementById('feed-section');
+                  if (feedEl) {
+                    feedEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
+                onImportSubmit={(e) => {
+                  e?.preventDefault();
+                  const target = searchQuery.trim() || inputUrl.trim();
+                  handleImportSubmit(e, target);
+                }}
+                sourceType={effectiveSourceType}
+                onSelectSourceType={handleSelectSourceType}
+                sourceCounts={sourceCounts}
+                matchedCount={filteredRepos.length}
+                matchedFirstRepo={matchedFirstRepo}
+              />
+            </div>
+
+            {/* Right Resume Reading / Progress Card */}
+            <DashboardResumeCard
+              recentResumeRepo={recentResumeRepo}
+              onToggleSave={handleToggleSave}
+            />
+          </div>
+
+          {/* Public Community Tutorials Feed */}
+          <DashboardFeedSection
+            displayFeedRepos={displayFeedRepos}
+            paginatedFeedRepos={paginatedFeedRepos}
+            categories={categories}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            currentSort={currentSort}
+            handleSortChange={handleSortChange}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            totalItems={totalItems}
+            safeCurrentPage={safeCurrentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            setCurrentPage={setCurrentPage}
+            editionsOf={editionsOf}
+            followOverrides={followOverrides}
+            handleToggleFollow={handleToggleFollow}
+            handleToggleSave={handleToggleSave}
+            setEditionDrawer={setEditionDrawer}
+            setRelayTarget={setRelayTarget}
+            handleEditionSavedChange={handleEditionSavedChange}
+            openWizardForEdition={openWizardForEdition}
+            searchQuery={searchQuery}
+            onClearSearch={() => {
+              setSearchQuery?.('');
+              const params = new URLSearchParams(window.location.search);
+              params.delete('q');
+              params.delete('highlight');
+              const qs = params.toString();
+              router.replace(qs ? `/?${qs}` : '/', { scroll: false });
+            }}
+            sourceType={effectiveSourceType}
+            onClearSource={() => handleSelectSourceType('all')}
+            highlightRepo={highlightRepo}
+            onOpenDetail={setDetailRepo}
+            onSearchTag={handleSearchTag}
+          />
+        </div>
+
+        {/* HomeFooter at bottom of scrollable right canvas */}
+        <div className="shrink-0 mt-auto pt-4">
+          <HomeFooter isDashboard />
+        </div>
+      </div>
+
+      {/* Update Plan Dialog */}
+      {updateTarget && (
+        <UpdatePlanDialog
+          open={!!updateTarget}
+          onOpenChange={(open) => !open && setUpdateTarget(null)}
+          owner={updateTarget.owner}
+          repo={updateTarget.repo}
+          branch={updateTarget.branch}
+          edition={updateTarget.edition}
+          onUpdated={() => router.refresh()}
+        />
+      )}
+
+      {/* 巨仓社区接力工作台 */}
+      {relayTarget && (
+        <UpdateWorkbenchModal
+          open={!!relayTarget}
+          onOpenChange={(open) => {
+            if (!open) {
+              setRelayTarget(null);
+              router.refresh();
+            }
+          }}
+          owner={relayTarget.owner}
+          repo={relayTarget.repo}
+          edition={relayTarget.edition}
+          repoInfo={relayTarget}
+          isLoggedIn={isLoggedIn}
+        />
+      )}
+
+      {/* 讲法抽屉 */}
+      <EditionDrawer
+        open={!!editionDrawer}
+        onOpenChange={(open) => !open && setEditionDrawer(null)}
+        editions={editionDrawer?.editions ?? []}
+        owner={editionDrawer?.owner}
+        repo={editionDrawer?.repo}
+        onSavedChange={handleEditionSavedChange}
+        onDeleted={(id) => {
+          onEditionDeleted?.(id);
+          setEditionDrawer((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  editions: prev.editions.filter((e) => e.id !== id),
+                }
+              : null
+          );
+        }}
+        onPromoted={() => {
+          router.refresh();
+        }}
+        canManage={editionDrawer ? editionDrawer.editions.some((e) => e.canManage || e.isMaintainer) : false}
+        onCreateEdition={
+          editionDrawer && editionDrawer.owner.toLowerCase() !== WEB_DOC_OWNER
+            ? () => requireApiKey(() => openWizardForEdition(editionDrawer.owner, editionDrawer.repo))
+            : undefined
+        }
+      />
+
+      {/* 全局 MCP 网关接入向导与诊断测试弹窗 */}
+      <McpConnectWizardDialog
+        isOpen={isMcpWizardOpen}
+        onClose={() => setIsMcpWizardOpen(false)}
+        owner="bookshelf"
+        repo="hub"
+        title={m.dashboard_personal_global_mcp()}
+      />
+
+      {/* 🌟 教程详情与版本控制中心全局全景大弹窗 (All-in-One RepoDetailDialog) */}
+      <TutorialDetailDialog
+        repo={detailRepo}
+        open={Boolean(detailRepo)}
+        onOpenChange={(open) => !open && setDetailRepo(null)}
+        editions={detailRepo ? editionsOf(detailRepo) : undefined}
+        canManage={detailRepo ? Boolean(detailRepo.canManage || detailRepo.isMaintainer) : false}
+        onEditionSavedChange={handleEditionSavedChange}
+        onCreateEdition={(owner, repo) => requireApiKey(() => openWizardForEdition(owner, repo))}
+        onCheckUpdate={handleCheckAndUpdate}
+        checkingRepoId={checkingRepoId}
+        onOpenUpdateDialog={setUpdateTarget}
+        onOpenRelayWorkbench={(targetRepo) => {
+          setDetailRepo(null);
+          setRelayTarget(targetRepo);
+        }}
+        onToggleSave={handleToggleSave}
+        onStartImport={(url) => {
+          if (url) setUrl(url);
+          openWizard();
+        }}
+        onSelectTab={(tab) => setActiveTab(tab)}
+        onSearchTag={handleSearchTag}
+      />
+
+      {/* 📁 项目管理弹窗 */}
+      <ManageProjectsDialog
+        open={isManageDialogOpen}
+        onOpenChange={setIsManageDialogOpen}
+        repos={allPersonalRepos}
+        onTogglePin={handleTogglePin}
+        onRemoveRepo={handleRemoveRepo}
+        onOpenDetail={setDetailRepo}
+      />
+    </main>
+  );
+}

@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+.next
+**/.next
+storage
+.git
+.gitignore
+.env
+.env.*
+*.log
+**/*.log
+.DS_Store
+scratch
+docs
+docker-build.log

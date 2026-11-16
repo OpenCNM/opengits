@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>System Architecture Diagram</title></head>
+<body>
+  <main>
+    <h1>Pipeline Architecture</h1>
+    <p>The diagram below illustrates how incoming web documents traverse deterministic extraction and local asset persistence before MDX rendering.</p>
+    <figure>
+      <span>
+        <svg width="640" height="280" viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg">
+          <title>Ingestion Pipeline Flow</title>
+          <script>alert('xss')</script>
+          <rect x="20" y="40" width="140" height="60" rx="8" />
+          <rect x="240" y="40" width="160" height="60" rx="8" />
+          <rect x="460" y="40" width="140" height="60" rx="8" />
+          <path d="M160 70 L240 70" />
+          <path d="M400 70 L460 70" />
+          <text x="50" y="75">HTML</text>
+          <text x="270" y="75">Lift Gate</text>
+          <text x="495" y="75">MDX</text>
+        </svg>
+      </span>
+      <figcaption>Ingestion and deterministic verification funnel.</figcaption>
+    </figure>
+    <div class="diagram-wrapper">
+      <span>
+        <svg width="800" height="300" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+          <title>Standalone Neutral Span Diagram</title>
+          <rect x="0" y="0" width="800" height="300" fill="#eee" />
+          <path d="M10 10 L790 290" stroke="#333" />
+          <circle cx="400" cy="150" r="40" />
+          <text x="120" y="150">Neutral Span SVG</text>
+        </svg>
+      </span>
+    </div>
+    <a href="/docs/other">
+      <svg width="800" height="300" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+        <title>ShouldStripAnchorSVG</title>
+        <rect x="0" y="0" width="800" height="300" fill="#ddd" />
+        <path d="M20 20 L780 280" stroke="#111" />
+        <circle cx="300" cy="150" r="30" />
+      </svg>
+      <div><h3>Linked Card</h3><p>Has body copy so this anchor SVG is decorative card header art and must be stripped, not assetized.</p></div>
+    </a>
+    <p>Every assetized SVG diagram is stripped of active script nodes prior to writing onto local storage endpoints.</p>
+  </main>
+</body>
+</html>

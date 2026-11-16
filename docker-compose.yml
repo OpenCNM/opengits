@@ -1,0 +1,409 @@
+# Network isolation:
+# - caddy reverse proxy is the public entry; admin is a separate private-repo deployment
+#   (opengits-admin) — /admin is reverse-proxied by web via ADMIN_INTERNAL_URL (502 when that container is not running)
+# - app ports bind to loopback only (127.0.0.1:3000), never exposed directly
+# - db exposes no ports (uncomment the 5433 mapping for local debugging)
+#
+# All app services read their env from the root `.env` file (see .env.example).
+services:
+  db:
+    image: postgres:16
+    container_name: opengits-db
+    # 内存压缩档（4C4G 单机口径，稳态 RSS 约 300~400MB + 弹性 OS 页缓存）：
+    # - shared_buffers 256MB：热数据页上限锁死（默认 128MB 但随页缓存自然膨胀，显式声明上限）
+    # - work_mem 8MB/操作：本库查询以索引点查为主；重查询（FTS ts_rank 大仓排序）如需放大，
+    #   用会话级 SET LOCAL work_mem（事务内生效自动回落），不要全局调大
+    # - max_connections 50：web(12)+worker(10)+glitchtip(~20)+备份瞬时+superuser 预留
+    #   （admin 独立私有仓容器 opengits-admin 不在本栈内，不占本预算）
+    # - maintenance_work_mem 64MB + autovacuum 2 worker：转录/导入写负载的回收内存封顶
+    # - jit off：纯点查负载用不上查询编译，省每查询编译内存
+    # 动态性说明：shared_buffers 启动即固定（PG 模型如此）；"不够用时自动扩"由
+    # OS 页缓存承担（内存紧张时内核自动让路），重活按需放大走上面的 SET LOCAL 模式。
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - work_mem=8MB
+      - -c
+      - hash_mem_multiplier=1.5
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - autovacuum_max_workers=2
+      - -c
+      - max_connections=100
+      - -c
+      - effective_cache_size=768MB
+      - -c
+      - wal_buffers=16MB
+      - -c
+      - max_wal_size=512MB
+      - -c
+      - min_wal_size=80MB
+      - -c
+      - jit=off
+    environment:
+      NODE_OPTIONS: --max-old-space-size=512
+      POSTGRES_USER: opengits
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opengits_local_dev}
+      POSTGRES_DB: opengits_db
+    # 首次建卷时初始化附属库（glitchtip_db 等；存量库请在 db 容器内手动执行 CREATE DATABASE）
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db:/docker-entrypoint-initdb.d:ro
+    # 调试用端口（绑定回环 127.0.0.1，不暴露公网）
+    ports:
+      - "127.0.0.1:5433:5432"
+    restart: unless-stopped
+    oom_score_adj: -1000
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
+        reservations:
+          memory: 256M
+    mem_limit: 1024M
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opengits -d opengits_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ─────────────────────────────────────────────────────────────
+  # 数据库定时备份（pg_dump 逻辑备份；卷级拷贝对运行中的 PG 不安全）：
+  # - 每日 3 点（BACKUP_HOUR 可调）dump opengits_db + glitchtip_db 至宿主 ./backups
+  # - 周一额外落周备与 assets 归档；日备留 7 天、周备留 4 周
+  # - 异地可选：BACKUP_UPLOAD_CMD="rclone copy" 类命令接入（见 backup.sh）
+  # 恢复：解压对应日备/周备 tar，再用 psql 或 pg_restore 导回（见 backup.sh 头注释）
+  # ─────────────────────────────────────────────────────────────
+  db-backup:
+    image: postgres:16
+    container_name: opengits-db-backup
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: opengits
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opengits_local_dev}
+      DB_HOST: db
+      BACKUP_DIR: /backups
+      STORAGE_DIR: /storage
+    volumes:
+      - ./backups:/backups
+      - ./storage:/storage:ro
+      - ./docker/db-backup/backup.sh:/usr/local/bin/backup.sh:ro
+    entrypoint: ["bash", "/usr/local/bin/backup.sh"]
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    mem_limit: 256M
+
+  langfuse:
+    profiles: ["ops"]
+    image: langfuse/langfuse:3
+    container_name: opengits-langfuse
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://opengits:${POSTGRES_PASSWORD:-opengits_local_dev}@db:5432/opengits_db
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-opengits_local_dev_secret}
+      NEXTAUTH_URL: http://localhost:3100
+      SALT: ${LANGFUSE_SALT:-opengits_local_dev_salt}
+      TELEMETRY_ENABLED: "false"
+    ports:
+      - "127.0.0.1:3100:3000"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 768M
+    mem_limit: 768M
+
+  # ─────────────────────────────────────────────────────────────
+  # 错误监控（自托管 GlitchTip，Sentry 协议兼容）：
+  # - 独立库 glitchtip_db（不污染业务库；首次建卷由 docker/init-db 自动创建，
+  #   存量部署执行：docker compose exec db psql -U opengits -d opengits_db
+  #   -c 'CREATE DATABASE glitchtip_db'）
+  # - 首次使用：Web UI（127.0.0.1:9000 或 Caddy 子域名）建 org → 建 Next.js 项目
+  #   → 拷 DSN → 在 .env 设 SENTRY_DSN → 重启 web/worker
+  # - redis 用独立 db 2（celery broker）；EMAIL_URL 配 smtp 后开通邮件告警
+  # - 注意：宿主机 :9000 与 minio（--profile object-storage）冲突，两个 profile
+  #   同时启用时需改掉其中一方的端口映射
+  # ─────────────────────────────────────────────────────────────
+  glitchtip:
+    profiles: ["ops"]
+    image: glitchtip/glitchtip:latest
+    container_name: opengits-glitchtip
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://opengits:${POSTGRES_PASSWORD:-opengits_local_dev}@db:5432/glitchtip_db
+      REDIS_URL: redis://redis:6379/2
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-change-me-glitchtip-secret-key}
+      GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-http://localhost:9000}
+      EMAIL_URL: ${GLITCHTIP_EMAIL_URL:-console://}
+      DEFAULT_FROM_EMAIL: ${GLITCHTIP_FROM_EMAIL:-alert@opengits.local}
+    ports:
+      - "127.0.0.1:9000:8000"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 768M
+    mem_limit: 768M
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # 显式锚定 Next 运行段：worker-go 追加为末段后，无 target 会默认构建到
+      # Go 镜像（Docker 语义：缺省 target=最后一段）——web 静默变成 sidecar
+      target: runner
+    container_name: opengits-web
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_OPTIONS: --max-old-space-size=512
+      # Containers reach db over the compose network (DATABASE_URL in .env should point at db:5432)
+      # Explicit pool sizing: Prisma defaults to num_cpus*2+1 per process; web(+langfuse)
+      # together can approach PG max_connections (default 100). connection_limit=12 ≈ single-process cap.
+      DATABASE_URL: postgresql://opengits:${POSTGRES_PASSWORD:-opengits_local_dev}@db:5432/opengits_db?schema=public&connection_limit=12&pool_timeout=10
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      # Multi-container topology: imports execute 100% in worker-go (Job Runner 单写者).
+      REDIS_URL: redis://redis:6379
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      # WebDocEngine Firecrawl channel: localhost inside the container points at itself,
+      # so it must explicitly target the firecrawl-api service (otherwise unreachable in container deploys)
+      FIRECRAWL_API_URL: http://firecrawl-api:3002
+      # 内部缓存失效令牌（admin 下架 → 跨进程失效 client 首页 tag）
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-dev-internal-token-change-me}
+      # 全站 SSE 广播网关（Go 原生二进制）：持久长连接卸载至 worker-go 容器；
+      # 空串 = 未启用（直接在进程内运行 Node SSE 实现）
+      SSE_GATEWAY_URL: ${SSE_GATEWAY_URL:-http://worker-go:8082}
+      # admin 独立私有仓容器（opengits-admin）；该容器不运行时 /admin 路由 502，不影响其余功能
+      ADMIN_INTERNAL_URL: http://admin:3999
+      # 客户端二进制搜索索引（OGIS）优先由 Go sidecar 构建
+      SEARCH_INDEX_GO_BUILDER: ${SEARCH_INDEX_GO_BUILDER:-1}
+    ports:
+      # 仅回环：外部流量一律经 caddy
+      - "127.0.0.1:3000:3000"
+    volumes:
+      # 归档（storage/repos）与图片（storage/assets）持久化
+      - ./storage:/app/storage
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
+        reservations:
+          memory: 256M
+    mem_limit: 1024M
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    # 高延迟跨区链路（long-fat network）内核拥塞控制：
+    # 容器非 root 进不了 entrypoint，走 compose namespace 级 sysctl。
+    # 前提：宿主机已加载 bbr 模块（modprobe tcp_bbr + 宿主 sysctl 持久化）
+    sysctls:
+      - net.ipv4.tcp_congestion_control=bbr
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ─────────────────────────────────────────────────────────────
+  # 后台工作进程（Node Worker 历史容器已根据加尔法则全面退役与物理切除）：
+  # 所有 ImportJob 队列、转录队列、定时调度（prune/search-sync/upstream-check/auto-update）
+  # 及 SSE 广播已 100% 独占迁移至 worker-go 静态容器，达成极简二元架构。
+  # ─────────────────────────────────────────────────────────────
+
+  # ─────────────────────────────────────────────────────────────
+  # Unified Sidecar Daemon（Go 双 Sidecar 进程内大收敛，Direction B）：
+  # 单进程 Goroutine 双活同时承接 :8081（MCP 机器协议）与 :8082（Worker 调度控制），
+  # 全局共享单一 pgxpool 连接池，进程内零 IPC 检索与大纲失效直通；
+  # 挂载网络别名 [worker-go, mcp-go, sidecar-go]，100% 透明向下兼容既有 Caddy 与 Web 路由。
+  # 生产拓扑全面收敛为极简 2 容器架构（web + sidecar-go）。
+  # ─────────────────────────────────────────────────────────────
+  sidecar-go:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker-go
+    container_name: opengits-worker-go
+    depends_on:
+      db:
+        condition: service_healthy
+      web:
+        condition: service_started
+    networks:
+      default:
+        aliases:
+          - worker-go
+          - mcp-go
+          - sidecar-go
+    env_file:
+      - .env
+    environment:
+      MCP_SIDECAR_ADDR: ":8081"
+      WORKER_SIDECAR_ADDR: ":8082"
+      DATABASE_URL: postgresql://opengits:${POSTGRES_PASSWORD:-opengits_local_dev}@db:5432/opengits_db?schema=public
+      # MCP 读路径 pgx 池上限（store.go 覆盖式设置，DSN 参数无效——池大小以此处为准）
+      MCP_SIDECAR_POOL_MAX: ${MCP_SIDECAR_POOL_MAX:-16}
+      MCP_UPSTREAM_URL: http://web:3000
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-dev-internal-token-change-me}
+      # Go sidecar 运行环境（production 时拒绝上方 compose 默认令牌，对齐 Node internal-auth）
+      APP_ENV: ${APP_ENV:-development}
+      WORKER_SIDECAR_URL: http://127.0.0.1:8082
+      REDIS_URL: redis://redis:6379
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      ASSETS_ROOT: /app/storage/assets
+      # 内部通信安全凭证与服务网关
+      WEB_INTERNAL_URL: ${WEB_INTERNAL_URL:-http://web:3000}
+      LLM_GATEWAY_URL: ${LLM_GATEWAY_URL:-http://web:3000}
+      FIRECRAWL_API_URL: ${FIRECRAWL_API_URL:-http://firecrawl-api:3002}
+      # 后台任务门控（统一由 Go sidecar 统管调度）
+      PRUNE_ENABLED: ${PRUNE_ENABLED:-1}
+      UPSTREAM_CHECK_ENABLED: ${UPSTREAM_CHECK_ENABLED:-1}
+      ORPHAN_SWEEPER_ENABLED: ${ORPHAN_SWEEPER_ENABLED:-1}
+      ORPHAN_SWEEPER_INTERVAL_SEC: ${ORPHAN_SWEEPER_INTERVAL_SEC:-30}
+      # ImportJob 队列壳（默认开启）
+      WORKER_GO_IMPORT_JOBS: ${WORKER_GO_IMPORT_JOBS:-1}
+      IMPORT_JOB_EXECUTOR: ${IMPORT_JOB_EXECUTOR:-go}
+      IMPORT_JOB_MAX_CONCURRENT: ${IMPORT_JOB_MAX_CONCURRENT:-8}
+      # 转录队列壳（默认开启）
+      WORKER_GO_TRANSCRIPTION: ${WORKER_GO_TRANSCRIPTION:-1}
+      TRANSCRIPTION_EXECUTOR: ${TRANSCRIPTION_EXECUTOR:-go}
+      # auto-update 定时调度
+      WORKER_GO_AUTO_UPDATE: ${WORKER_GO_AUTO_UPDATE:-1}
+      # 低谷调度器（McpCallLog 流量画像自动判窗，门控 auto-update 定时 tick；
+      # 样本不足/查询失败 fail-closed 回落 00:00-05:00 保守窗口）
+      VALLEY_ENABLED: ${VALLEY_ENABLED:-1}
+      VALLEY_TZ: ${VALLEY_TZ:-Asia/Shanghai}
+      # OGIS 搜索索引 Go 构建（去抖直触发 + sweep 兜底 + HTTP 端点）
+      WORKER_GO_SEARCH_INDEX: ${WORKER_GO_SEARCH_INDEX:-1}
+    volumes:
+      - ./storage:/storage
+      - ./storage:/app/storage
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '3.0'
+          memory: 2560M
+        reservations:
+          memory: 512M
+    mem_limit: 2560M
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/sidecar", "-healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: opengits-redis
+    # 限流窗口数据可失而复得（fail-open 兜底），无需持久化；显式设置 LRU 淘汰与 128MB 物理内存封顶
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    mem_limit: 256M
+
+  # ─────────────────────────────────────────────────────────────
+  # Firecrawl 网页与技术文档抓取核心引擎 (自部署)
+  # ─────────────────────────────────────────────────────────────
+  firecrawl-api:
+    image: mendableai/firecrawl:latest
+    container_name: opengits-firecrawl-api
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT=3002
+      - HOST=0.0.0.0
+      - NUM_WORKERS_PER_QUEUE=4
+      - TELEMETRY_ENABLED=false
+      - USE_DB_AUTHENTICATION=false
+    ports:
+      - "127.0.0.1:3002:3002"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1024M
+        reservations:
+          memory: 256M
+    mem_limit: 1024M
+
+  # 对象存储（可选：--profile object-storage 启用，配合 STORAGE_DRIVER=s3 与 S3_* env）
+  # 注意：宿主机 :9000 与 glitchtip（--profile ops）冲突，两个 profile 同时启用时需改掉其中一方的端口映射
+  minio:
+    image: minio/minio
+    container_name: opengits-minio
+    profiles: ["object-storage"]
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-opengits}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-opengits-minio-secret}
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    container_name: opengits-caddy
+    depends_on:
+      - web
+      - sidecar-go
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    mem_limit: 128M
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+  minio_data:

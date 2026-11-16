@@ -1,0 +1,79 @@
+{
+  "ok": true,
+  "repository": {
+    "id": "repo-0001",
+    "owner": "octo",
+    "repo": "kit",
+    "branch": "main",
+    "edition": "",
+    "isPublic": false,
+    "ownerUserId": "user-0001",
+    "transcriptionPaused": false,
+    "reviewStatus": "NONE",
+    "publishedAt": "2026-10-19T12:00:00Z",
+    "transcriptionCreditsEarned": 0,
+    "transcriptionTokens": 1200,
+    "repoProfile": {
+      "ingestPrefix": "docs/"
+    },
+    "navTree": [
+      {
+        "name": "Intro",
+        "path": "docs/intro.md",
+        "type": "file"
+      }
+    ]
+  },
+  "documents": [
+    {
+      "id": "doc-0001",
+      "path": "docs/intro.md",
+      "title": "Intro",
+      "status": "PROCESSED",
+      "errorMessage": null,
+      "transcriptionJob": null
+    },
+    {
+      "id": "doc-0002",
+      "path": "docs/engine.md",
+      "title": "Engine",
+      "status": "PROCESSING",
+      "errorMessage": null,
+      "transcriptionJob": {
+        "status": "RUNNING",
+        "savedChunks": 3,
+        "totalChunks": 5,
+        "claimedAt": "2026-10-19T11:59:00Z",
+        "createdAt": "2026-10-19T11:58:00Z",
+        "startedAtMs": 1776436740000
+      }
+    },
+    {
+      "id": "doc-0003",
+      "path": "docs/queue.md",
+      "title": "Queue",
+      "status": "UNPROCESSED",
+      "errorMessage": null,
+      "transcriptionJob": {
+        "status": "QUEUED",
+        "savedChunks": 0,
+        "totalChunks": null,
+        "queuePosition": 2
+      }
+    },
+    {
+      "id": "doc-0004",
+      "path": "docs/broken.md",
+      "title": null,
+      "status": "ERROR",
+      "errorMessage": "LLM timeout",
+      "transcriptionJob": {
+        "status": "FAILED",
+        "savedChunks": 0,
+        "totalChunks": null
+      }
+    }
+  ],
+  "publishRequested": true,
+  "avgJobSeconds": 42.5
+}

@@ -1,0 +1,217 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > check_breaking_changes（单仓 locator + 空） > locator 命中 1`] = `
+"Breaking Changes Locator for "headers async" in acme/calculator
+
+--- Result 1 (Score: 90.0%) ---
+Document: Migrate [Path: docs/migrate.md]
+Section: v4 to v5
+HeadingPath: v4 to v5
+Address: docs/migrate.md#v4 to v5
+Snippet: breaking: headers are async now
+
+(Use read(target="<Address>") to fetch section digest; drill down into physical facts via read_symbol(symbol="<name>") or read_source_file(path="<path>").)"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > check_breaking_changes（单仓 locator + 空） > 空结果 1`] = `"No explicit breaking changes found for "nothing" in acme/calculator."`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > dissect_code（命中 / 过大拒绝） > AST 解剖输出 1`] = `
+"# 🔬 Code Dissection: \`src/main.ts\`
+
+\`\`\`mermaid
+graph TD
+  A-->B
+\`\`\`
+
+(AST tier: tree-sitter; pass start_line/end_line to narrow the dissection window.)"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > dissect_code（命中 / 过大拒绝） > 超大输入拒绝（isError） 1`] = `"Error: source slice too large for dissection (21000 chars > 20000). Pass start_line/end_line or symbol to narrow the window."`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > list_chapter_versions（有版本 / 无版本） > 无社区版本 1`] = `
+"# 📚 Chapter Versions: \`ch01.md\` in acme/calculator
+- **Current Effective**: content \`content-aaa…\`
+
+No community chapter versions (relay/retranslation) exist for this chapter yet — the current transcription is the only version."
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > list_chapter_versions（有版本 / 无版本） > 版本市场列表 1`] = `
+"# 📚 Chapter Versions: \`ch01.md\` in acme/calculator
+- **Current Effective**: content \`content-aaa…\`
+- **Community Versions**: 2
+
+- \`ver-1…\` [RETRANSLATE] by alice · votes: 7
+- \`ver-2…\` [RELAY] by bob · votes: 2 · 📌 author-pinned · canonical · **[CURRENT]**
+
+(Use read with this document path to get the currently effective chapter content; version market data is observational.)"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read_source_file（命中 / 行区间 / 未命中） > 全文命中 1`] = `
+"# 📄 Source File: \`src/calc.ts\` [sha-abc]
+
+\`\`\`typescript
+line 1
+line 2
+line 3
+line 4
+line 5
+line 6
+line 7
+line 8
+line 9
+line 10
+\`\`\`"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read_source_file（命中 / 行区间 / 未命中） > 未命中（isError） 1`] = `"File not found in local source archive: missing.ts (tried ref: sha-abc, main). The archive for this repository may be evicted; use read_symbol for symbol-level slices or check the exact path via outline."`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read_source_file（命中 / 行区间 / 未命中） > 行区间 1`] = `
+"# 📄 Source File: \`src/calc.ts\` (Lines 3–5 of 10) [sha-abc]
+
+\`\`\`typescript
+line 3
+line 4
+line 5
+\`\`\`"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read_symbol（三档 + 归档缺失降级） > contract 档（归档命中） 1`] = `
+"# 🔍 Code Symbol: \`add\` (function)
+
+- **File**: \`src/math/calc.ts\` (Lines 3–7)
+- **Role**: \`Core Contract (核心契约)\` | **PageRank**: 0.420 | **Importers**: 5
+- **Cross-Module Callers**: Calculator.compute
+
+### Type & Interface Contract
+
+\`\`\`typescript
+  return a + b;
+}
+\`\`\`
+
+*(Contract mode: body omitted to preserve context tokens. Pass aspect="implementation" for full source body, or aspect="architecture" for system context.)*"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read_symbol（三档 + 归档缺失降级） > implementation 档 1`] = `
+"# 🔍 Code Symbol: \`add\` (function)
+
+- **File**: \`src/math/calc.ts\` (Lines 3–7)
+- **Role**: \`Core Contract (核心契约)\` | **PageRank**: 0.420 | **Importers**: 5
+- **Cross-Module Callers**: Calculator.compute
+
+### Source Implementation
+
+\`\`\`typescript
+  return a + b;
+}
+\`\`\`"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read_symbol（三档 + 归档缺失降级） > search_symbols 黄金符号清单 1`] = `
+"# 🏛️ Top Architectural Symbols in acme/calculator (Found 1)
+
+### \`add\` (function)
+- **File**: \`src/math/calc.ts\` | **Role**: \`Core Contract (核心契约)\` | **PageRank**: 0.050
+- 👉 Inspect signature: \`read_symbol(symbol="add", aspect="contract")\`
+
+*(Tip: Pass aspect="contract" to read_symbol for lightweight type signature (~80% token savings), or aspect="implementation" for full source code.)*"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read_symbol（三档 + 归档缺失降级） > 归档缺失降级 + 黄金符号候选回退 1`] = `
+"# 🔍 Code Symbol: \`add\` (function)
+
+- **File**: \`src/math/calc.ts\` (Lines 3–7)
+- **Role**: \`Core Contract (核心契约)\` | **PageRank**: 0.420 | **Importers**: 5
+- **Cross-Module Callers**: Calculator.compute
+
+### Source Implementation
+
+*(Source code archive file not found on disk; refer to file path above)*"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read（分节 / 版本归因 / 全文 / 未命中） > 全文读取 1`] = `
+"# Getting Started
+Source Path: docs/getting-started.md
+
+# Full doc
+
+Body line.
+
+---
+🔍 **Provenance Beacon (L2 Ground Truth · sha-abc)**
+Tutorial may simplify code. Drill down into physical AST/source facts:
+- Symbol: \`read_symbol(symbol="<symbol_name>")\`
+- Source: \`read_source_file(path="<file_path>")\`"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read（分节 / 版本归因 / 全文 / 未命中） > 分节命中（含 graphPos 空形态） 1`] = `
+"# Getting Started
+Source Path: docs/getting-started.md
+Section: Install
+
+Section body about installing.
+
+---
+🔍 **Provenance Beacon (L2 Ground Truth · sha-abc)**
+Tutorial may simplify code. Drill down into physical AST/source facts:
+- Symbol: \`read_symbol(symbol="<symbol_name>")\`
+- Source: \`read_source_file(path="<file_path>")\`"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read（分节 / 版本归因 / 全文 / 未命中） > 文档未命中错误 1`] = `"Error: Document "missing.md" not found in acme/calculator. Call outline to view valid document paths."`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > read（分节 / 版本归因 / 全文 / 未命中） > 版本归因行（chunk semVer 与目标不一致） 1`] = `
+"# Getting Started
+Source Path: docs/getting-started.md
+Section: Install
+Version: v15.0.0
+
+Section body.
+
+---
+🔍 **Provenance Beacon (L2 Ground Truth · sha-abc)**
+Tutorial may simplify code. Drill down into physical AST/source facts:
+- Symbol: \`read_symbol(symbol="<symbol_name>")\`
+- Source: \`read_source_file(path="<file_path>")\`"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > search（单仓 locator / summary / 空 / 回退） > locator 命中输出 1`] = `
+"Search Results for "install" across acme/calculator [Locator Mode]
+
+--- Result 1 (Score: 87.0%) ---
+Document: A [Path: docs/a.md]
+Section: Install
+HeadingPath: Install
+Address: docs/a.md#Install
+Snippet: run npm install to get started quickly
+
+(Use read(target="<Address>") to fetch section digest; drill down into physical facts via read_symbol(symbol="<name>") or read_source_file(path="<path>").)"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > search（单仓 locator / summary / 空 / 回退） > summary 命中输出（导师卡片为空注入形态） 1`] = `
+"Search Results for "install" across acme/calculator [Summary Mode]:
+
+--- Result 1 (Score: 66.0%) ---
+Document: A [Path: docs/a.md]
+Section Heading: Install
+Web Link: /docs/acme/calculator/a
+
+Full body content about installation steps.
+
+"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > search（单仓 locator / summary / 空 / 回退） > 回退上下文头部警告注入 1`] = `
+"⚠ Edition fallback: requested "ed_deep" was not found; results below come from the BASE edition. Use list_resources to discover available editions.
+
+Search Results for "x" across acme/calculator [Locator Mode]
+
+--- Result 1 (Score: 50.0%) ---
+Document: A [Path: docs/a.md]
+Address: docs/a.md#
+Snippet: x
+
+(Use read(target="<Address>") to fetch section digest; drill down into physical facts via read_symbol(symbol="<name>") or read_source_file(path="<path>").)"
+`;
+
+exports[`Phase 2 快照基线（Phase 3 管线化前的 byte 锁） > search（单仓 locator / summary / 空 / 回退） > 空结果输出 1`] = `"No relevant documentation chunks found for query: "nothing" in acme/calculator. Try listing documents or checking the overview."`;

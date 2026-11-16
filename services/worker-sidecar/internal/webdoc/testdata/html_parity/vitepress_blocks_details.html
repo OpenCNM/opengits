@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>VitePress Advanced Runtime</title></head>
+<body>
+  <main class="VPDoc">
+    <div class="vp-doc">
+      <h1>VitePress Runtime Blocks</h1>
+      <p>Review recommended caching strategies and inspect hidden configuration blocks preserved reliably in MDX.</p>
+      <div class="custom-block tip">
+        <p class="custom-block-title">TIP</p>
+        <p>Enable persistent filesystem caching to cut incremental build times in CI by over half.</p>
+      </div>
+      <details class="details custom-block">
+        <summary>Inspect Default Cache Policy</summary>
+        <p>Static documentation chunks revalidate automatically whenever upstream content hashes diverge.</p>
+      </details>
+      <div class="vp-code-group">
+        <div role="tablist">
+          <button type="button" role="tab" aria-controls="vp-pnpm">pnpm</button>
+          <button type="button" role="tab" aria-controls="vp-npm">npm</button>
+        </div>
+        <div id="vp-pnpm" role="tabpanel"><pre><code class="language-bash">pnpm add -D vitepress</code></pre></div>
+        <div id="vp-npm" role="tabpanel" hidden><pre><code class="language-bash">npm install -D vitepress</code></pre></div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
