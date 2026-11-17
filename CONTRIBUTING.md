@@ -5,7 +5,7 @@ Thanks for your interest! Issues and PRs are welcome.
 ## Setup
 
 ```bash
-git clone https://github.com/opengits/opengits.git && cd opengits
+git clone https://github.com/OpenCNM/opengits.git && cd opengits
 npm install
 cp .env.example .env                     # DATABASE_URL (LLM key 在应用内 BYOK 输入,不走 env)
 docker compose up -d db                  # local Postgres on :5433
