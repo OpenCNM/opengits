@@ -46,6 +46,10 @@ const SECURITY_HEADERS: Array<{ key: string; value: string }> = [
 const nextConfig: NextConfig = {
   // 生产环境独立构建：依赖摇树裁剪，镜像体积和运行时常驻内存从 ~500MB+ 压减至 ~150-250MB
   output: 'standalone',
+  // 容器化构建跳过冗余类型检查（由 verify:fast / CI 保证），防止构建期 V8 堆内存耗尽
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   // 控制服务端运行时默认内存缓存上限（25MB），防止页面/路由响应在长期运行时导致内存无节制膨胀
   cacheMaxMemorySize: 25 * 1024 * 1024,
   productionBrowserSourceMaps: false,

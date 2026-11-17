@@ -35,6 +35,7 @@ RUN npx prisma generate
 
 FROM node:22-slim AS builder
 WORKDIR /app
+ENV NODE_OPTIONS="--max-old-space-size=2560"
 # 构建期 page data 收集会执行模块顶层（含 NEXTAUTH_SECRET fail-fast 安全校验）。
 # 此占位值只存在于 builder 阶段——runner 阶段独立 FROM，不继承该 ENV，
 # 运行时未配置真实 NEXTAUTH_SECRET 仍会 fail-fast 拒绝启动。
@@ -45,6 +46,7 @@ RUN npx prisma generate
 
 # 源码拷贝与 Client 应用构建
 COPY . .
+RUN npm run i18n:compile
 WORKDIR /app/apps/client
 RUN npm run build
 

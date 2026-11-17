@@ -190,6 +190,8 @@ services:
       # Multi-container topology: imports execute 100% in worker-go (Job Runner 单写者).
       REDIS_URL: redis://redis:6379
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      TARBALL_CACHE_DIR: /app/storage/repos
+      ASSETS_ROOT: /app/storage/assets
       # WebDocEngine Firecrawl channel: localhost inside the container points at itself,
       # so it must explicitly target the firecrawl-api service (otherwise unreachable in container deploys)
       FIRECRAWL_API_URL: http://firecrawl-api:3002
@@ -208,6 +210,7 @@ services:
     volumes:
       # 归档（storage/repos）与图片（storage/assets）持久化
       - ./storage:/app/storage
+      - ./docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:ro
     restart: unless-stopped
     deploy:
       resources:
@@ -278,6 +281,7 @@ services:
       WORKER_SIDECAR_URL: http://127.0.0.1:8082
       REDIS_URL: redis://redis:6379
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      TARBALL_CACHE_DIR: /app/storage/repos
       ASSETS_ROOT: /app/storage/assets
       # 内部通信安全凭证与服务网关
       WEB_INTERNAL_URL: ${WEB_INTERNAL_URL:-http://web:3000}
@@ -310,7 +314,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '3.0'
+          cpus: '2.0'
           memory: 2560M
         reservations:
           memory: 512M

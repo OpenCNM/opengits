@@ -1,6 +1,6 @@
 # OpenGits 前置智能反代网关（双独立容器分流）
 
-http://localhost {
+http://localhost, :80 {
 	# ── 内部端点：仅 docker 内网（WEB_INTERNAL_URL）可达，公网一律 404 不暴露存在性 ──
 	handle /api/internal* {
 		respond 404

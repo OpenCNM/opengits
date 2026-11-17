@@ -31,11 +31,16 @@ if [ -n "$SKIP_SCHEMA_SYNC" ]; then
   exec "$@"
 fi
 
+SCHEMA_FLAG=""
+if [ -f "/app/prisma/schema.prisma" ]; then
+  SCHEMA_FLAG="--schema=/app/prisma/schema.prisma"
+fi
+
 echo "[entrypoint] applying database migrations (prisma migrate deploy)..."
-if ! npx prisma migrate deploy; then
+if ! npx prisma migrate deploy $SCHEMA_FLAG; then
   echo "[entrypoint] migrate deploy failed; assuming legacy db-push database without migration history — baselining 20260827000000_init..."
-  npx prisma migrate resolve --applied 20260827000000_init
-  npx prisma migrate deploy
+  npx prisma migrate resolve --applied 20260827000000_init $SCHEMA_FLAG
+  npx prisma migrate deploy $SCHEMA_FLAG
 fi
 
 echo "[entrypoint] starting: $*"
