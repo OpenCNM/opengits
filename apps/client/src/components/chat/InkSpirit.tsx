@@ -20,6 +20,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { toastManager } from '@/components/ui/toast';
+import { requireAiCapability } from '@/lib/permissions/permission-gateway';
 import * as m from '@/paraglide/messages';
 
 import { InkSpiritAvatar } from './InkSpiritAvatar';
@@ -186,20 +187,13 @@ export function InkSpirit({ owner, repo }: InkSpiritProps) {
   const handleLocalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input || input.trim() === '' || isLoading) return;
-    if (!session?.user) {
-      toastManager.add({
-        type: 'info',
-        title: m.toast_login_required(),
-        description: m.toast_login_required_desc(),
+    requireAiCapability(() => {
+      sendMessage({
+        role: 'user',
+        parts: [{ type: 'text', text: input }],
       });
-      router.push('/auth/signin');
-      return;
-    }
-    sendMessage({
-      role: 'user',
-      parts: [{ type: 'text', text: input }],
-    });
-    setInput('');
+      setInput('');
+    }, m.gate_reason_ai_chat());
   };
 
   const handleNewChat = () => {
@@ -209,20 +203,13 @@ export function InkSpirit({ owner, repo }: InkSpiritProps) {
   };
 
   const handleSelectPrompt = (promptText: string) => {
-    if (!session?.user) {
-      toastManager.add({
-        type: 'info',
-        title: m.toast_login_required(),
-        description: m.toast_login_required_desc(),
+    requireAiCapability(() => {
+      setIsChatOpen(true);
+      sendMessage({
+        role: 'user',
+        parts: [{ type: 'text', text: promptText }],
       });
-      router.push('/auth/signin');
-      return;
-    }
-    setIsChatOpen(true);
-    sendMessage({
-      role: 'user',
-      parts: [{ type: 'text', text: promptText }],
-    });
+    }, m.gate_reason_ai_chat());
   };
 
   const panelContent = (

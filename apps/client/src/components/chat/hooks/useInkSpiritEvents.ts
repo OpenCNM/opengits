@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, RefObject } from 'react';
-import { useRouter } from 'next/navigation';
-import { toastManager } from '@/components/ui/toast';
 import { CUSTOM_EVENTS } from '@/lib/constants';
 import { useModalStore } from '@/lib/stores/modal-store';
 import { serializeExplainCodePayload } from '@/lib/code-viewport/explain-context';
+import { requireAiCapability } from '@/lib/permissions/permission-gateway';
 import * as m from '@/paraglide/messages';
 
 interface UseInkSpiritEventsOptions {
@@ -23,8 +22,6 @@ export function useInkSpiritEvents({
   chatInputRef,
   sendMessage,
 }: UseInkSpiritEventsOptions) {
-  const router = useRouter();
-
   const askAiPayload = useModalStore((s) => s.askAiPayload);
   const clearAskAi = useModalStore((s) => s.clearAskAi);
   const deepDivePayload = useModalStore((s) => s.deepDivePayload);
@@ -33,43 +30,31 @@ export function useInkSpiritEvents({
   // Handle Ask AI Store Updates
   useEffect(() => {
     if (!askAiPayload) return;
-    if (!session?.user) {
-      toastManager.add({
-        type: 'info',
-        title: m.toast_login_required(),
-        description: m.toast_login_required_desc(),
-      });
-      router.push('/auth/signin');
-      clearAskAi();
-      return;
-    }
-    setIsChatOpen(true);
-    const queryPayload = JSON.stringify({
-      type: 'explain_selection',
-      text: askAiPayload.text,
-    });
-    sendMessage({ role: 'user', parts: [{ type: 'text', text: queryPayload }] });
+    const payload = askAiPayload;
     clearAskAi();
-  }, [askAiPayload, session?.user, router, sendMessage, clearAskAi, setIsChatOpen]);
+
+    requireAiCapability(() => {
+      setIsChatOpen(true);
+      const queryPayload = JSON.stringify({
+        type: 'explain_selection',
+        text: payload.text,
+      });
+      sendMessage({ role: 'user', parts: [{ type: 'text', text: queryPayload }] });
+    }, m.gate_reason_ai_chat());
+  }, [askAiPayload, sendMessage, clearAskAi, setIsChatOpen]);
 
   // Handle Deep Dive Store Updates
   useEffect(() => {
     if (!deepDivePayload) return;
-    if (!session?.user) {
-      toastManager.add({
-        type: 'info',
-        title: m.toast_login_required(),
-        description: m.toast_login_required_desc(),
-      });
-      router.push('/auth/signin');
-      clearDeepDive();
-      return;
-    }
-    setIsChatOpen(true);
-    const queryPayload = serializeExplainCodePayload(deepDivePayload);
-    sendMessage({ role: 'user', parts: [{ type: 'text', text: queryPayload }] });
+    const payload = deepDivePayload;
     clearDeepDive();
-  }, [deepDivePayload, session?.user, router, sendMessage, clearDeepDive, setIsChatOpen]);
+
+    requireAiCapability(() => {
+      setIsChatOpen(true);
+      const queryPayload = serializeExplainCodePayload(payload);
+      sendMessage({ role: 'user', parts: [{ type: 'text', text: queryPayload }] });
+    }, m.gate_reason_ai_chat());
+  }, [deepDivePayload, sendMessage, clearDeepDive, setIsChatOpen]);
 
   // Handle Keyboard Escape, Cmd+I & Ask AI Legacy Custom Events
   useEffect(() => {
@@ -90,23 +75,16 @@ export function useInkSpiritEvents({
     };
 
     const handleAskAiEvent = (e: any) => {
-      if (!session?.user) {
-        toastManager.add({
-          type: 'info',
-          title: m.toast_login_required(),
-          description: m.toast_login_required_desc(),
-        });
-        router.push('/auth/signin');
-        return;
-      }
-      setIsChatOpen(true);
-      if (e.detail?.text) {
-        const queryPayload = JSON.stringify({
-          type: 'explain_selection',
-          text: e.detail.text,
-        });
-        sendMessage({ role: 'user', parts: [{ type: 'text', text: queryPayload }] });
-      }
+      requireAiCapability(() => {
+        setIsChatOpen(true);
+        if (e.detail?.text) {
+          const queryPayload = JSON.stringify({
+            type: 'explain_selection',
+            text: e.detail.text,
+          });
+          sendMessage({ role: 'user', parts: [{ type: 'text', text: queryPayload }] });
+        }
+      }, m.gate_reason_ai_chat());
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -115,5 +93,5 @@ export function useInkSpiritEvents({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener(CUSTOM_EVENTS.ASK_AI, handleAskAiEvent);
     };
-  }, [isChatOpen, sendMessage, session?.user, router, chatInputRef, setIsChatOpen]);
+  }, [isChatOpen, sendMessage, chatInputRef, setIsChatOpen]);
 }

@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, Terminal, Plus, Globe, Sparkles, Code2, Layers, Cpu,
   CheckCircle2, RefreshCw, FileCode2, ArrowRight, Zap, ChevronRight,
   ShieldCheck, FileText, Activity
 } from 'lucide-react';
+import { useSafeSession } from '@/lib/useSafeSession';
+import { useGuestStore } from '@/lib/stores/guest-store';
+import { DisplayRepo } from '@/lib/home-data';
 import * as m from '@/paraglide/messages';
 
 interface ExperienceItem {
@@ -80,7 +84,60 @@ const PIPELINE_STEPS: PipelineStep[] = [
 const mcpQuerySnippet = (title: string): string =>
   `search({ query: "${title}", mode: "architecture" })`;
 
-export function BentoFeaturesSection() {
+interface BentoFeaturesSectionProps {
+  repos?: DisplayRepo[];
+}
+
+export function BentoFeaturesSection({ repos = [] }: BentoFeaturesSectionProps = {}) {
+  const router = useRouter();
+  const { data: session } = useSafeSession();
+  const isAuthenticated = Boolean(session?.user?.id);
+  const isGuest = useGuestStore((s) => s.isGuest);
+
+  const realTutorials = useMemo(() => {
+    // Filter public repos that actually have transcribed chapters/documents in DB
+    const validRepos = (repos || []).filter(
+      (r) => r.isPublic && (r.chapterCount > 0 || r.processedDocsCount > 0 || (r.documents && r.documents.length > 0))
+    );
+
+    if (validRepos.length > 0) {
+      return validRepos.map((r) => ({
+        id: r.id,
+        owner: r.owner,
+        repo: r.repo,
+        label: r.repoProfile?.titleZh || r.title || r.repo,
+        slug: `${r.owner}/${r.repo}`,
+        stars: r.starCount ? (r.starCount >= 1000 ? `${(r.starCount / 1000).toFixed(0)}k` : `${r.starCount}`) : '1k',
+        chapterCount: r.chapterCount || r.processedDocsCount || 0,
+        description: r.repoProfile?.summary || r.description || '',
+      }));
+    }
+
+    // Fallback to BRAND_ITEMS if repos is not yet populated
+    return BRAND_ITEMS.map((b) => {
+      const [owner, repo] = b.name.split('/');
+      return {
+        id: b.name,
+        owner: owner || '',
+        repo: repo || '',
+        label: b.label,
+        slug: b.name,
+        stars: b.stars,
+        chapterCount: 0,
+        description: '',
+      };
+    });
+  }, [repos]);
+
+  const handleCardClick = (item: { owner: string; repo: string }) => {
+    if (!isAuthenticated && !isGuest) {
+      useGuestStore.getState().setGuestMode(true, `${item.owner}/${item.repo}`);
+    }
+    router.push(`/docs/${item.owner}/${item.repo}`);
+  };
+
+  const marqueeDuration = Math.max(25, realTutorials.length * 3.2);
+
   // Card 1 State: Step & Language
   const [selectedLang, setSelectedLang] = useState<'zh' | 'en' | 'ja'>('zh');
   const [activeStep, setActiveStep] = useState<number>(2);
@@ -339,51 +396,76 @@ export function BentoFeaturesSection() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 🌟 模块三: GitHub 风格全宽屏幕热门仓库大屏 (Full-Width Brand Showcase like GitHub) */}
+      {/* 🌟 模块三: 精选公开教程横向大屏 (Curated Public Tutorials Marquee) */}
       {/* ========================================================================= */}
       <motion.section 
+        id="curated-showcase"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-60px' }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="w-full pt-16 pb-20 border-t border-b border-theme-border/60 bg-gradient-to-b from-theme-bg via-theme-surface/40 to-theme-bg relative overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center space-y-8">
-          
+        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center space-y-4 mb-8">
           <p className="text-xs sm:text-sm text-theme-muted max-w-2xl mx-auto font-sans leading-relaxed">
             {m.bento_brand_marquee_desc()}
           </p>
+        </div>
 
-          {/* Full-Width Infinite Marquee Row */}
-          <div className="w-full overflow-hidden relative py-6 group">
-            {/* Gradient Mask Edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-theme-bg to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-theme-bg to-transparent z-10 pointer-events-none" />
+        {/* Full-Width Infinite Marquee Row: hover on the row pauses the animation */}
+        <div 
+          className="w-full overflow-hidden relative py-6 pause-on-hover group/marquee"
+          style={{ '--marquee-duration': `${marqueeDuration}s` } as React.CSSProperties}
+        >
+          {/* Gradient Mask Edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-theme-bg to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-theme-bg to-transparent z-10 pointer-events-none" />
 
-            <motion.div
-              animate={{ x: ['0%', '-50%'] }}
-              transition={{ repeat: Infinity, duration: 25, ease: 'linear' }}
-              className="flex items-center gap-8 w-max group-hover:[animation-play-state:paused]"
-            >
-              {[...BRAND_ITEMS, ...BRAND_ITEMS].map((brand, idx) => (
-                <div
-                  key={`${brand.name}-${idx}`}
-                  className="px-6 py-4 rounded-2xl border border-theme-border bg-theme-surface/80 backdrop-blur-md flex items-center gap-4 hover:border-sky-400 transition-all shrink-0 shadow-sm"
-                >
-                  <span className="text-sm md:text-base font-bold font-mono text-theme-foreground">
-                    {brand.label}
-                  </span>
-                  <span className="text-micro font-mono text-theme-muted bg-theme-bg px-2 py-1 rounded-lg border border-theme-border">
-                    {brand.name}
-                  </span>
-                  <span className="text-micro font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                    ★ {brand.stars}
+          <div className="animate-opengits-marquee flex items-center gap-6 sm:gap-8">
+            {[...realTutorials, ...realTutorials].map((item, idx) => (
+              <div
+                key={`${item.slug}-${idx}`}
+                onClick={() => handleCardClick(item)}
+                className="w-[300px] sm:w-[340px] min-h-[155px] p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-theme-border/80 bg-theme-surface/90 hover:bg-theme-surface backdrop-blur-md flex flex-col justify-between hover:border-theme-primary/60 transition-all duration-300 shrink-0 shadow-2xs hover:shadow-xl cursor-pointer select-none group/card relative text-left"
+              >
+                {/* Top Row: Name + Star Badge */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-base sm:text-lg font-bold font-mono text-theme-foreground group-hover/card:text-theme-primary transition-colors truncate block">
+                      {item.label}
+                    </span>
+                    <span className="text-micro font-mono text-theme-muted bg-theme-bg px-2 py-0.5 rounded border border-theme-border inline-block truncate max-w-[190px] mt-1">
+                      {item.slug}
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20 flex items-center gap-1 shrink-0">
+                    ★ {item.stars}
                   </span>
                 </div>
-              ))}
-            </motion.div>
-          </div>
 
+                {/* Middle: Informative Description */}
+                <p className="text-xs text-theme-muted line-clamp-2 leading-relaxed my-2">
+                  {item.description || (item.chapterCount > 0 ? `${item.chapterCount} 章节系统级全景架构解析与交互式源码导读` : `${item.slug} 核心代码架构解析`)}
+                </p>
+
+                {/* Bottom: Chapter Tag & Big Primary Button */}
+                <div className="flex items-center justify-between pt-2 border-t border-theme-border/40 mt-auto">
+                  <span className="text-micro font-mono text-theme-muted bg-theme-bg px-2 py-0.5 rounded border border-theme-border/60">
+                    {item.chapterCount > 0 ? m.showcase_card_chapters({ count: item.chapterCount }) : '开源导读'}
+                  </span>
+
+                  {/* Action Button: subtle/transparent while moving, turns solid black with crisp contrasting text on card hover */}
+                  <button
+                    type="button"
+                    className="h-8 sm:h-8.5 px-3.5 rounded-xl border border-theme-border/70 bg-transparent text-theme-muted group-hover/card:bg-theme-primary group-hover/card:!text-theme-primary-fg group-hover/card:border-theme-primary text-xs font-semibold flex items-center gap-1.5 shadow-none group-hover/card:shadow-xs transition-all duration-200 active:scale-95 cursor-pointer ml-auto"
+                  >
+                    <span className="group-hover/card:!text-theme-primary-fg transition-colors">{m.action_enter_view()}</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/card:!text-theme-primary-fg group-hover/card:translate-x-0.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </motion.section>
 

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { inspectGithubUrl } from '@/lib/url-inspector';
 import { useImportWizard } from './ImportWizardContext';
 import { useImportWizardStore } from '@/lib/stores/import-wizard-store';
-import { savePendingImportReauth } from '@/lib/stores/pending-import-reauth';
+import { triggerGithubReauth } from '@/lib/import-wizard/wizard-reauth';
 import { ScoutFeedbackCard } from './ScoutFeedbackCard';
 import { WizardModelSelector } from './common/WizardModelSelector';
 import { SUPPORTED_LANGUAGES } from '@/lib/constants';
@@ -233,15 +233,9 @@ export function Step1URLInput() {
   const { displayedCount } = useScoutPipelineProgression(loading, scoutSteps);
 
   const handleAuthRequired = () => {
-    const wizardState = useImportWizardStore.getState();
-    savePendingImportReauth({
-      url: wizardState.url || url,
-      createEdition: wizardState.createEdition,
-      targetLanguage: wizardState.targetLanguage,
-      isPublic: wizardState.isPublic,
-      importMode: wizardState.importMode,
+    triggerGithubReauth({
+      url: url.trim(),
     });
-    router.push('/auth/signin');
   };
 
   const hasUrlInput = url.trim().length > 0;
