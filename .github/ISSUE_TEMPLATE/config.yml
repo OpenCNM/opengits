@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/opengits/opengits/blob/main/SECURITY.md
+    url: https://github.com/OpenCNM/opengits/blob/main/SECURITY.md
     about: Please report security issues privately via SECURITY.md — do not open a public issue.

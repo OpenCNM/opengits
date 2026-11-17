@@ -19,9 +19,9 @@ export const DEFAULT_PLATFORM_URL = 'https://opengits.com';
 /**
  * 官方 GitHub 仓库、反馈与更新日志链接（通过环境变量解耦，杜绝硬编码）
  */
-export const OFFICIAL_GITHUB_URL = process.env.NEXT_PUBLIC_GITHUB_REPO_URL || 'https://github.com/opengits/opengits';
-export const OFFICIAL_FEEDBACK_URL = process.env.NEXT_PUBLIC_FEEDBACK_URL || 'https://github.com/opengits/opengits/issues';
-export const OFFICIAL_CHANGELOG_URL = process.env.NEXT_PUBLIC_CHANGELOG_URL || 'https://github.com/opengits/opengits/releases';
+export const OFFICIAL_GITHUB_URL = process.env.NEXT_PUBLIC_GITHUB_REPO_URL || 'https://github.com/OpenCNM/opengits';
+export const OFFICIAL_FEEDBACK_URL = process.env.NEXT_PUBLIC_FEEDBACK_URL || 'https://github.com/OpenCNM/opengits/issues';
+export const OFFICIAL_CHANGELOG_URL = process.env.NEXT_PUBLIC_CHANGELOG_URL || 'https://github.com/OpenCNM/opengits/releases';
 export const OFFICIAL_SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@opengits.org';
 
 export interface LanguageOption {

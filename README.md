@@ -31,7 +31,7 @@ OpenGits parses repositories with a deterministic AST and rule pipeline, produci
 Prerequisites: Node.js 24+ and Docker.
 
 ```bash
-git clone https://github.com/opengits/opengits.git && cd opengits
+git clone https://github.com/OpenCNM/opengits.git && cd opengits
 cp .env.example .env                     # fill in DATABASE_URL and NEXTAUTH_SECRET
 docker compose up -d db                  # local Postgres on :5433
 npm install
