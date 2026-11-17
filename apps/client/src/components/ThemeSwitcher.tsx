@@ -7,7 +7,6 @@ import { STORAGE_KEYS } from '@/lib/constants';
 import * as m from '@/paraglide/messages';
 
 import { useReaderAppearanceStore, type ThemeOption } from '@/lib/stores/reader-appearance-store';
-import { Tooltip, TooltipTrigger, TooltipPopup } from '@/components/ui/tooltip';
 
 export type { ThemeOption };
 
@@ -51,43 +50,8 @@ export function ThemeSwitcher({ variant = 'icon-hover', className }: ThemeSwitch
     setIsOpen(false);
   };
 
-  if (!mounted) {
-    if (variant === 'ghost') {
-      return (
-        <div className={cn("relative inline-block", className)}>
-          <div className="size-8 rounded-lg flex items-center justify-center text-theme-muted">
-            <Sun className="size-4 text-amber-500" />
-          </div>
-        </div>
-      );
-    }
-    if (variant === 'icon-hover') {
-      return (
-        <div className={cn("relative inline-block", className)}>
-          <div className="size-8 rounded-full bg-theme-surface border border-theme-border/70 flex items-center justify-center text-theme-foreground/80 shadow-2xs">
-            <Sun className="size-4 text-amber-500" />
-          </div>
-        </div>
-      );
-    }
-    return null;
-  }
-
-  const themes: { id: ThemeOption; label: string; desc: string }[] = [
-    { 
-      id: 'vercel', 
-      label: m.theme_light(), 
-      desc: 'Vercel Light',
-    },
-    { 
-      id: 'dark', 
-      label: m.theme_dark(), 
-      desc: 'Modern Dark',
-    },
-  ];
-
   if (variant === 'ghost') {
-    const isDark = currentTheme === 'dark';
+    const isDark = mounted && currentTheme === 'dark';
 
     const handleToggle = () => {
       const nextTheme: ThemeOption = isDark ? 'vercel' : 'dark';
@@ -99,29 +63,25 @@ export function ThemeSwitcher({ variant = 'icon-hover', className }: ThemeSwitch
         ref={containerRef}
         className={cn("relative inline-block", className)}
       >
-        <Tooltip>
-          <TooltipTrigger
-            type="button"
-            onClick={handleToggle}
-            aria-label={m.theme_switch()}
-            className="size-8 rounded-lg hover:bg-theme-surface flex items-center justify-center text-theme-muted hover:text-theme-foreground transition-colors cursor-pointer focus:outline-none"
-          >
-            {isDark ? (
-              <Moon className="size-4 text-sky-400 transition-transform duration-200 hover:scale-110" />
-            ) : (
-              <Sun className="size-4 text-amber-500 transition-transform duration-200 hover:scale-110" />
-            )}
-          </TooltipTrigger>
-          <TooltipPopup side="bottom" align="center" className="bg-theme-surface text-theme-foreground border border-theme-border font-sans text-xs px-2.5 py-1 rounded-lg shadow-sm z-50">
-            {isDark ? m.theme_current_dark() : m.theme_current_light()}
-          </TooltipPopup>
-        </Tooltip>
+        <button
+          type="button"
+          onClick={handleToggle}
+          aria-label={m.theme_switch()}
+          title={isDark ? m.theme_current_dark() : m.theme_current_light()}
+          className="size-8 rounded-lg hover:bg-theme-surface flex items-center justify-center text-theme-muted hover:text-theme-foreground transition-colors cursor-pointer focus:outline-none"
+        >
+          {isDark ? (
+            <Moon className="size-4 text-sky-400 transition-transform duration-200 hover:scale-110" />
+          ) : (
+            <Sun className="size-4 text-amber-500 transition-transform duration-200 hover:scale-110" />
+          )}
+        </button>
       </div>
     );
   }
 
   if (variant === 'icon-hover') {
-    const isDark = currentTheme === 'dark';
+    const isDark = mounted && currentTheme === 'dark';
 
     const handleToggle = () => {
       const nextTheme: ThemeOption = isDark ? 'vercel' : 'dark';
@@ -150,7 +110,24 @@ export function ThemeSwitcher({ variant = 'icon-hover', className }: ThemeSwitch
     );
   }
 
- if (variant === 'sidebar-pill') {
+  if (!mounted) {
+    return null;
+  }
+
+  const themes: { id: ThemeOption; label: string; desc: string }[] = [
+    { 
+      id: 'vercel', 
+      label: m.theme_light(), 
+      desc: 'Vercel Light',
+    },
+    { 
+      id: 'dark', 
+      label: m.theme_dark(), 
+      desc: 'Modern Dark',
+    },
+  ];
+
+  if (variant === 'sidebar-pill') {
  return (
  <div className={cn("flex items-center gap-1 p-0.5 rounded-xl bg-theme-surface/70 border border-theme-border/50 shadow-2xs select-none w-full", className)}>
  {themes.map((t) => {
