@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Compass, Search } from 'lucide-react';
 import { OpenGitsOctocatLogo } from './OpenGitsOctocatLogo';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { I18nLanguageSwitcher } from '@/components/I18nLanguageSwitcher';
@@ -11,6 +11,8 @@ import { UserCreditsPopover } from '@/components/credits/UserCreditsPopover';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSafeSession } from '@/lib/useSafeSession';
+import { useGuestStore } from '@/lib/stores/guest-store';
+import { toastManager } from '@/components/ui/toast';
 import * as m from '@/paraglide/messages';
 
 interface HomeHeaderProps {
@@ -20,6 +22,7 @@ interface HomeHeaderProps {
 export function HomeHeader({ initialUserId }: HomeHeaderProps = {}) {
   const { data: session } = useSafeSession();
   const isAuthenticated = Boolean(session?.user?.id || initialUserId);
+  const isGuest = useGuestStore(s => s.isGuest);
   const [isMac, setIsMac] = React.useState(false);
 
   React.useEffect(() => {
@@ -49,7 +52,7 @@ export function HomeHeader({ initialUserId }: HomeHeaderProps = {}) {
       <div className="w-full px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
         
         {/* Left: Brand Logo & Title */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <Link href="/" className="flex items-center gap-2.5 select-none">
             <div className="flex items-center justify-center shrink-0">
               <OpenGitsOctocatLogo className="w-6 h-6" />
@@ -58,6 +61,23 @@ export function HomeHeader({ initialUserId }: HomeHeaderProps = {}) {
               opengits
             </span>
           </Link>
+
+          {!isAuthenticated && !isGuest && (
+            <button
+              type="button"
+              onClick={() => {
+                useGuestStore.getState().enableGuestMode();
+                toastManager.add({
+                  type: 'info',
+                  title: m.auth_guest_welcome_toast(),
+                });
+              }}
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-sans text-theme-muted hover:text-theme-foreground transition-colors cursor-pointer pl-3 border-l border-theme-border/60"
+            >
+              <Compass className="w-3.5 h-3.5 text-theme-primary" />
+              <span>{m.header_guest_explore_nav()}</span>
+            </button>
+          )}
         </div>
 
         {/* Right: Unified Controls (Vercel Standard: 32px / h-8 All-in-One Rhythm) */}

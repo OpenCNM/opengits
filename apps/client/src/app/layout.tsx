@@ -44,6 +44,8 @@ import OnboardingWizardModal from '@/components/OnboardingWizardModal';
 import CustomSearchDialog from '@/components/SearchDialog';
 import { UnifiedTaskDock } from '@/components/dock/UnifiedTaskDock';
 import { ImportWizardProvider, ImportWizardModal } from '@/components/ImportWizard';
+import { PermissionGateModal } from '@/components/auth/PermissionGateModal';
+import { SignInOptionsModal } from '@/components/auth/SignInOptionsModal';
 import { cn } from "@/lib/utils";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { resolveFontSize } from "@/lib/font-size";
@@ -104,6 +106,8 @@ export default async function RootLayout({
                 <OnboardingWizardModal />
                 <ImportWizardModal />
                 <UnifiedTaskDock />
+                <PermissionGateModal />
+                <SignInOptionsModal />
                 <FontSizeProvider />
                 <ThemeInitializer />
               </ImportWizardProvider>

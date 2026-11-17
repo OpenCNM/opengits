@@ -422,8 +422,8 @@ export class PromptRegistry {
       this.printDriftReport(report);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (/P1001|Can't reach database|ECONNREFUSED|ETIMEDOUT|does not exist|authentication/i.test(msg)) {
-        console.log('[PromptCheck] [SKIP] 数据库不可达，跳过漂移检查（运行时始终有代码兜底，无能力损失）。');
+      if (/P1001|Can't reach database|ECONNREFUSED|ETIMEDOUT|does not exist|authentication|DATABASE_URL/i.test(msg)) {
+        console.log('[PromptCheck] [SKIP] 数据库不可达或未配置，跳过漂移检查（运行时始终有代码兜底，无能力损失）。');
       } else {
         throw err;
       }

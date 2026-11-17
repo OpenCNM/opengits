@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, Variants, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, ChevronDown, GitBranch, Sparkles, X, Globe } from 'lucide-react';
+import { ArrowRight, ChevronDown, Compass, GitBranch, Sparkles, X, Globe } from 'lucide-react';
 import { SAMPLE_REPOS } from '../types';
 
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ interface HomeHeroSectionProps {
   setInputUrl: (val: string) => void;
   handleImportSubmit: (e?: React.FormEvent) => void;
   handleSuggestionClick: (url: string) => void;
+  onExploreGuest?: () => void;
+  reposCount?: number | string;
 }
 
 const containerVariants: Variants = {
@@ -37,8 +39,21 @@ export function HomeHeroSection({
   setInputUrl,
   handleImportSubmit,
   handleSuggestionClick,
+  onExploreGuest,
+  reposCount,
 }: HomeHeroSectionProps) {
   const { scrollY } = useScroll();
+
+  // 动态阶梯计算（如 104 -> "100+", 28 -> "20+", 8 -> "8+"），随着开源库持续扩张实时自适应
+  const displayCount = React.useMemo(() => {
+    if (typeof reposCount === 'number' && reposCount > 0) {
+      return reposCount >= 10 ? `${Math.floor(reposCount / 10) * 10}+` : `${reposCount}+`;
+    }
+    if (typeof reposCount === 'string' && reposCount) {
+      return reposCount;
+    }
+    return '100+';
+  }, [reposCount]);
 
   // 🚀 120fps GPU-accelerated Parallax Curve with Depth-of-Field Recede
   const heroScale = useTransform(scrollY, [0, 480], [1, 0.86]);
@@ -176,6 +191,24 @@ export function HomeHeroSection({
               </motion.button>
             ))}
           </div>
+
+          {/* Guest Exploration Callout (Zero-Friction Discovery Hub) */}
+          {onExploreGuest && (
+            <motion.div
+              variants={itemVariants}
+              className="flex items-center justify-center pt-5 sm:pt-6"
+            >
+              <button
+                type="button"
+                onClick={onExploreGuest}
+                className="group inline-flex items-center gap-2.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-theme-border/80 bg-theme-surface/70 hover:bg-theme-surface hover:border-theme-primary/50 text-xs sm:text-sm font-medium text-theme-foreground/85 hover:text-theme-foreground transition-all duration-300 shadow-2xs hover:shadow-md backdrop-blur-md cursor-pointer select-none active:scale-[0.98]"
+              >
+                <Compass className="w-4 h-4 text-theme-primary group-hover:rotate-45 transition-transform duration-500 shrink-0" />
+                <span>{m.home_hero_guest_explore({ count: displayCount })}</span>
+                <ArrowRight className="w-3.5 h-3.5 text-theme-muted group-hover:text-theme-foreground group-hover:translate-x-0.5 transition-all duration-300 shrink-0" />
+              </button>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 

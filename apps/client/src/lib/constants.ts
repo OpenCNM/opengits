@@ -384,6 +384,7 @@ export const STORAGE_KEYS = {
   FONT_SIZE_COOKIE: 'opengits-font-size',
   THEME_PREFERENCE: 'theme_preference',
   USER_MODEL_PROVIDERS: 'opengits_user_model_providers',
+  GUEST_SESSION: 'opengits_guest_session',
   INGEST_PAUSED: (owner: string, repo: string) => `ingest-paused-${owner}/${repo}`,
   // 关闭页面时自动暂停转录（beacon 卸载钩子读取；默认关闭 = 关浏览器后台继续）
   INGEST_PAUSE_ON_CLOSE: (owner: string, repo: string) => `ingest-pause-on-close-${owner}/${repo}`,

@@ -6,6 +6,7 @@ import { DisplayRepo } from '@/lib/home-data';
 import { useImportWizard } from '@/components/ImportWizard/ImportWizardContext';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { requireApiKey } from '@/lib/api-key-guard';
+import { requireAuth } from '@/lib/permissions/permission-gateway';
 import { McpConnectWizardDialog as McpConnectDialog } from '@/components/mcp-connect/McpConnectWizardDialog';
 import { toastManager } from '@/components/ui/toast';
 import { api } from '@/lib/api/client';
@@ -24,6 +25,7 @@ import { getDashboardSnapshot, saveDashboardSnapshot } from '@/lib/stores/dashbo
 import { normalizeCategory } from '@/lib/constants';
 import { matchRepoWithSmartQuery, type DashboardSourceType } from '@/lib/search/smart-repo-search';
 import { useUserCreditsStore } from '@/lib/stores/user-credits-store';
+import { useGuestStore } from '@/lib/stores/guest-store';
 
 export function GitHubHomeView({
   initialRepos,
@@ -45,6 +47,22 @@ export function GitHubHomeView({
 
   // Mode State: false = Logged-Out Public Homepage, true = Logged-In User Dashboard
   const [isLoggedInMode, setIsLoggedInMode] = useState<boolean>(Boolean(initialUserId));
+  const isGuest = useGuestStore((s) => s.isGuest);
+  const [mounted, setMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isGuest) {
+      setIsLoggedInMode(true);
+    } else if (!initialUserId) {
+      setIsLoggedInMode(false);
+    }
+  }, [isGuest, initialUserId]);
+
+  const effectiveLoggedInMode = mounted ? (isLoggedInMode || isGuest) : isLoggedInMode;
   const [inputUrl, setInputUrl] = useState('');
 
   // 1. 首屏渲染遵循 SSR 确定性原则（规避 sessionStorage 导致的 Hydration Mismatch）
@@ -96,6 +114,19 @@ export function GitHubHomeView({
   }, [urlQuery, urlSource]);
 
   const [mcpDialogRepo, setMcpDialogRepo] = useState<{ owner: string; repo: string; title?: string } | null>(null);
+
+  const handleOpenMcpDialog = React.useCallback(
+    (target: { owner: string; repo: string; title?: string } | null) => {
+      if (!target) {
+        setMcpDialogRepo(null);
+        return;
+      }
+      requireAuth(() => {
+        setMcpDialogRepo(target);
+      }, m.gate_reason_save_shelf());
+    },
+    []
+  );
   const [repos, setRepos] = useState<DisplayRepo[]>(initialRepos);
   const [myRepos, setMyRepos] = useState<DisplayRepo[]>(initialMyRepos);
   const [customRepo, setCustomRepo] = useState<string>('');
@@ -188,50 +219,66 @@ export function GitHubHomeView({
 
   const handleImportSubmit = (e?: React.FormEvent, customUrl?: string) => {
     if (e) e.preventDefault();
-    if (!isLoggedInMode && !initialUserId) {
-      toastManager.add({
-        type: 'info',
-        title: m.toast_login_required(),
-        description: m.toast_login_required_desc(),
-      });
-      router.push('/auth/signin');
-      return;
-    }
-    const targetUrl = (customUrl ?? inputUrl).trim();
-    if (!targetUrl) {
-      toastManager.add({ type: 'info', title: m.toast_repo_url_required() });
-      return;
-    }
-    requireApiKey(() => {
-      setUrl(targetUrl);
-      openWizard();
-    }, m.apikey_continue_parse());
+    requireAuth(() => {
+      const targetUrl = (customUrl ?? inputUrl).trim();
+      if (!targetUrl) {
+        toastManager.add({ type: 'info', title: m.toast_repo_url_required() });
+        return;
+      }
+      requireApiKey(() => {
+        setUrl(targetUrl);
+        openWizard();
+      }, m.apikey_continue_parse());
+    }, m.gate_reason_import_repo());
+  };
+
+  const handleExploreGuest = () => {
+    useGuestStore.getState().enableGuestMode();
+    toastManager.add({
+      type: 'info',
+      title: m.auth_guest_welcome_toast(),
+    });
   };
 
   const handleSuggestionClick = (url: string) => {
-    if (!isLoggedInMode && !initialUserId) {
-      toastManager.add({
-        type: 'info',
-        title: m.toast_login_required(),
-        description: m.toast_login_required_desc(),
-      });
-      router.push('/auth/signin');
+    // 1. 若推荐仓库已收录在库，访客可免登录直接进入阅读页（零门槛直达 Aha Moment）
+    const matched = repos.find(r => {
+      if (r.url && r.url.toLowerCase() === url.toLowerCase()) return true;
+      if (r.owner && r.repo) {
+        const fullSlug = `${r.owner}/${r.repo}`.toLowerCase();
+        if (url.toLowerCase().includes(fullSlug)) return true;
+        const pureRepo = r.repo.toLowerCase().replace(/-(docs|guide|tutorial)$/, '');
+        if (pureRepo.length > 3 && url.toLowerCase().includes(pureRepo)) return true;
+      }
+      return false;
+    });
+
+    if (matched) {
+      if (!effectiveLoggedInMode) {
+        useGuestStore.getState().enableGuestMode();
+        toastManager.add({
+          type: 'info',
+          title: m.auth_guest_welcome_toast(),
+        });
+      }
+      router.push(`/docs/${matched.owner}/${matched.repo}`);
       return;
     }
-    setInputUrl(url);
-    requireApiKey(() => {
-      setUrl(url);
-      openWizard();
-    }, m.apikey_continue_parse());
+
+    // 2. 若尚未收录，走标准导入流程（受登录网关守护）
+    requireAuth(() => {
+      setInputUrl(url);
+      requireApiKey(() => {
+        setUrl(url);
+        openWizard();
+      }, m.apikey_continue_parse());
+    }, m.gate_reason_import_repo());
   };
 
   const handleToggleSave = async (repo: DisplayRepo, autoFollow: boolean = true) => {
-    if (!isLoggedInMode && !initialUserId) {
-      router.push('/auth/signin');
-      return;
-    }
-    const nextSaved = !repo.isSaved;
-    try {
+    requireAuth(async () => {
+      const nextSaved = !repo.isSaved;
+      try {
       // 行级收藏：POST /api/repos {action, repositoryId, autoFollow}——按讲法行 connect/disconnect
       const res = await api.post<{ fee?: number; alreadySaved?: boolean; signupGift?: number; balance?: number }>('/api/repos', {
         action: repo.isSaved ? 'unsave' : 'save',
@@ -307,49 +354,48 @@ export function GitHubHomeView({
       // 透出服务端原因，无 message 才回落通用提示
       toastManager.add({ type: 'error', title: m.toast_action_failed(), description: err?.message || m.common_retry_later() });
     }
-  };
+  }, m.gate_reason_save_shelf());
+};
 
   const handleRemoveRepo = async (repo: DisplayRepo) => {
-    if (!isLoggedInMode && !initialUserId) {
-      router.push('/auth/signin');
-      return;
-    }
-    try {
-      const editions = repo.editionGroup?.editions;
-      const idsToRemove = editions && editions.length > 0
-        ? editions.map(e => e.id)
-        : [repo.id];
+    requireAuth(async () => {
+      try {
+        const editions = repo.editionGroup?.editions;
+        const idsToRemove = editions && editions.length > 0
+          ? editions.map(e => e.id)
+          : [repo.id];
 
-      for (const id of idsToRemove) {
-        if (repo.isPublic) {
-          await api.post('/api/repos', {
-            action: 'unsave',
-            repositoryId: id,
-          });
-        } else {
-          await api.delete(`/api/repos?id=${id}`);
+        for (const id of idsToRemove) {
+          if (repo.isPublic) {
+            await api.post('/api/repos', {
+              action: 'unsave',
+              repositoryId: id,
+            });
+          } else {
+            await api.delete(`/api/repos?id=${id}`);
+          }
         }
-      }
 
-      setRepos(prev =>
-        prev.map(r =>
-          idsToRemove.includes(r.id)
-            ? { ...r, isSaved: false, savedCount: Math.max(0, (r.savedCount || 0) - 1) }
-            : r
-        )
-      );
-      setMyRepos(prev => prev.filter(r => !idsToRemove.includes(r.id) && r.id !== repo.id));
-      toastManager.add({
-        type: 'success',
-        title: repo.isPublic ? m.toast_project_removed() : m.toast_project_deleted(),
-      });
-    } catch (err: any) {
-      toastManager.add({
-        type: 'error',
-        title: m.common_delete_failed(),
-        description: err?.message || m.common_retry_later(),
-      });
-    }
+        setRepos(prev =>
+          prev.map(r =>
+            idsToRemove.includes(r.id)
+              ? { ...r, isSaved: false, savedCount: Math.max(0, (r.savedCount || 0) - 1) }
+              : r
+          )
+        );
+        setMyRepos(prev => prev.filter(r => !idsToRemove.includes(r.id) && r.id !== repo.id));
+        toastManager.add({
+          type: 'success',
+          title: repo.isPublic ? m.toast_project_removed() : m.toast_project_deleted(),
+        });
+      } catch (err: any) {
+        toastManager.add({
+          type: 'error',
+          title: m.common_delete_failed(),
+          description: err?.message || m.common_retry_later(),
+        });
+      }
+    });
   };
 
   const categories = useMemo(() => {
@@ -397,7 +443,7 @@ export function GitHubHomeView({
       </div>
 
       {/* 3. Public Homepage vs Logged-In User Dashboard */}
-      {!isLoggedInMode && !urlQuery && !urlHighlight ? (
+      {!effectiveLoggedInMode && !urlQuery && !urlHighlight ? (
         <main className="w-full flex-1 pb-0">
           <div className="relative w-full">
             {/* 1. Sticky Hero Layer (整屏完整呈现，居中黄金分割，随滚动原地下沉) */}
@@ -407,6 +453,8 @@ export function GitHubHomeView({
                 setInputUrl={setInputUrl}
                 handleImportSubmit={handleImportSubmit}
                 handleSuggestionClick={handleSuggestionClick}
+                onExploreGuest={handleExploreGuest}
+                reposCount={repos.length}
               />
             </div>
 
@@ -419,7 +467,7 @@ export function GitHubHomeView({
                 <div className="absolute left-0 right-0 h-48 -top-48 bg-gradient-to-b from-transparent to-theme-bg pointer-events-none z-[-1]" />
                 
                 <div className="bg-theme-bg relative pt-16 z-10 border-t border-theme-border/0">
-                  <BentoFeaturesSection />
+                  <BentoFeaturesSection repos={repos} />
 
                   <FaqAccordionSection />
                   <CtaBannerSection />
@@ -442,8 +490,8 @@ export function GitHubHomeView({
             handleImportSubmit={handleImportSubmit}
             handleToggleSave={handleToggleSave}
             handleRemoveRepo={handleRemoveRepo}
-            setMcpDialogRepo={setMcpDialogRepo}
-            isLoggedIn={isLoggedInMode}
+            setMcpDialogRepo={handleOpenMcpDialog}
+            isLoggedIn={effectiveLoggedInMode}
             initialActiveTab={activeTab}
             initialSort={sort}
             searchQuery={searchQuery}
@@ -457,7 +505,7 @@ export function GitHubHomeView({
       )}
 
       {/* 3. Footer */}
-      {!isLoggedInMode && !urlQuery && !urlHighlight && <HomeFooter />}
+      {!effectiveLoggedInMode && !urlQuery && !urlHighlight && <HomeFooter />}
 
       {/* MCP Quick Connect Dialog Modal */}
       {mcpDialogRepo && (

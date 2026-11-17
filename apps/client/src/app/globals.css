@@ -1923,3 +1923,72 @@ aside[class*="toc"] {
   fill: #0a0a0a !important;
 }
 
+/* 11. OpenGits Dual Confluence Brand Loading Animation (双向流光对冲品牌动效) */
+@keyframes og-confluence-o {
+  0% {
+    stroke-dashoffset: 65;
+    opacity: 0.15;
+  }
+  18% {
+    opacity: 1;
+  }
+  55%, 82% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -65;
+    opacity: 0.15;
+  }
+}
+
+@keyframes og-confluence-g {
+  0% {
+    stroke-dashoffset: 85;
+    opacity: 0.15;
+  }
+  18% {
+    opacity: 1;
+  }
+  55%, 82% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -85;
+    opacity: 0.15;
+  }
+}
+
+.animate-og-confluence-o {
+  stroke-dasharray: 65;
+  animation: og-confluence-o var(--og-dur, 1.2s) cubic-bezier(0.3, 0.85, 0.25, 1) infinite;
+}
+
+.animate-og-confluence-g {
+  stroke-dasharray: 85;
+  animation: og-confluence-g var(--og-dur, 1.2s) cubic-bezier(0.3, 0.85, 0.25, 1) infinite;
+}
+
+@keyframes opengits-marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-opengits-marquee {
+  display: flex;
+  width: max-content;
+  animation: opengits-marquee var(--marquee-duration, 35s) linear infinite;
+  will-change: transform;
+}
+
+.pause-on-hover:hover .animate-opengits-marquee,
+.animate-opengits-marquee:hover {
+  animation-play-state: paused !important;
+}
+
+

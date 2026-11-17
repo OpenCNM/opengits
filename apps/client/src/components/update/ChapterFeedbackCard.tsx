@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toastManager } from '@/components/ui/toast';
-import { requireApiKey } from '@/lib/api-key-guard';
+import { requireAiCapability } from '@/lib/permissions/permission-gateway';
 import { api } from '@/lib/api/client';
 import * as m from '@/paraglide/messages';
 
@@ -61,43 +61,39 @@ export function ChapterFeedbackCard({
       </div>
 
       <div className="shrink-0 flex items-center gap-2">
-        {viewerId ? (
-          confirmOpen ? (
-            <div className="inline-flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() =>
-                  requireApiKey(() => void handleRetranslate(), m.apikey_continue_retranslate())
-                }
-                disabled={retranslating}
-                className="px-3 py-1 rounded-lg bg-theme-primary text-theme-primary-fg text-xs font-medium cursor-pointer disabled:opacity-50 inline-flex items-center gap-1 shadow-2xs hover:bg-theme-primary/90 transition-colors"
-              >
-                {retranslating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                {retranslating ? m.chapter_feedback_retranslating() : m.common_confirm()}
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmOpen(false)}
-                className="px-2.5 py-1 rounded-lg border border-theme-border text-theme-muted hover:text-theme-foreground text-xs cursor-pointer transition-colors"
-              >
-                {m.common_cancel()}
-              </button>
-            </div>
-          ) : (
+        {confirmOpen ? (
+          <div className="inline-flex items-center gap-1.5">
             <button
               type="button"
-              onClick={() => setConfirmOpen(true)}
+              onClick={() =>
+                requireAiCapability(() => void handleRetranslate(), m.apikey_continue_retranslate())
+              }
               disabled={retranslating}
-              className="px-3 py-1 rounded-lg border border-theme-primary/30 bg-theme-primary/10 text-theme-primary text-xs font-medium hover:bg-theme-primary/20 transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
+              className="px-3 py-1 rounded-lg bg-theme-primary text-theme-primary-fg text-xs font-medium cursor-pointer disabled:opacity-50 inline-flex items-center gap-1 shadow-2xs hover:bg-theme-primary/90 transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              {m.chapter_feedback_action()}
+              {retranslating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              {retranslating ? m.chapter_feedback_retranslating() : m.common_confirm()}
             </button>
-          )
+            <button
+              type="button"
+              onClick={() => setConfirmOpen(false)}
+              className="px-2.5 py-1 rounded-lg border border-theme-border text-theme-muted hover:text-theme-foreground text-xs cursor-pointer transition-colors"
+            >
+              {m.common_cancel()}
+            </button>
+          </div>
         ) : (
-          <span className="text-micro text-theme-muted italic">
-            {m.chapter_feedback_login_tip()}
-          </span>
+          <button
+            type="button"
+            onClick={() => {
+              requireAiCapability(() => setConfirmOpen(true));
+            }}
+            disabled={retranslating}
+            className="px-3 py-1 rounded-lg border border-theme-primary/30 bg-theme-primary/10 text-theme-primary text-xs font-medium hover:bg-theme-primary/20 transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            {m.chapter_feedback_action()}
+          </button>
         )}
       </div>
     </div>
