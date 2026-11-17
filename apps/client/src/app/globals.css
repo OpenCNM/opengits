@@ -1688,10 +1688,12 @@ figure:hover::-webkit-scrollbar-thumb:hover,
   scrollbar-color: rgba(120, 113, 108, 0.35) transparent !important;
 }
 
-/* Replace Fumadocs primitive theme toggle with full Multi-Theme Switcher */
+/* Replace Fumadocs primitive theme toggle with full Multi-Theme Switcher.
+   Scope strictly to Fumadocs' own markers (.fd-theme-toggle class and its
+   official [data-theme-toggle] attribute). Never match by aria-label
+   substrings here — our own ThemeSwitcher renders aria-label="Toggle theme"
+   in the en locale and would be hidden by such a selector. */
 .fd-theme-toggle,
-[aria-label*="Toggle Theme"],
-[aria-label*="Toggle theme"],
 [data-theme-toggle] {
   display: none !important;
 }
