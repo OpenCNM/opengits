@@ -1,6 +1,6 @@
-# OpenGits 前置智能反代网关（双独立容器分流）
+# OpenGits 前置智能反代网关（双独立容器分流与全站 HTTPS 接入）
 
-http://localhost, :80 {
+(proxy_rules) {
 	# ── 内部端点：仅 docker 内网（WEB_INTERNAL_URL）可达，公网一律 404 不暴露存在性 ──
 	handle /api/internal* {
 		respond 404
@@ -33,6 +33,7 @@ http://localhost, :80 {
 			flush_interval -1
 		}
 	}
+
 	# ── MCP 浏览器管理端点（Tokens/书架/查询日志等 UI REST 接口 -> 直达 Web 容器 3000）──
 	handle /api/mcp/tokens* {
 		reverse_proxy web:3000
@@ -63,35 +64,20 @@ http://localhost, :80 {
 
 	# ── 客户端用户流量 -> 独立转发至 Web 容器 (3000) ──
 	handle /* {
-		reverse_proxy web:3000
+		reverse_proxy web:3000 {
+			flush_interval -1
+		}
 	}
 }
 
-# ── 错误监控（自托管 GlitchTip）子域名示例：启用 TLS 后建议独立子域访问管理台 ──
-# （GlitchTip 是 Django 应用，子路径反代兼容性差；未配置子域时可用 127.0.0.1:9000 SSH 隧道访问）
-#errors.example.com {
-#	encode gzip
-#	reverse_proxy glitchtip:8000
-#}
+# ── 生产域名：Cloudflare Proxy (Full SSL) 架构，源站签发 internal TLS，公网边缘由 Cloudflare 托管 Universal SSL ──
+opengits.com, www.opengits.com {
+	tls internal
+	encode gzip
+	import proxy_rules
+}
 
-#docs.example.com {
-#	encode gzip
-#
-#	# ── TLS：Caddy 自动 ACME 签发/续期；启用 TLS 即自动获得 HTTP/2 + HTTP/3(QUIC)。
-#	# HTTP/3 连接迁移可让移动端 Wi-Fi↔蜂窝切换不掉连接（高延迟跨区链路上的主要断连场景之一）。
-#
-#	#	├─ 内部端点公网 404（同 localhost 拓扑，仅 docker 内网可达）
-#	#	handle /api/internal* {
-#	#		respond 404
-#	#	}
-#
-#	# ── 用户流量：转发至 Web 容器 ──
-#	# flush_interval -1：显式关闭响应缓冲，保证 SSE（/api/ingest-jobs/*/events 等）
-#	# 逐事件即时下发（Caddy 对 text/event-stream 通常自动 flush，显式声明防中间层/未来版本变化）
-#	handle /* {
-#		reverse_proxy web:3000 {
-#			flush_interval -1
-#		}
-#	}
-#}
-
+# ── 宿主机 IP 与本机回环访问（平滑调试与运维探针兼容）──
+http://198.12.119.11, http://localhost, :80 {
+	import proxy_rules
+}
