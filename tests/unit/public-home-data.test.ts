@@ -92,7 +92,7 @@ describe('getPublicHomeData(首页公共数据缓存层)', () => {
     await mod.getPublicHomeData('newest');
 
     const sorts = cacheRegistry.map((c) => c.keyParts);
-    expect(sorts.some((k) => k.includes('hot') && k.includes('public-home-data-v5'))).toBe(true);
+    expect(sorts.some((k) => k.includes('hot') && k.includes('public-home-data-v6'))).toBe(true);
     expect(sorts.some((k) => k.includes('newest'))).toBe(true);
     for (const c of cacheRegistry) {
       expect(c.options.tags).toContain('home:v2');
@@ -156,5 +156,20 @@ describe('getPublicHomeData(首页公共数据缓存层)', () => {
     // 无大纲的仓：回退物理文档数 3
     expect(data.chapterCountsByRepo['repoNoOutline']).toBe(3);
     expect(data.docsByRepoBaseline['repoNoOutline']).toHaveLength(3);
+  });
+
+  it('shelfFeeOverride=0 时首页展示价强制为 0，其余沿用公式计费', async () => {
+    vi.resetModules();
+    cacheRegistry.length = 0;
+    findManyMock.mockResolvedValue([
+      { ...repoRow('freeRepo'), transcriptionCreditsEarned: 150, shelfFeeOverride: 0, _count: { savedRepos: 0, documents: 12 } },
+      { ...repoRow('paidRepo'), transcriptionCreditsEarned: 150, shelfFeeOverride: null, _count: { savedRepos: 0, documents: 12 } },
+    ]);
+
+    const mod = await import('@/lib/home/public-home-data');
+    const data = await mod.getPublicHomeData('hot');
+
+    expect(data.shelfFees['freeRepo']).toBe(0);
+    expect(data.shelfFees['paidRepo']).toBe(150);
   });
 });

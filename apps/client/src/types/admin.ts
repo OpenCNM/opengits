@@ -46,6 +46,13 @@ export interface AdminKpiStats {
   topSavedRepos: SavedRepoStat[];
 }
 
+export interface AdminRepoTranscriber {
+  userId: string;
+  name: string | null;
+  email: string | null;
+  role: string;
+}
+
 export interface AdminRepoSummary {
   id: string;
   owner: string;
@@ -59,5 +66,9 @@ export interface AdminRepoSummary {
   rejectionReason?: string | null;
   documentCount: number;
   chunkCount: number;
+  transcriptionCreditsEarned?: number;
+  shelfFeeOverride?: number | null;
+  shelfFeeEstimate?: number;
+  transcribers?: AdminRepoTranscriber[];
   updatedAt: string;
 }
