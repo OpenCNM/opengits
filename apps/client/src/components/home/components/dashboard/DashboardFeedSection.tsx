@@ -88,6 +88,11 @@ export function DashboardFeedSection({
 }: DashboardFeedSectionProps) {
   const router = useRouter();
   const [internalDetailRepo, setInternalDetailRepo] = useState<DisplayRepo | null>(null);
+  const activeInternalDetailRepo = React.useMemo(() => {
+    if (!internalDetailRepo) return null;
+    const matched = displayFeedRepos.find((r) => r.id === internalDetailRepo.id);
+    return matched ? { ...internalDetailRepo, ...matched } : internalDetailRepo;
+  }, [internalDetailRepo, displayFeedRepos]);
   const handleOpenDetail = externalOpenDetail ?? setInternalDetailRepo;
 
   const handledHighlightRef = React.useRef<string | null>(null);
@@ -371,11 +376,11 @@ export function DashboardFeedSection({
       {/* 🌟 教程详情全局弹窗（外部未接管时作为独立回落） */}
       {!externalOpenDetail && (
         <TutorialDetailDialog
-          repo={internalDetailRepo}
-          open={Boolean(internalDetailRepo)}
+          repo={activeInternalDetailRepo}
+          open={Boolean(activeInternalDetailRepo)}
           onOpenChange={(open) => !open && setInternalDetailRepo(null)}
-          editions={internalDetailRepo ? editionsOf(internalDetailRepo) : undefined}
-          canManage={internalDetailRepo ? Boolean(internalDetailRepo.canManage || internalDetailRepo.isMaintainer) : false}
+          editions={activeInternalDetailRepo ? editionsOf(activeInternalDetailRepo) : undefined}
+          canManage={activeInternalDetailRepo ? Boolean(activeInternalDetailRepo.canManage || activeInternalDetailRepo.isMaintainer) : false}
           onEditionSavedChange={handleEditionSavedChange}
           onCreateEdition={(owner, repo) => requireApiKey(() => openWizardForEdition(owner, repo))}
           onToggleSave={handleToggleSave}

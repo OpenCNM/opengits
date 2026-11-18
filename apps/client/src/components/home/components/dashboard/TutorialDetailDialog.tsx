@@ -119,6 +119,7 @@ export function TutorialDetailDialog({
   const [showConfirmJoin, setShowConfirmJoin] = useState(false);
   const [autoFollow, setAutoFollow] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const saveLockRef = React.useRef(false);
   const [isReReviewing, setIsReReviewing] = useState(false);
   const [localReviewLlm, setLocalReviewLlm] = useState<Record<string, any>>({});
   const [localReReviewRemaining, setLocalReReviewRemaining] = useState<Record<string, number>>({});
@@ -147,6 +148,8 @@ export function TutorialDetailDialog({
     setIsReReviewing(false);
     setLocalReviewLlm({});
     setLocalReReviewRemaining({});
+    saveLockRef.current = false;
+    setIsSaving(false);
   }, [repo?.id, open]);
 
   React.useEffect(() => {
@@ -406,11 +409,13 @@ export function TutorialDetailDialog({
   );
 
   const handleToggleSaveClick = async () => {
-    if (!repo || !onToggleSave || isSaving) return;
+    if (!repo || !onToggleSave || repo.isSaved || isSaving || saveLockRef.current) return;
+    saveLockRef.current = true;
     setIsSaving(true);
     try {
       await onToggleSave(repo, autoFollow);
     } finally {
+      saveLockRef.current = false;
       setIsSaving(false);
     }
   };
@@ -1368,12 +1373,23 @@ export function TutorialDetailDialog({
               </span>
             )}
 
-            {!repo.isSaved && onToggleSave ? (
+            {repo.isSaved ? (
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-sans font-bold text-xs sm:text-sm flex items-center gap-1.5 cursor-not-allowed opacity-90 select-none"
+              >
+                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>{m.shelf_in_personal_project()}</span>
+              </button>
+            ) : onToggleSave ? (
               <button
                 type="button"
                 disabled={isSaving}
                 title={fee > 0 ? m.shelf_confirm_fee_required({ count: fee }) : undefined}
                 onClick={async () => {
+                  if (isSaving || saveLockRef.current) return;
                   if (fee > 0) {
                     if (!hasEnoughBalance) {
                       setShowInsufficientGuidance((prev) => !prev);
@@ -1384,7 +1400,7 @@ export function TutorialDetailDialog({
                   }
                   await handleToggleSaveClick();
                 }}
-                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border border-theme-primary/40 bg-theme-primary/10 hover:bg-theme-primary/20 text-theme-primary font-sans font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border border-theme-primary/40 bg-theme-primary/10 hover:bg-theme-primary/20 text-theme-primary font-sans font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSaving ? <RotateCw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5 stroke-[2.5]" />}
                 <span>{m.shelf_join_free()}</span>

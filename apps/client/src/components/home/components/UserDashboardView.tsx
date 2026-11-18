@@ -131,6 +131,13 @@ export function UserDashboardView({
   const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
   const [personalSearch, setPersonalSearch] = useState('');
   const [detailRepo, setDetailRepo] = useState<DisplayRepo | null>(null);
+  const activeDetailRepo = React.useMemo(() => {
+    if (!detailRepo) return null;
+    const matched =
+      repos.find((r) => r.id === detailRepo.id) ||
+      myRepos.find((r) => r.id === detailRepo.id);
+    return matched ? { ...detailRepo, ...matched } : detailRepo;
+  }, [detailRepo, repos, myRepos]);
   const [relayTarget, setRelayTarget] = useState<DisplayRepo | null>(null);
   const [editionDrawer, setEditionDrawer] = useState<{
     editions: EditionChip[];
@@ -503,11 +510,11 @@ export function UserDashboardView({
 
       {/* 🌟 教程详情与版本控制中心全局全景大弹窗 (All-in-One RepoDetailDialog) */}
       <TutorialDetailDialog
-        repo={detailRepo}
-        open={Boolean(detailRepo)}
+        repo={activeDetailRepo}
+        open={Boolean(activeDetailRepo)}
         onOpenChange={(open) => !open && setDetailRepo(null)}
-        editions={detailRepo ? editionsOf(detailRepo) : undefined}
-        canManage={detailRepo ? Boolean(detailRepo.canManage || detailRepo.isMaintainer) : false}
+        editions={activeDetailRepo ? editionsOf(activeDetailRepo) : undefined}
+        canManage={activeDetailRepo ? Boolean(activeDetailRepo.canManage || activeDetailRepo.isMaintainer) : false}
         onEditionSavedChange={handleEditionSavedChange}
         onCreateEdition={(owner, repo) => requireApiKey(() => openWizardForEdition(owner, repo))}
         onCheckUpdate={handleCheckAndUpdate}

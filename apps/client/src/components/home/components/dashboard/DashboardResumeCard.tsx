@@ -17,6 +17,9 @@ interface DashboardResumeCardProps {
 }
 
 export function DashboardResumeCard({ recentResumeRepo, onToggleSave }: DashboardResumeCardProps) {
+  const [isJoining, setIsJoining] = useState(false);
+  const joinLockRef = React.useRef(false);
+
   const handleScrollToFeed = () => {
     const feedElem = document.getElementById('feed-section');
     if (feedElem) {
@@ -178,8 +181,19 @@ export function DashboardResumeCard({ recentResumeRepo, onToggleSave }: Dashboar
                 <span className="text-theme-muted/40">•</span>
                 <button
                   type="button"
-                  onClick={() => onToggleSave(recentResumeRepo)}
-                  className="inline-flex items-center gap-0.5 text-theme-primary hover:underline cursor-pointer font-medium"
+                  disabled={isJoining}
+                  onClick={async () => {
+                    if (isJoining || joinLockRef.current) return;
+                    joinLockRef.current = true;
+                    setIsJoining(true);
+                    try {
+                      await onToggleSave(recentResumeRepo);
+                    } finally {
+                      joinLockRef.current = false;
+                      setIsJoining(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-0.5 text-theme-primary hover:underline cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-2.5 h-2.5" />
                   <span>{m.dashboard_join_project()}</span>
