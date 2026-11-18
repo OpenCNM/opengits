@@ -23,13 +23,17 @@ export function HomeHeader({ initialUserId }: HomeHeaderProps = {}) {
   const { data: session } = useSafeSession();
   const isAuthenticated = Boolean(session?.user?.id || initialUserId);
   const isGuest = useGuestStore(s => s.isGuest);
+  const [mounted, setMounted] = React.useState(false);
   const [isMac, setIsMac] = React.useState(false);
 
   React.useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
       setIsMac(/(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent));
     }
   }, []);
+
+  const effectiveIsGuest = mounted ? isGuest : false;
 
   const handleOpenSearch = () => {
     if (typeof window !== 'undefined') {
@@ -62,7 +66,7 @@ export function HomeHeader({ initialUserId }: HomeHeaderProps = {}) {
             </span>
           </Link>
 
-          {!isAuthenticated && !isGuest && (
+          {!isAuthenticated && !effectiveIsGuest && (
             <button
               type="button"
               onClick={() => {

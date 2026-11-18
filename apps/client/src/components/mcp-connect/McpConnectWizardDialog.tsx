@@ -21,6 +21,8 @@ import {
 import { McpConnectDialogProps } from './types';
 import { McpTokensManager } from '@/components/settings/McpTokensManager';
 import { api, ApiClientError } from '@/lib/api/client';
+import { useSafeSession } from '@/lib/useSafeSession';
+import { requireAuth } from '@/lib/permissions/permission-gateway';
 
 import {
   type ClientType,
@@ -73,6 +75,8 @@ export function McpConnectWizardDialog({
 
   const { copy, isCopied } = useClipboard({ showToast: false });
   const aiPromptCopied = isCopied('ai-prompt');
+  const { data: session, status: sessionStatus } = useSafeSession();
+  const isAuthenticated = sessionStatus === 'authenticated' && Boolean(session?.user);
 
   const isGlobalHub = !owner || owner === 'bookshelf' || owner === 'global' || owner === 'hub';
   const origin = getClientOrigin();
@@ -103,6 +107,9 @@ export function McpConnectWizardDialog({
       }
     } catch (err) {
       setActiveToken(null);
+      if (err instanceof ApiClientError && (err.status === 401 || err.status === 403)) {
+        return;
+      }
       setTokenError(err instanceof Error && err.message ? err.message : m.mcp_token_load_error_hint());
     } finally {
       setIsLoadingToken(false);
@@ -124,6 +131,13 @@ export function McpConnectWizardDialog({
       return;
     }
 
+    if (!isAuthenticated) {
+      setSavedRepos([]);
+      setDisabledMcpRepoIds([]);
+      setActiveToken(null);
+      return;
+    }
+
     api
       .get<{ savedRepositories?: SavedRepoItem[]; disabledMcpRepoIds?: string[] }>('/api/user/preferences', {
         onUnauthorized: 'throw',
@@ -133,35 +147,19 @@ export function McpConnectWizardDialog({
         setDisabledMcpRepoIds(prefData?.disabledMcpRepoIds ?? []);
       })
       .catch((err) => {
-        console.error('Failed to load MCP repo preferences:', err);
+        if (!(err instanceof ApiClientError && (err.status === 401 || err.status === 403))) {
+          console.error('Failed to load MCP repo preferences:', err);
+        }
       });
 
     void fetchDefaultToken();
-  }, [isOpen, fetchDefaultToken]);
+  }, [isOpen, isAuthenticated, fetchDefaultToken]);
 
   const endpointUrl = isGlobalHub
     ? `${origin}/api/mcp/hub`
     : `${origin}/api/mcp/${owner}/${repo}`;
 
-  const handlePrimaryCopyAction = async () => {
-    if (isLoadingToken || isCreatingToken) return;
-    setTokenError(null);
-
-    if (activeToken?.token) {
-      const wasRetryAfterCreate = copyNeedsRetry;
-      const copied = await copy(
-        getClientAiPrompt(activeClient, endpointUrl, activeToken.token),
-        'ai-prompt'
-      );
-      if (copied) {
-        setCopyNeedsRetry(false);
-        if (wasRetryAfterCreate) {
-          setCreatedJustNow(true);
-        }
-      }
-      return;
-    }
-
+  const createAndCopyDefaultToken = async () => {
     setIsCreatingToken(true);
     try {
       const res = await api.post<{
@@ -198,6 +196,10 @@ export function McpConnectWizardDialog({
         setCopyNeedsRetry(true);
       }
     } catch (err) {
+      if (err instanceof ApiClientError && (err.status === 401 || err.status === 403)) {
+        requireAuth(() => void createAndCopyDefaultToken());
+        return;
+      }
       if (err instanceof ApiClientError && err.code === 'MAX_TOKENS_EXCEEDED') {
         setIsTokensExpanded(true);
       }
@@ -205,6 +207,33 @@ export function McpConnectWizardDialog({
     } finally {
       setIsCreatingToken(false);
     }
+  };
+
+  const handlePrimaryCopyAction = async () => {
+    if (isLoadingToken || isCreatingToken) return;
+    setTokenError(null);
+
+    if (activeToken?.token) {
+      const wasRetryAfterCreate = copyNeedsRetry;
+      const copied = await copy(
+        getClientAiPrompt(activeClient, endpointUrl, activeToken.token),
+        'ai-prompt'
+      );
+      if (copied) {
+        setCopyNeedsRetry(false);
+        if (wasRetryAfterCreate) {
+          setCreatedJustNow(true);
+        }
+      }
+      return;
+    }
+
+    if (!isAuthenticated) {
+      requireAuth(() => void createAndCopyDefaultToken());
+      return;
+    }
+
+    await createAndCopyDefaultToken();
   };
 
   const handleToggleRepoMcp = async (repoId: string, enable: boolean) => {
@@ -538,7 +567,13 @@ export function McpConnectWizardDialog({
         <div className="pt-2 flex items-center justify-between border-t border-theme-border/40 gap-3">
           <button
             type="button"
-            onClick={() => setIsTokensExpanded((prev) => !prev)}
+            onClick={() => {
+              if (!isTokensExpanded && !isAuthenticated) {
+                requireAuth(() => setIsTokensExpanded(true));
+                return;
+              }
+              setIsTokensExpanded((prev) => !prev);
+            }}
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 text-xs font-serif rounded-md border transition-all cursor-pointer",
               isTokensExpanded
