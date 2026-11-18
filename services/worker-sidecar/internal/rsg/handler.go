@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/sync/singleflight"
+
 	"github.com/opengits/worker-sidecar/internal/archive"
 	"github.com/opengits/worker-sidecar/internal/platform/httpx"
 )
@@ -46,12 +48,18 @@ type MemoryGate interface {
 	CalculateJobWeight(nodeCount int, isCodeRepo bool) int
 }
 
+// ArchiveEnsurer 按需拉取并解压指定 Git SHA 归档的回调契约。
+type ArchiveEnsurer func(ctx context.Context, owner, repo, sha string) (string, error)
+
 // Handler manages HTTP endpoints for the RSG package.
 type Handler struct {
-	cfg         Config
-	getDefs     func() *LanguageDefinitions
-	getPatterns func() Patterns
-	gate        MemoryGate
+	cfg           Config
+	getDefs       func() *LanguageDefinitions
+	getPatterns   func() Patterns
+	gate          MemoryGate
+	graphRepo     GraphArtifactRepo
+	ensureArchive ArchiveEnsurer
+	buildSF       singleflight.Group
 }
 
 // NewHandler constructs an RSG Handler.
@@ -66,6 +74,16 @@ func NewHandler(cfg Config, getDefs func() *LanguageDefinitions, getPatterns fun
 // SetGate 注入两阶段加权内存准入闸门。
 func (h *Handler) SetGate(g MemoryGate) {
 	h.gate = g
+}
+
+// SetGraphRepo 注入语义图谱数据库持久化仓储。
+func (h *Handler) SetGraphRepo(repo GraphArtifactRepo) {
+	h.graphRepo = repo
+}
+
+// SetArchiveEnsurer 注入归档按需拉取器，使本地磁盘缺失或被驱逐时可自愈重建图谱。
+func (h *Handler) SetArchiveEnsurer(fn ArchiveEnsurer) {
+	h.ensureArchive = fn
 }
 
 func (h *Handler) getLanguageDefs() *LanguageDefinitions {
@@ -178,6 +196,8 @@ func (h *Handler) buildGraphArtifact(ctx context.Context, req GraphBuildRequest)
 	archiveRoot := "storage/repos"
 	if h != nil && h.cfg.ArchiveRoot != "" {
 		archiveRoot = h.cfg.ArchiveRoot
+	} else if envDir := strings.TrimSpace(os.Getenv("TARBALL_CACHE_DIR")); envDir != "" {
+		archiveRoot = envDir
 	}
 	graphDir := "storage/graphs"
 	if h != nil && h.cfg.SemanticGraphDir != "" {
@@ -187,6 +207,12 @@ func (h *Handler) buildGraphArtifact(ctx context.Context, req GraphBuildRequest)
 	// 1. Check if already persisted (fast-path: zero MemoryGate contention)
 	if existing, err := LoadSemanticGraphArtifact(graphDir, req.Owner, req.Repo, req.Sha); err == nil && existing != nil {
 		return existing, nil
+	}
+	if h != nil && h.graphRepo != nil {
+		if persisted, err := h.graphRepo.LoadArtifact(ctx, req.Owner, req.Repo, req.Sha); err == nil && persisted != nil {
+			_, _ = SaveSemanticGraphArtifact(graphDir, req.Owner, req.Repo, req.Sha, persisted)
+			return persisted, nil
+		}
 	}
 
 	archiveDir := archive.ArchiveDirFor(archiveRoot, req.Owner, req.Repo, req.Sha)
@@ -226,7 +252,86 @@ func (h *Handler) buildGraphArtifact(ctx context.Context, req GraphBuildRequest)
 		defer h.gate.Release(weight)
 	}
 
-	return BuildRepoSemanticGraph(ctx, archiveRoot, graphDir, req.Owner, req.Repo, req.Sha, defs, patterns, nodes)
+	artifact, err := BuildRepoSemanticGraph(ctx, archiveRoot, graphDir, req.Owner, req.Repo, req.Sha, defs, patterns, nodes)
+	if err == nil && artifact != nil && h != nil && h.graphRepo != nil {
+		if serr := h.graphRepo.SaveArtifact(ctx, req.Owner, req.Repo, req.Sha, artifact); serr != nil {
+			log.Printf("[rsg] persist semantic graph to DB failed (%s/%s@%s): %v", req.Owner, req.Repo, req.Sha, serr)
+		}
+	}
+	return artifact, err
+}
+
+func hasArchiveFiles(dir string) bool {
+	entries, err := os.ReadDir(dir)
+	return err == nil && len(entries) > 0
+}
+
+// LoadOrBuildSemanticGraph 统一读取并懒自愈建图：
+// 本地磁盘缓存 → PostgreSQL RepoSemanticGraph → 单飞按需拉取归档并运行 Tree-sitter 构建。
+func (h *Handler) LoadOrBuildSemanticGraph(ctx context.Context, owner, repo, sha string) (*SemanticGraphArtifact, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	graphDir := "storage/graphs"
+	if h != nil && h.cfg.SemanticGraphDir != "" {
+		graphDir = h.cfg.SemanticGraphDir
+	}
+	archiveRoot := "storage/repos"
+	if h != nil && h.cfg.ArchiveRoot != "" {
+		archiveRoot = h.cfg.ArchiveRoot
+	} else if envDir := strings.TrimSpace(os.Getenv("TARBALL_CACHE_DIR")); envDir != "" {
+		archiveRoot = envDir
+	}
+
+	// 1. 本地磁盘 Fast Path
+	if loaded, err := LoadSemanticGraphArtifact(graphDir, owner, repo, sha); err == nil && loaded != nil {
+		return loaded, nil
+	}
+
+	// 2. PostgreSQL 持久化层读取并回暖本地磁盘
+	if h != nil && h.graphRepo != nil {
+		if persisted, err := h.graphRepo.LoadArtifact(ctx, owner, repo, sha); err == nil && persisted != nil {
+			_, _ = SaveSemanticGraphArtifact(graphDir, owner, repo, sha, persisted)
+			return persisted, nil
+		}
+	}
+
+	if h == nil || owner == "" || repo == "" || sha == "" {
+		return nil, os.ErrNotExist
+	}
+
+	sfKey := strings.ToLower(owner) + "/" + strings.ToLower(repo) + "@" + strings.ToLower(sha)
+	res, err, _ := h.buildSF.Do(sfKey, func() (any, error) {
+		if loaded, lerr := LoadSemanticGraphArtifact(graphDir, owner, repo, sha); lerr == nil && loaded != nil {
+			return loaded, nil
+		}
+		if h.graphRepo != nil {
+			if persisted, perr := h.graphRepo.LoadArtifact(ctx, owner, repo, sha); perr == nil && persisted != nil {
+				_, _ = SaveSemanticGraphArtifact(graphDir, owner, repo, sha, persisted)
+				return persisted, nil
+			}
+		}
+
+		archiveDir := archive.ArchiveDirFor(archiveRoot, owner, repo, sha)
+		if !hasArchiveFiles(archiveDir) {
+			if h.ensureArchive == nil || strings.EqualFold(owner, "web-docs") {
+				return nil, os.ErrNotExist
+			}
+			if _, eerr := h.ensureArchive(ctx, owner, repo, sha); eerr != nil {
+				return nil, eerr
+			}
+			if !hasArchiveFiles(archiveDir) {
+				return nil, os.ErrNotExist
+			}
+		}
+
+		return h.buildGraphArtifact(ctx, GraphBuildRequest{Owner: owner, Repo: repo, Sha: sha})
+	})
+	if err != nil {
+		return nil, err
+	}
+	art, _ := res.(*SemanticGraphArtifact)
+	return art, nil
 }
 
 // HandleTopologySlice handles POST /v1/graph/slice-context.
@@ -266,11 +371,11 @@ func (h *Handler) HandleTopologySlice(w http.ResponseWriter, r *http.Request) {
 		err      error
 	)
 
-	// If sha is specified, try loading artifact directly from disk
+	// If sha is specified, load from disk/DB or lazily build from archive
 	if req.Sha != "" {
-		artifact, err = LoadSemanticGraphArtifact(graphDir, req.Owner, req.Repo, req.Sha)
+		artifact, err = h.LoadOrBuildSemanticGraph(r.Context(), req.Owner, req.Repo, req.Sha)
 		if err != nil {
-			log.Printf("[worker-sidecar] load graph for slice-context error (%s/%s@%s): %v", req.Owner, req.Repo, req.Sha, err)
+			log.Printf("[worker-sidecar] load graph for slice-context (%s/%s@%s): %v", req.Owner, req.Repo, req.Sha, err)
 		}
 	} else {
 		// If sha is not provided, pick the most recently modified graph artifact.
@@ -300,11 +405,6 @@ func (h *Handler) HandleTopologySlice(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-	}
-
-	// If not found, fallback to OnDemand build if possible and sha is present
-	if artifact == nil && req.Sha != "" {
-		artifact, _ = h.BuildGraphOnDemand(req.Owner, req.Repo, req.Sha)
 	}
 
 	// Perform fast extraction (if artifact is nil, ExtractTopologySlice returns graceful empty response)

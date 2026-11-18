@@ -1001,6 +1001,20 @@ CREATE TABLE "DaemonTaskRun" (
 );
 
 -- CreateTable
+CREATE TABLE "RepoSemanticGraph" (
+    "id" TEXT NOT NULL,
+    "owner" TEXT NOT NULL,
+    "repo" TEXT NOT NULL,
+    "gitSha" TEXT NOT NULL,
+    "payload" BYTEA NOT NULL,
+    "symbolCount" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "RepoSemanticGraph_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_BundleRepositories" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -1409,6 +1423,12 @@ CREATE INDEX "OAuthAuthCode_expiresAt_idx" ON "OAuthAuthCode"("expiresAt");
 
 -- CreateIndex
 CREATE INDEX "DaemonTaskRun_task_createdAt_idx" ON "DaemonTaskRun"("task", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "RepoSemanticGraph_owner_repo_idx" ON "RepoSemanticGraph"("owner", "repo");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RepoSemanticGraph_owner_repo_gitSha_key" ON "RepoSemanticGraph"("owner", "repo", "gitSha");
 
 -- CreateIndex
 CREATE INDEX "_BundleRepositories_B_index" ON "_BundleRepositories"("B");

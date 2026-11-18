@@ -3,9 +3,8 @@
  * 数据源为本地解压归档直读（与 Web /api/code file 路由、Go ARCHIVE_ROOT 同卷），
  * 不走网络回源——MCP 服务的仓必为本平台导入归档仓，缺失即显式降级提示（失效封闭）。
  */
-import { readFileLocal } from '@/engine/tarball/archive-store';
 import { detectLanguage } from '@/engine/languages';
-import { cleanSourcePath } from '@/lib/mcp/source-archive';
+import { cleanSourcePath, readSourceFileWithFallback } from '@/lib/mcp/source-archive';
 import { capFullDocText } from './read';
 import {
   RepoRuntime,
@@ -80,21 +79,10 @@ export async function runReadSourceFile(
   const sha = (ctx.repository.gitSha as string) || '';
   const branch = (ctx.repository.branch as string) || '';
 
-  // 归档直读：gitSha 优先，未命中按 branch 兜底（与 read_symbol 同序）
-  let content: string | null = null;
-  let usedRef = '';
-  for (const ref of [sha, branch].filter(Boolean)) {
-    try {
-      const local = await readFileLocal(owner, repo, ref, cleanPath);
-      if (local !== null) {
-        content = local;
-        usedRef = ref;
-        break;
-      }
-    } catch {
-      // 归档读取失败继续尝试下一 ref
-    }
-  }
+  // 归档直读优先，缺失时按不可变 Ref 回源（gitSha 优先，未命中按 branch 兜底）
+  const resolvedSource = await readSourceFileWithFallback(owner, repo, [sha, branch].filter(Boolean), cleanPath);
+  const content = resolvedSource?.content ?? null;
+  const usedRef = resolvedSource?.usedRef ?? '';
 
   if (content === null) {
     

@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/opengits/worker-sidecar/internal/archive"
 	"github.com/opengits/worker-sidecar/internal/chunker"
 	"github.com/opengits/worker-sidecar/internal/cluster"
@@ -56,6 +57,19 @@ func (s *Server) routes() http.Handler {
 	rsgH := rsg.NewHandler(s.cfg.RSGConfig(), s.getLanguageDefinitions, func() rsg.Patterns { return s.getPatterns() })
 	if s.memoryGate != nil {
 		rsgH.SetGate(s.memoryGate)
+	}
+	if poolProvider, ok := s.searchStore.(interface{ Pool() *pgxpool.Pool }); ok {
+		if pool := poolProvider.Pool(); pool != nil {
+			rsgH.SetGraphRepo(rsg.NewPgGraphStore(pool))
+		}
+	}
+	if s.archiveEnsure != nil {
+		ae := s.archiveEnsure
+		ghToken := s.cfg.GitHubToken
+		rsgH.SetArchiveEnsurer(func(ctx context.Context, owner, repo, sha string) (string, error) {
+			dir, _, err := ae.Ensure(ctx, owner, repo, sha, 0, ghToken)
+			return dir, err
+		})
 	}
 	mux.HandleFunc("POST /v1/graph/concept-grounding", s.internal(rsgH.HandleGrounding))
 	mux.HandleFunc("POST /v1/graph/symbol-lookup", s.internal(rsgH.HandleSymbolLookup))

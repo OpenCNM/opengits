@@ -183,6 +183,11 @@ func buildGraphArtifact(ctx context.Context, cfg Config, deps IngestBodyDeps, jo
 	if err != nil {
 		return nil, fmt.Errorf("semantic graph build failed for %s/%s: %w", job.Owner, job.Repo, err)
 	}
+	if deps.GraphRepo != nil && artifact != nil {
+		if serr := deps.GraphRepo.SaveArtifact(ctx, job.Owner, job.Repo, sha, artifact); serr != nil {
+			log.Printf("[ingest] persist semantic graph to DB failed (%s/%s@%s): %v", job.Owner, job.Repo, sha, serr)
+		}
+	}
 	return artifact, nil
 }
 

@@ -544,7 +544,7 @@ func formatNeighborsOutput(conceptName string, neighbors []neighborItem) string 
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("\n(可对任一邻居调用 get_concept_details / read_section 深入；学习顺序见 learning_path)")
+	b.WriteString("\n(可对任一邻居调用 explore_concept / read 深入；学习顺序见 explore_concept(action=\"path\"))")
 	b.WriteString("\n(证据来源：共现/教学顺序/代码依赖=确定；LLM推断=可能幻觉，权重越高关系越强)")
 	return b.String()
 }
@@ -609,7 +609,7 @@ func (s *readService) runLearningPath(ctx context.Context, repo RepoRow, userID,
 		b.WriteString("\n")
 	}
 	fmt.Fprintf(&b, "%d. 🎯 %s（目标概念）\n", len(steps)+1, node.ConceptName)
-	b.WriteString("\n(按顺序阅读即可递进掌握；每个概念可用 read_section 精读，get_concept_details 深钻)")
+	b.WriteString("\n(按顺序阅读即可递进掌握；每个概念可用 read 精读，explore_concept 深钻)")
 
 	s.recordTelemetry(ctx, CallLogEntry{
 		ToolName: "explore_concept", UserID: userID, ClientName: clientName, RepositoryID: repo.ID,
@@ -916,7 +916,7 @@ func formatDependencyHintText(targetName string, deps []EdgeRef) string {
 		}
 		fmt.Fprintf(&b, "  • (概念 %s) [来源:%s(%s) · w%s]\n", d.SourceID, meta.label, meta.confidence, formatWeight(d.Weight))
 	}
-	b.WriteString("\n(可用 read_section 精读任一前置概念，或 learning_path 获取完整递进链)")
+	b.WriteString("\n(可用 read 精读任一前置概念，或 explore_concept(action=\"path\") 获取完整递进链)")
 	b.WriteString("\n(证据来源：共现/教学顺序/代码依赖=确定；LLM推断=可能幻觉)")
 	return b.String()
 }

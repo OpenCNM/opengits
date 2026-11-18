@@ -304,12 +304,7 @@ func (h *Handler) HandleSymbolLookup(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		graphDir := "storage/graphs"
-		if h != nil && h.cfg.SemanticGraphDir != "" {
-			graphDir = h.cfg.SemanticGraphDir
-		}
-
-		loaded, err := LoadSemanticGraphArtifact(graphDir, req.Owner, req.Repo, req.Sha)
+		loaded, err := h.LoadOrBuildSemanticGraph(r.Context(), req.Owner, req.Repo, req.Sha)
 		if err != nil || loaded == nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
@@ -398,12 +393,7 @@ func (h *Handler) HandleSymbolSearch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		graphDir := "storage/graphs"
-		if h != nil && h.cfg.SemanticGraphDir != "" {
-			graphDir = h.cfg.SemanticGraphDir
-		}
-
-		loaded, err := LoadSemanticGraphArtifact(graphDir, req.Owner, req.Repo, req.Sha)
+		loaded, err := h.LoadOrBuildSemanticGraph(r.Context(), req.Owner, req.Repo, req.Sha)
 		if err != nil || loaded == nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)

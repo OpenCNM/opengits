@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/opengits/worker-sidecar/internal/rsg"
 	"github.com/opengits/worker-sidecar/internal/search"
 )
 
@@ -163,6 +164,7 @@ type ReadStore interface {
 	ConceptGramCandidates(ctx context.Context, repositoryID string, grams []string) ([]ConceptRichNode, error)
 	ConceptDependencyEdges(ctx context.Context, repositoryID string, memberIDs []string) ([]EdgeRef, error)
 	GetRepoGitSha(ctx context.Context, repositoryID string) (owner, repo, sha string, ok bool)
+	LoadSemanticGraph(ctx context.Context, owner, repo, sha string) (*rsg.SemanticGraphArtifact, error)
 	ResolveConceptNode(ctx context.Context, repositoryID, concept string) (*ConceptRichNode, error)
 	GetDocumentQuizzesByPath(ctx context.Context, repositoryID, docPath string) ([]ChapterQuizRow, error)
 	ConceptEditionCompare(ctx context.Context, owner, repo, concept string) ([]ConceptEditionRow, error)

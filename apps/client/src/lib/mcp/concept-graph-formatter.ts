@@ -70,7 +70,7 @@ export function formatDependencyHintText(
     if (d.address) text += ` [Address: ${d.address}]`;
     text += `\n`;
   }
-  text += `\n(可用 read_section 精读任一前置概念，或 learning_path 获取完整递进链)`;
+  text += `\n(可用 read 精读任一前置概念，或 explore_concept(action="path") 获取完整递进链)`;
   text += `\n(证据来源：共现/教学顺序/代码依赖=确定；LLM推断=可能幻觉)`;
   return text;
 }
@@ -118,7 +118,7 @@ export function formatConceptTaxonomyGrouped(
     }
     text += `\n`;
   }
-  text += `(Use get_concept_details (concept: "<name>") to dive into any concept above, or read_section with its Address for the source section.)`;
+  text += `(Use explore_concept (concept: "<name>") to dive into any concept above, or read with its Address for the source section.)`;
   return text;
 }
 
@@ -150,7 +150,7 @@ export function formatLearningPathOutput(
     text += `\n`;
   });
   text += `${steps.length + 1}. 🎯 ${targetName}（目标概念）\n`;
-  text += `\n(按顺序阅读即可递进掌握；每个概念可用 read_section 精读，get_concept_details 深钻)`;
+  text += `\n(按顺序阅读即可递进掌握；每个概念可用 read 精读，explore_concept 深钻)`;
   return text;
 }
 
@@ -191,7 +191,7 @@ export function formatNeighborsOutput(
     if (n.address) text += `\n  [Address: ${n.address}]`;
     text += `\n`;
   }
-  text += `\n(可对任一邻居调用 get_concept_details / read_section 深入；学习顺序见 learning_path)`;
+  text += `\n(可对任一邻居调用 explore_concept / read 深入；学习顺序见 explore_concept(action="path"))`;
   text += `\n(证据来源：共现/教学顺序/代码依赖=确定；LLM推断=可能幻觉，权重越高关系越强)`;
   return text;
 }

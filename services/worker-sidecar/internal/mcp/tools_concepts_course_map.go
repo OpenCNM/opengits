@@ -100,7 +100,7 @@ func formatSuperTopicsCourseMap(raw json.RawMessage) (string, bool) {
 		}
 	}
 	b.WriteString("```\n\n")
-	b.WriteString("主题域清单（用 get_concept_details 深入任一概念，或 explore_concept 查邻居）：\n")
+	b.WriteString("主题域清单（用 explore_concept(action=\"details\") 深入任一概念，或 explore_concept(action=\"neighbors\") 查邻居）：\n")
 	for _, t := range block.Topics {
 		b.WriteString("- " + t.Title)
 		if t.Summary != "" {
@@ -263,7 +263,7 @@ func formatCodeClustersCourseMap(raw json.RawMessage) (string, bool) {
 	}
 
 	b.WriteString("```\n\n")
-	b.WriteString("章节清单（可对任一章用 read_section / get_concept_details 深入）：\n")
+	b.WriteString("章节清单（可对任一章用 read / explore_concept 深入）：\n")
 	for _, c := range clusters {
 		fmt.Fprintf(&b, "- %d. %s — %d 文件\n", c.TeachingOrder, c.Title, len(c.Files))
 	}

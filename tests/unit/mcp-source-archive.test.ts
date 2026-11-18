@@ -1,9 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { WEB_DOC_OWNER } from '@/lib/constants';
 import {
   cleanSourcePath,
   detectSourceLanguage,
   extractSymbolSignature,
   readSymbolSourceCode,
+  readSourceFileWithFallback,
+  setSourceFallbackFetcherForTest,
+  clearSourceFallbackCacheForTest,
 } from '@/lib/mcp/source-archive';
 
 const readFileLocalMock = vi.fn(async () => null);
@@ -107,6 +111,52 @@ describe('source-archive 纯函数（Go 镜像对齐）', () => {
       readFileLocalMock.mockResolvedValue(null);
       const out = await readSymbolSourceCode('o', 'r', 'sha', 'f.go', 'sym', 1, 2);
       expect(out).toBe('');
+    });
+  });
+
+  describe('readSourceFileWithFallback 不可变上游按需回源', () => {
+    beforeEach(() => {
+      readFileLocalMock.mockReset();
+      readFileLocalMock.mockResolvedValue(null);
+      clearSourceFallbackCacheForTest();
+    });
+
+    afterEach(() => {
+      setSourceFallbackFetcherForTest(null);
+      clearSourceFallbackCacheForTest();
+    });
+
+    it('本地未命中时按不可变 SHA 回源并缓存（二次调用零 HTTP）', async () => {
+      const fetcher = vi.fn(async () => new Response('export const x = 42;\n', { status: 200 }));
+      setSourceFallbackFetcherForTest(fetcher);
+
+      const sha = 'abcdef1234567890abcdef1234567890abcdef12';
+      const first = await readSourceFileWithFallback('acme', 'demo', [sha, 'main'], 'src/x.ts');
+      expect(first).toEqual({ content: 'export const x = 42;\n', usedRef: sha });
+      expect(fetcher).toHaveBeenCalledTimes(1);
+
+      const second = await readSourceFileWithFallback('acme', 'demo', [sha, 'main'], 'src/x.ts');
+      expect(second).toEqual({ content: 'export const x = 42;\n', usedRef: sha });
+      expect(fetcher).toHaveBeenCalledTimes(1);
+    });
+
+    it('web-doc 虚拟仓跳过远端 GitHub 回源', async () => {
+      const fetcher = vi.fn(async () => new Response('should not happen', { status: 200 }));
+      setSourceFallbackFetcherForTest(fetcher);
+
+      const res = await readSourceFileWithFallback(WEB_DOC_OWNER, 'docs', ['main'], 'page.md');
+      expect(res).toBeNull();
+      expect(fetcher).not.toHaveBeenCalled();
+    });
+
+    it('404 负缓存生效，避免重复击穿上游', async () => {
+      const fetcher = vi.fn(async () => new Response('Not Found', { status: 404 }));
+      setSourceFallbackFetcherForTest(fetcher);
+
+      const sha = '1234567890abcdef1234567890abcdef12345678';
+      expect(await readSourceFileWithFallback('acme', 'demo', [sha], 'missing.ts')).toBeNull();
+      expect(await readSourceFileWithFallback('acme', 'demo', [sha], 'missing.ts')).toBeNull();
+      expect(fetcher).toHaveBeenCalledTimes(1);
     });
   });
 });

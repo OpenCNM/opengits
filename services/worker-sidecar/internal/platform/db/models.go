@@ -715,6 +715,17 @@ type PromptVersion struct {
 	CreatedAt    pgtype.Timestamp `db:"createdAt" json:"createdAt"`
 }
 
+type RepoSemanticGraph struct {
+	ID          string           `db:"id" json:"id"`
+	Owner       string           `db:"owner" json:"owner"`
+	Repo        string           `db:"repo" json:"repo"`
+	GitSha      string           `db:"gitSha" json:"gitSha"`
+	Payload     []byte           `db:"payload" json:"payload"`
+	SymbolCount int32            `db:"symbolCount" json:"symbolCount"`
+	CreatedAt   pgtype.Timestamp `db:"createdAt" json:"createdAt"`
+	UpdatedAt   pgtype.Timestamp `db:"updatedAt" json:"updatedAt"`
+}
+
 type Repository struct {
 	ID                         string           `db:"id" json:"id"`
 	Owner                      string           `db:"owner" json:"owner"`
@@ -735,6 +746,7 @@ type Repository struct {
 	PublishGiftAt              pgtype.Timestamp `db:"publishGiftAt" json:"publishGiftAt"`
 	RelayNotifiedAt            pgtype.Timestamp `db:"relayNotifiedAt" json:"relayNotifiedAt"`
 	TranscriptionCreditsEarned int32            `db:"transcriptionCreditsEarned" json:"transcriptionCreditsEarned"`
+	ShelfFeeOverride           pgtype.Int4      `db:"shelfFeeOverride" json:"shelfFeeOverride"`
 	Category                   pgtype.Text      `db:"category" json:"category"`
 	Tags                       []string         `db:"tags" json:"tags"`
 	Views                      int32            `db:"views" json:"views"`

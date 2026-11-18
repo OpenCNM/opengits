@@ -277,12 +277,21 @@ func (s *readService) getConceptNeighbors(ctx context.Context, repositoryID, con
 // ── readService：read 工具执行域（含策略缓存与遥测） ──
 
 type readService struct {
-	store       ReadStore
-	policyCache *ttlCache // GlobalMcpToolPolicy（60s TTL，对齐 getGlobalToolPolicies）
+	store            ReadStore
+	policyCache      *ttlCache // GlobalMcpToolPolicy（60s TTL，对齐 getGlobalToolPolicies）
+	workerSidecarURL string
+	internalToken    string
 }
 
 func newReadService(store ReadStore) *readService {
 	return &readService{store: store, policyCache: newTTLCache(60*time.Second, 16)}
+}
+
+func newReadServiceWithConfig(store ReadStore, cfg Config) *readService {
+	rs := newReadService(store)
+	rs.workerSidecarURL = strings.TrimRight(strings.TrimSpace(cfg.WorkerSidecarURL), "/")
+	rs.internalToken = cfg.InternalToken
+	return rs
 }
 
 // toolEnabled 对齐 isToolEnabled：policy.isEnabled=false 或 tier 不满足 → false

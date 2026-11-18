@@ -132,10 +132,7 @@ func (s *readService) runReadSourceFile(ctx context.Context, resolved *ResolvedR
 		sha = repo.Branch
 	}
 
-	archiveRoot := os.Getenv("ARCHIVE_ROOT")
-	if archiveRoot == "" {
-		archiveRoot = "storage/repos"
-	}
+	archiveRoot := resolveArchiveRoot()
 
 	content := ""
 	usedRef := ""
@@ -146,6 +143,17 @@ func (s *readService) runReadSourceFile(ctx context.Context, resolved *ResolvedR
 		if raw := readRawSourceFile(archiveRoot, repo.Owner, repo.Repo, ref, cleanPath); raw != "" {
 			content, usedRef = raw, ref
 			break
+		}
+	}
+	if content == "" {
+		for _, ref := range []string{sha, repo.Branch} {
+			if ref == "" {
+				continue
+			}
+			if raw := fetchImmutableSourceFile(ctx, archiveRoot, repo.Owner, repo.Repo, ref, cleanPath); raw != "" {
+				content, usedRef = raw, ref
+				break
+			}
 		}
 	}
 	if content == "" {

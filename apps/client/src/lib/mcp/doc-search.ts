@@ -492,7 +492,7 @@ export async function injectConceptMentorCard(
       }
     }
 
-    card += `\n(Use get_concept_details (concept: "${conceptNode.conceptName}") for the full concept package, or read_section with the Address above to read the source section.)`;
+    card += `\n(Use explore_concept (concept: "${conceptNode.conceptName}", action: "details") for the full concept package, or read with the Address above to read the source section.)`;
 
     return `${baseText}${card}`;
   } catch (error) {

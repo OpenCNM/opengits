@@ -546,7 +546,7 @@ func (s *readService) injectMentorCard(ctx context.Context, repositoryID string,
 		}
 	}
 
-	fmt.Fprintf(&card, "\n(Use get_concept_details (concept: %q) for the full concept package, or read_section with the Address above to read the source section.)", concept.ConceptName)
+	fmt.Fprintf(&card, "\n(Use explore_concept (concept: %q, action: \"details\") for the full concept package, or read with the Address above to read the source section.)", concept.ConceptName)
 	return baseText + card.String()
 }
 
@@ -678,7 +678,7 @@ func (s *readService) injectDependencyHint(ctx context.Context, repositoryID str
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("\n(可用 read_section 精读任一前置概念，或 learning_path 获取完整递进链)")
+	b.WriteString("\n(可用 read 精读任一前置概念，或 explore_concept(action=\"path\") 获取完整递进链)")
 	b.WriteString("\n(证据来源：共现/教学顺序/代码依赖=确定；LLM推断=可能幻觉)")
 	return baseText + b.String()
 }

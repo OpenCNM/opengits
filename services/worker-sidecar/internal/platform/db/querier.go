@@ -200,6 +200,7 @@ type Querier interface {
 	GetRepoIDsByOwnerList(ctx context.Context, dollar_1 []string) ([]GetRepoIDsByOwnerListRow, error)
 	GetRepoPauseInfo(ctx context.Context, arg GetRepoPauseInfoParams) (GetRepoPauseInfoRow, error)
 	GetRepoProfile(ctx context.Context, id string) ([]byte, error)
+	GetRepoSemanticGraph(ctx context.Context, arg GetRepoSemanticGraphParams) (GetRepoSemanticGraphRow, error)
 	GetRepoUnpublishState(ctx context.Context, id string) (GetRepoUnpublishStateRow, error)
 	GetRepositoryForIngestStatus(ctx context.Context, arg GetRepositoryForIngestStatusParams) (GetRepositoryForIngestStatusRow, error)
 	GetRepositoryForWebSync(ctx context.Context, arg GetRepositoryForWebSyncParams) (GetRepositoryForWebSyncRow, error)
@@ -510,6 +511,7 @@ type Querier interface {
 	UpsertContentLayer(ctx context.Context, arg UpsertContentLayerParams) (string, error)
 	UpsertFreeSavedRepo(ctx context.Context, arg UpsertFreeSavedRepoParams) (int64, error)
 	UpsertImportRecord(ctx context.Context, arg UpsertImportRecordParams) error
+	UpsertRepoSemanticGraph(ctx context.Context, arg UpsertRepoSemanticGraphParams) error
 	UpsertRepositoryRow(ctx context.Context, arg UpsertRepositoryRowParams) (string, error)
 	UpsertSavedRepo(ctx context.Context, arg UpsertSavedRepoParams) error
 	WriteUpstreamChanged(ctx context.Context, arg WriteUpstreamChangedParams) error

@@ -657,7 +657,7 @@ func formatConceptTaxonomyGrouped(items []taxonomyItem) string {
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("(Use get_concept_details (concept: \"<name>\") to dive into any concept above, or read_section with its Address for the source section.)")
+	b.WriteString("(Use explore_concept (concept: \"<name>\") to dive into any concept above, or read with its Address for the source section.)")
 	return b.String()
 }
 

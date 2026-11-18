@@ -175,7 +175,7 @@ func newServer(cfg Config, store Store) *server {
 		},
 	}
 	if rs, ok := store.(ReadStore); ok {
-		s.reader = newReadService(rs)
+		s.reader = newReadServiceWithConfig(rs, cfg)
 	}
 	return s
 }

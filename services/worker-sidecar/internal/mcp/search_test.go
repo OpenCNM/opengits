@@ -355,7 +355,7 @@ func TestNativeSearchDependencyHintInjection(t *testing.T) {
 	assert.Contains(t, text, "⚡ 依赖提示 (Prerequisite Hint)")
 	assert.Contains(t, text, "- 理解「deploy」建议先掌握:")
 	assert.Contains(t, text, "• 基础概念 (principle) [来源:教学顺序(确定) · w0.90]")
-	assert.Contains(t, text, "(可用 read_section 精读任一前置概念，或 learning_path 获取完整递进链)")
+	assert.Contains(t, text, "(可用 read 精读任一前置概念，或 explore_concept(action=\"path\") 获取完整递进链)")
 	assert.Contains(t, text, "(证据来源：共现/教学顺序/代码依赖=确定；LLM推断=可能幻觉)")
 }
 

@@ -68,6 +68,7 @@ type IngestBodyDeps struct {
 	Patterns             *Patterns
 	Languages            *LanguageDefinitions
 	GraphDir             string
+	GraphRepo            cognitive.GraphArtifactRepo
 	LLM                  LLMGenerator
 	Firecrawl            FirecrawlAPI
 	Gate                 *jobs.MemoryGate

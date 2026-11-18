@@ -63,7 +63,7 @@ export function formatCourseMap(repoProfile: unknown, navTree?: NavNode[] | null
       if (i + 1 < superTopics.length) text += `  ${id} --> T${String(i + 2).padStart(2, '0')}\n`;
     });
     text += '```\n\n';
-    text += `主题域清单（用 get_concept_details 深入任一概念，或 explore_concept 查邻居）：\n`;
+    text += `主题域清单（用 explore_concept(action="details") 深入任一概念，或 explore_concept(action="neighbors") 查邻居）：\n`;
     for (const t of superTopics) {
       text += `- ${t.title}`;
       if (t.summary) text += ` — ${t.summary}`;
@@ -177,7 +177,7 @@ export function formatCourseMap(repoProfile: unknown, navTree?: NavNode[] | null
     }
 
     text += '```\n\n';
-    text += `章节清单（可对任一章用 read_section / get_concept_details 深入）：\n`;
+    text += `章节清单（可对任一章用 read / explore_concept 深入）：\n`;
     for (const c of clusters) {
       text += `- ${c.teachingOrder}. ${c.title} — ${c.files.length} 文件\n`;
     }

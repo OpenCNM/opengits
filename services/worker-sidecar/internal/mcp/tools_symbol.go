@@ -1,10 +1,12 @@
 package mcp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -14,6 +16,11 @@ import (
 	"github.com/opengits/worker-sidecar/internal/archive"
 	"github.com/opengits/worker-sidecar/internal/armor"
 	"github.com/opengits/worker-sidecar/internal/rsg"
+)
+
+var (
+	graphBackfillCache = newTTLCache(5*time.Minute, 256)
+	graphBackfillHTTP  = &http.Client{Timeout: 45 * time.Second}
 )
 
 // readSymbolArgs read_symbol 工具调用参数。
@@ -71,17 +78,12 @@ func (s *readService) runReadSymbol(ctx context.Context, resolved *ResolvedRepo,
 	if graphDir == "" {
 		graphDir = "storage/graphs"
 	}
-	archiveRoot := os.Getenv("ARCHIVE_ROOT")
-	if archiveRoot == "" {
-		archiveRoot = "storage/repos"
-	}
+	archiveRoot := resolveArchiveRoot()
 
-	// 2. 尝试从 RSG 语义图谱产物查找
+	// 2. 尝试从 RSG 语义图谱产物查找（本地盘 → PostgreSQL → Worker 懒回填）
 	var detail *rsg.SymbolLookupDetail
-	if sha != "" {
-		if artifact, err := rsg.LoadSemanticGraphArtifact(graphDir, repo.Owner, repo.Repo, sha); err == nil && artifact != nil {
-			detail = rsg.LookupSymbolDetail(artifact, cleanSym, cleanFile)
-		}
+	if artifact := s.loadSemanticGraphForMCP(ctx, graphDir, repo.Owner, repo.Repo, sha, repo.Branch); artifact != nil {
+		detail = rsg.LookupSymbolDetail(artifact, cleanSym, cleanFile)
 	}
 
 	// 3. 若 RSG 未生成或未命中，回退到 repoProfile.codeClusters (GoldenSymbols + CallFlow)
@@ -193,9 +195,17 @@ func (s *readService) runReadSymbol(ctx context.Context, resolved *ResolvedRepo,
 
 	sourceSnippet := ""
 	if includeCode && aspect != "architecture" {
-		sourceSnippet = readSymbolSourceCode(archiveRoot, repo.Owner, repo.Repo, sha, detail.File, detail.Name, detail.StartLine, detail.EndLine)
-		if sourceSnippet == "" && repo.Branch != "" && repo.Branch != sha {
-			sourceSnippet = readSymbolSourceCode(archiveRoot, repo.Owner, repo.Repo, repo.Branch, detail.File, detail.Name, detail.StartLine, detail.EndLine)
+		for _, ref := range nonEmptyStrings(sha, repo.Branch) {
+			sourceSnippet = readSymbolSourceCode(archiveRoot, repo.Owner, repo.Repo, ref, detail.File, detail.Name, detail.StartLine, detail.EndLine)
+			if sourceSnippet != "" {
+				break
+			}
+			if raw := fetchImmutableSourceFile(ctx, archiveRoot, repo.Owner, repo.Repo, ref, detail.File); raw != "" {
+				sourceSnippet = sliceSymbolSourceContent(raw, detail.Name, detail.StartLine, detail.EndLine)
+				if sourceSnippet != "" {
+					break
+				}
+			}
 		}
 	}
 
@@ -368,12 +378,10 @@ func (s *readService) runSearchSymbols(ctx context.Context, resolved *ResolvedRe
 		Limit:      limit,
 	}
 
-	// 2. 尝试从 RSG 语义图谱检索
+	// 2. 尝试从 RSG 语义图谱检索（本地盘 → PostgreSQL → Worker 懒回填）
 	var results []*rsg.SymbolLookupDetail
-	if sha != "" {
-		if artifact, err := rsg.LoadSemanticGraphArtifact(graphDir, repo.Owner, repo.Repo, sha); err == nil && artifact != nil {
-			results = rsg.SearchSymbols(artifact, opts)
-		}
+	if artifact := s.loadSemanticGraphForMCP(ctx, graphDir, repo.Owner, repo.Repo, sha, repo.Branch); artifact != nil {
+		results = rsg.SearchSymbols(artifact, opts)
 	}
 
 	// 3. 若未生成或未命中，回退到 repoProfile.codeClusters
@@ -563,6 +571,10 @@ func readSymbolSourceCode(archiveRoot, owner, repo, ref, relPath, symName string
 		}
 		raw = string(b)
 	}
+	return sliceSymbolSourceContent(raw, symName, startLine, endLine)
+}
+
+func sliceSymbolSourceContent(raw, symName string, startLine, endLine int) string {
 	lines := strings.Split(raw, "\n")
 	if len(lines) == 0 {
 		return ""
@@ -614,4 +626,101 @@ func readSymbolSourceCode(archiveRoot, owner, repo, ref, relPath, symName string
 // extractSymbolSignature 纯确定性状态机提取代码符号接口契约与签名（零语法正则，严格遵守 Chomsky 边界与 GO-004）。
 func extractSymbolSignature(sourceCode, symName, lang string) string {
 	return armor.ExtractSymbolSignature(sourceCode, symName, lang)
+}
+
+// loadSemanticGraphForMCP 统一读取 RSG 语义图谱：
+// 1. 本地磁盘缓存 → 2. PostgreSQL RepoSemanticGraph → 3. 向 worker-sidecar 发起单飞按需懒回填。
+func (s *readService) loadSemanticGraphForMCP(ctx context.Context, graphDir, owner, repo, sha, branch string) *rsg.SemanticGraphArtifact {
+	refs := nonEmptyStrings(sha, branch)
+	if len(refs) == 0 || owner == "" || repo == "" {
+		return nil
+	}
+
+	for _, ref := range refs {
+		if artifact, err := rsg.LoadSemanticGraphArtifact(graphDir, owner, repo, ref); err == nil && artifact != nil {
+			return artifact
+		}
+	}
+
+	if s != nil && s.store != nil {
+		for _, ref := range refs {
+			if persisted, err := s.store.LoadSemanticGraph(ctx, owner, repo, ref); err == nil && persisted != nil {
+				_, _ = rsg.SaveSemanticGraphArtifact(graphDir, owner, repo, ref, persisted)
+				return persisted
+			}
+		}
+	}
+
+	if s == nil || s.workerSidecarURL == "" || sha == "" || strings.EqualFold(owner, "web-docs") {
+		return nil
+	}
+
+	sfKey := strings.ToLower(owner) + "/" + strings.ToLower(repo) + "@" + strings.ToLower(sha)
+	res, err := graphBackfillCache.getOrLoadWithCustomTTL(sfKey, func() (any, time.Duration, error) {
+		for _, ref := range refs {
+			if artifact, err := rsg.LoadSemanticGraphArtifact(graphDir, owner, repo, ref); err == nil && artifact != nil {
+				return artifact, 10 * time.Minute, nil
+			}
+			if s.store != nil {
+				if persisted, err := s.store.LoadSemanticGraph(ctx, owner, repo, ref); err == nil && persisted != nil {
+					_, _ = rsg.SaveSemanticGraphArtifact(graphDir, owner, repo, ref, persisted)
+					return persisted, 10 * time.Minute, nil
+				}
+			}
+		}
+
+		payload, _ := json.Marshal(struct {
+			Owner string `json:"owner"`
+			Repo  string `json:"repo"`
+			Sha   string `json:"sha"`
+			Query string `json:"query"`
+			Limit int    `json:"limit"`
+		}{
+			Owner: owner,
+			Repo:  repo,
+			Sha:   sha,
+			Query: "",
+			Limit: 1,
+		})
+
+		reqCtx, cancel := context.WithTimeout(ctx, 40*time.Second)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(reqCtx, http.MethodPost, s.workerSidecarURL+"/v1/graph/symbol-search", bytes.NewReader(payload))
+		if err != nil {
+			return (*rsg.SemanticGraphArtifact)(nil), 1 * time.Minute, nil
+		}
+		req.Header.Set("Content-Type", "application/json")
+		if s.internalToken != "" {
+			req.Header.Set("x-internal-token", s.internalToken)
+		}
+
+		resp, err := graphBackfillHTTP.Do(req)
+		if err != nil {
+			return (*rsg.SemanticGraphArtifact)(nil), 1 * time.Minute, nil
+		}
+		defer resp.Body.Close()
+		_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20))
+
+		if resp.StatusCode != http.StatusOK {
+			return (*rsg.SemanticGraphArtifact)(nil), 5 * time.Minute, nil
+		}
+
+		if s.store != nil {
+			if persisted, err := s.store.LoadSemanticGraph(ctx, owner, repo, sha); err == nil && persisted != nil {
+				_, _ = rsg.SaveSemanticGraphArtifact(graphDir, owner, repo, sha, persisted)
+				return persisted, 10 * time.Minute, nil
+			}
+		}
+		if artifact, err := rsg.LoadSemanticGraphArtifact(graphDir, owner, repo, sha); err == nil && artifact != nil {
+			return artifact, 10 * time.Minute, nil
+		}
+		return (*rsg.SemanticGraphArtifact)(nil), 1 * time.Minute, nil
+	})
+	if err != nil {
+		return nil
+	}
+
+	artifact, _ := res.(*rsg.SemanticGraphArtifact)
+	return artifact
 }

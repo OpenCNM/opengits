@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/opengits/worker-sidecar/internal/rsg"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -933,7 +934,7 @@ func TestNativeOutlineRepoModeNavTreeAndTaxonomy(t *testing.T) {
 	assert.True(t, principleIdx > archIdx, "architecture must precede principle")
 	assert.Contains(t, text, "  - 基础概念 [前置×1] — README.md")
 	assert.Contains(t, text, "- 事件循环 ×2 处同义 — docs/guide.md [Address: docs/guide.md#Guide > Event Loop]")
-	assert.True(t, strings.HasSuffix(text, "(Use get_concept_details (concept: \"<name>\") to dive into any concept above, or read_section with its Address for the source section.)\n(Next steps: use outline with \"path\" to inspect document headings, search to find keywords, or read with \"target\" to read content.)"))
+	assert.True(t, strings.HasSuffix(text, "(Use explore_concept (concept: \"<name>\") to dive into any concept above, or read with its Address for the source section.)\n(Next steps: use outline with \"path\" to inspect document headings, search to find keywords, or read with \"target\" to read content.)"))
 	assert.Contains(t, text, "(Next steps: use outline with \"path\" to inspect document headings, search to find keywords, or read with \"target\" to read content.)")
 }
 
@@ -1196,6 +1197,10 @@ func (f *readFakeStore) ConceptDependencyEdges(_ context.Context, _ string, _ []
 
 func (f *readFakeStore) GetRepoGitSha(_ context.Context, _ string) (string, string, string, bool) {
 	return f.repoGitSha.owner, f.repoGitSha.repo, f.repoGitSha.sha, f.repoGitSha.ok
+}
+
+func (f *readFakeStore) LoadSemanticGraph(_ context.Context, _, _, _ string) (*rsg.SemanticGraphArtifact, error) {
+	return nil, nil
 }
 
 // ── Phase 2f：explore_concept fake 扩展 ──

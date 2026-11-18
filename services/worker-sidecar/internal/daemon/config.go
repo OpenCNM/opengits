@@ -324,7 +324,7 @@ func loadConfigFromEnv() Config {
 
 		// 2026-09-17 Node 管线收刀：repo 摄取 Go 单一执行体，默认值由 node 翻转为 go
 		ImportJobExecutor:        envOr("IMPORT_JOB_EXECUTOR", "go"),
-		ArchiveRoot:              envOr("ARCHIVE_ROOT", "storage/repos"),
+		ArchiveRoot:              envOr("ARCHIVE_ROOT", envOr("TARBALL_CACHE_DIR", "storage/repos")),
 		EntryCapBytes:            int64(envIntOr("TARBALL_CACHE_ENTRY_CAP_MB", 1024)) * 1024 * 1024,
 		ArchiveDownloadTimeoutMs: envIntOr("ARCHIVE_DOWNLOAD_TIMEOUT_MS", 300000),
 

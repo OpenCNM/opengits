@@ -194,6 +194,7 @@ func Run(args []string) error {
 				Patterns:    patterns,
 				Languages:   langs,
 				GraphDir:    cfg.SemanticGraphDir,
+				GraphRepo:   rsg.NewPgGraphStore(pool),
 				LLM:         llmGW,
 				Firecrawl:   scout.NewFirecrawlClient(cfg.FirecrawlAPIURL, ""),
 				Gate:        memoryGate,

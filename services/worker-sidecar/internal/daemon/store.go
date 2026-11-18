@@ -186,6 +186,13 @@ func (s *pgxStore) postSwapDocument(ctx context.Context, repoID, docID, content 
 	return nil
 }
 
+func (s *pgxStore) Pool() *pgxpool.Pool {
+	if s == nil {
+		return nil
+	}
+	return s.pool
+}
+
 func (s *pgxStore) PostSwapDocument(ctx context.Context, repoID, docID, content string) error {
 	return s.postSwapDocument(ctx, repoID, docID, content)
 }

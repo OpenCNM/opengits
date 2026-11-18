@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/opengits/worker-sidecar/internal/platform/db"
+	"github.com/opengits/worker-sidecar/internal/rsg"
 )
 
 func toRepoRow(id, owner, repo, branch, edition string, semVerLabel pgtype.Text, mcpStatus string, category pgtype.Text, isPublic bool, navTree, repoProfile []byte) *RepoRow {
@@ -313,6 +314,14 @@ func (s *pgxStore) GetRepoGitSha(ctx context.Context, repositoryID string) (owne
 		return "", "", "", false
 	}
 	return row.Owner, row.Repo, row.GitSha.String, true
+}
+
+// LoadSemanticGraph 从 PostgreSQL RepoSemanticGraph 表读取持久化的 RSG 语义图谱。
+func (s *pgxStore) LoadSemanticGraph(ctx context.Context, owner, repo, sha string) (*rsg.SemanticGraphArtifact, error) {
+	if s == nil || s.pool == nil {
+		return nil, nil
+	}
+	return rsg.NewPgGraphStore(s.pool).LoadArtifact(ctx, owner, repo, sha)
 }
 
 // HasPrivateDocs 检查当前用户在指定仓库是否存在私有文档副本。

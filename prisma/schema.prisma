@@ -1509,3 +1509,19 @@ model DaemonTaskRun {
 
   @@index([task, createdAt])
 }
+
+/// RSG 语义图谱持久化索引（Single-Writer：仅 Go sidecar 写入与读取，
+/// 彻底消除容器重启、跨卷部署或本地磁盘淘汰导致的 AST 符号索引空洞）。
+model RepoSemanticGraph {
+  id          String   @id @default(cuid())
+  owner       String
+  repo        String
+  gitSha      String
+  payload     Bytes
+  symbolCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([owner, repo, gitSha])
+  @@index([owner, repo])
+}

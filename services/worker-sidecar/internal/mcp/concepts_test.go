@@ -118,7 +118,7 @@ func TestConceptNeighborsTemplate(t *testing.T) {
 	assert.Contains(t, text, "- 基础概念 (principle) ⇠[前置] [prerequisite · 来源:教学顺序(确定) · w0.80] (归并: 基础) — README.md\n  [Address: README.md#basics]")
 	// 出边：⇢[后继]
 	assert.Contains(t, text, "- 异步模式 (workflow) ⇢[后继] [successor · 来源:共现(确定) · w0.60]\n")
-	assert.True(t, strings.HasSuffix(text, "(可对任一邻居调用 get_concept_details / read_section 深入；学习顺序见 learning_path)\n(证据来源：共现/教学顺序/代码依赖=确定；LLM推断=可能幻觉，权重越高关系越强)"))
+	assert.True(t, strings.HasSuffix(text, "(可对任一邻居调用 explore_concept / read 深入；学习顺序见 explore_concept(action=\"path\"))\n(证据来源：共现/教学顺序/代码依赖=确定；LLM推断=可能幻觉，权重越高关系越强)"))
 }
 
 func TestConceptNeighborsEmpty(t *testing.T) {
@@ -154,7 +154,7 @@ func TestLearningPathChainAndTemplate(t *testing.T) {
 		"1. 函数基础 (principle) — basics.md\n" +
 		"2. 回调函数 (principle) — README.md\n" +
 		"3. 🎯 事件循环（目标概念）\n" +
-		"\n(按顺序阅读即可递进掌握；每个概念可用 read_section 精读，get_concept_details 深钻)"
+		"\n(按顺序阅读即可递进掌握；每个概念可用 read 精读，explore_concept 深钻)"
 	assert.Equal(t, want, text)
 }
 
@@ -196,7 +196,7 @@ func TestCourseMapSuperTopicsMermaid(t *testing.T) {
 	assert.True(t, strings.HasPrefix(text, "🗺️ Course Map（知识超主题骨架，2 个主题域）\n\n```mermaid\nflowchart TD\n"))
 	assert.Contains(t, text, `  T01["基础（2 概念组）"]`)
 	assert.Contains(t, text, "  T01 --> T02\n")
-	assert.Contains(t, text, "主题域清单（用 get_concept_details 深入任一概念，或 explore_concept 查邻居）：\n- 基础 — 语言基础\n- 进阶\n")
+	assert.Contains(t, text, "主题域清单（用 explore_concept(action=\"details\") 深入任一概念，或 explore_concept(action=\"neighbors\") 查邻居）：\n- 基础 — 语言基础\n- 进阶\n")
 	assert.Contains(t, text, "(超主题由图谱凝聚生成于 2026-09-01；覆盖 3 个概念组)\n")
 }
 
@@ -221,7 +221,7 @@ func TestCourseMapCodeClusters(t *testing.T) {
 	assert.True(t, strings.HasPrefix(text, "🗺️ Course Map — 2 章 / 3 文件（按教学顺序）\n\n```mermaid\nflowchart TD\n"))
 	assert.Contains(t, text, `  Ch01["1. 入门（1 文件）"]`)
 	assert.Contains(t, text, "  Ch01 --> Ch02\n")
-	assert.Contains(t, text, "章节清单（可对任一章用 read_section / get_concept_details 深入）：\n- 1. 入门 — 1 文件\n- 2. 进阶 — 2 文件\n")
+	assert.Contains(t, text, "章节清单（可对任一章用 read / explore_concept 深入）：\n- 1. 入门 — 1 文件\n- 2. 进阶 — 2 文件\n")
 }
 
 // 🧪 [7.14.2.1] TestCourseMapCognitiveDAGAndPhases 验证带认知梯度元数据的代码仓渲染真实 DAG 与阶段分层子图
