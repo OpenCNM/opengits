@@ -1,6 +1,9 @@
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
+-- Extensions required by trigram GIN indexes (gin_trgm_ops)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- CreateEnum
 CREATE TYPE "DocumentStatus" AS ENUM ('UNPROCESSED', 'PROCESSING', 'PROCESSED', 'ERROR');
 
@@ -231,7 +234,6 @@ CREATE TABLE "ContentReport" (
     "detail" TEXT,
     "triage" JSONB,
     "handledAt" TIMESTAMP(3),
-    "handledBy" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ContentReport_pkey" PRIMARY KEY ("id")
@@ -263,7 +265,6 @@ CREATE TABLE "ImportUpdateRun" (
     "plan" JSONB,
     "candidateSet" JSONB,
     "stats" JSONB,
-    "errorMessage" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "finishedAt" TIMESTAMP(3),
@@ -471,7 +472,7 @@ CREATE TABLE "DocumentChunk" (
     "contentType" TEXT NOT NULL DEFAULT 'prose',
     "content" TEXT NOT NULL,
     "order" INTEGER,
-    "searchVector" tsvector DEFAULT to_tsvector('simple'::regconfig, ((COALESCE(heading, ''::text) || ' '::text) || COALESCE(content, ''::text))),
+    "searchVector" tsvector GENERATED ALWAYS AS (to_tsvector('simple'::regconfig, ((COALESCE(heading, ''::text) || ' '::text) || COALESCE(content, ''::text)))) STORED,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

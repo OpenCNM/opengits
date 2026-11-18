@@ -23,7 +23,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:ddl-export": "npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > services/worker-sidecar/migrations/000001_baseline.sql",
+    "db:ddl-export": "node scripts/export-baseline-ddl.mjs",
     "sqlc:gen": "sqlc generate -f services/worker-sidecar/sqlc.yaml",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
