@@ -93,7 +93,7 @@ describe('course-map 与 cross-repo 纯函数格式化', () => {
 
     test('空仓库无 codeClusters 且 navTree 为空', () => {
       const text = formatCourseMap({}, []);
-      expect(text).toContain('无法生成课程图。可用 read_document（无参数）查看文档清单');
+      expect(text).toContain('无法生成课程图。可用 outline 查看文档清单');
     });
   });
 

@@ -41,7 +41,7 @@ func formatFanoutLocatorOutput(header string, hits []FanoutLocatorHit) string {
 		fmt.Fprintf(&b, "Address: %s\n", buildSectionAddress(h.Path, addrHeading))
 		fmt.Fprintf(&b, "Snippet: %s\n\n", h.Snippet)
 	}
-	b.WriteString(`(Use read_document with "repository" and "section" set to an Address above to fetch the complete section; pass "path" for the whole page.)`)
+	b.WriteString(hintHubReadSectionByTarget)
 	return b.String()
 }
 
@@ -457,6 +457,6 @@ func formatCrossRepoConceptSearch(query string, hits []CrossRepoConceptHit, gcMa
 		}
 	}
 
-	b.WriteString("\n(对任一命中调用 explore_concept(action='details', concept=..., repository=...) 深入，read_document(section=Address) 精读原文)")
+	b.WriteString("\n(对任一命中调用 explore_concept(action='details', concept=..., repository=...) 深入，read(target=Address, repository=...) 精读原文)")
 	return b.String()
 }

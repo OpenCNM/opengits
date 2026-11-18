@@ -294,13 +294,13 @@ func formatCourseMap(repoProfile json.RawMessage, navTree json.RawMessage) strin
 	// ③ navTree 文件兜底（shortTitle || title || path）
 	entries := flattenNavTreeFileEntries(navTree)
 	if len(entries) == 0 {
-		return "🗺️ Course Map：该仓库无 codeClusters（非代码教学仓），且 navTree 为空，无法生成课程图。可用 read_document（无参数）查看文档清单。"
+		return "🗺️ Course Map：该仓库无 codeClusters（非代码教学仓），且 navTree 为空，无法生成课程图。可用 outline 查看文档清单。"
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "🗺️ Course Map（文档大纲兜底，%d 篇）\n\n", len(entries))
 	for i, f := range entries {
 		if i >= 50 {
-			fmt.Fprintf(&b, "...（其余 %d 篇见 read_document 大纲）\n", len(entries)-50)
+			fmt.Fprintf(&b, "...（其余 %d 篇见 outline 大纲）\n", len(entries)-50)
 			break
 		}
 		fmt.Fprintf(&b, "%d. %s [Path: %s]\n", i+1, f.title, f.path)

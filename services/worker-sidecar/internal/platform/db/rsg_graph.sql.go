@@ -49,6 +49,26 @@ func (q *Queries) GetRepoSemanticGraph(ctx context.Context, arg GetRepoSemanticG
 	return i, err
 }
 
+const getRepositoryCuratedProfile = `-- name: GetRepositoryCuratedProfile :one
+SELECT "repoProfile"
+FROM "Repository"
+WHERE LOWER("owner") = LOWER($1) AND LOWER("repo") = LOWER($2)
+ORDER BY "updatedAt" DESC
+LIMIT 1
+`
+
+type GetRepositoryCuratedProfileParams struct {
+	Owner string `db:"owner" json:"owner"`
+	Repo  string `db:"repo" json:"repo"`
+}
+
+func (q *Queries) GetRepositoryCuratedProfile(ctx context.Context, arg GetRepositoryCuratedProfileParams) ([]byte, error) {
+	row := q.db.QueryRow(ctx, getRepositoryCuratedProfile, arg.Owner, arg.Repo)
+	var repoProfile []byte
+	err := row.Scan(&repoProfile)
+	return repoProfile, err
+}
+
 const upsertRepoSemanticGraph = `-- name: UpsertRepoSemanticGraph :exec
 INSERT INTO "RepoSemanticGraph" ("id", "owner", "repo", "gitSha", "payload", "symbolCount", "createdAt", "updatedAt")
 VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())

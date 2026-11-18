@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -149,4 +150,41 @@ func (s *PgGraphStore) SaveArtifact(ctx context.Context, owner, repo, sha string
 		Payload:     payload,
 		SymbolCount: int32(symbolCount),
 	})
+}
+
+// LoadCuratedPaths 从 Repository.repoProfile.codeClusters 读取教学聚类精选代码路径（供巨仓有界建图优先纳入）。
+func (s *PgGraphStore) LoadCuratedPaths(ctx context.Context, owner, repo string) ([]string, error) {
+	if s == nil || s.pool == nil {
+		return nil, nil
+	}
+	raw, err := db.New(s.pool).GetRepositoryCuratedProfile(ctx, db.GetRepositoryCuratedProfileParams{
+		Owner: strings.TrimSpace(owner),
+		Repo:  strings.TrimSpace(repo),
+	})
+	if errors.Is(err, pgx.ErrNoRows) || len(raw) == 0 {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var profile struct {
+		CodeClusters []struct {
+			Files []string `json:"files"`
+		} `json:"codeClusters"`
+	}
+	if err := json.Unmarshal(raw, &profile); err != nil {
+		return nil, err
+	}
+	seen := make(map[string]bool)
+	var out []string
+	for _, c := range profile.CodeClusters {
+		for _, f := range c.Files {
+			clean := strings.TrimSpace(f)
+			if clean != "" && !seen[clean] {
+				seen[clean] = true
+				out = append(out, clean)
+			}
+		}
+	}
+	return out, nil
 }

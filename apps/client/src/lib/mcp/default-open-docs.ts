@@ -91,12 +91,11 @@ OpenGits MCP 采用高内聚低冗余工具设计，全面支持单仓精搜与 
    - **返回**: 精确段落定位（Section Address: \`path#headingPath\`）及代码块
 
 ### 3. 精准文档钻取（Token 友好）
-3. **read_document**: 钻取文档大纲或读取指定章节小节的正文内容。
-   - **用途**: 传 \`path\` 不传 \`section\` 获取单篇内部目录结构（TOC）；传 \`section\` 精准拉取指定小节内容，极大节省 Agent 提示词上下文。
+3. **outline / read**: 钻取文档大纲（\`outline\`）或读取指定章节小节的正文内容（\`read\`）。
+   - **用途**: 调用 \`outline\` 获取仓库架构拓扑与文档内部目录；调用 \`read\` 传入 \`target\`（文档路径或 \`path#headingPath\`）精准拉取指定章节内容，极大节省 Agent 提示词上下文。
    - **输入**:
      - \`repository: string\` — 仓库 "owner/repo" 或 ID（Hub 模式必填）
-     - \`path?: string\` — 文档相对路径（如 "docs/getting-started.md"）
-     - \`section?: string\` — 精确小节地址（如 "docs/getting-started.md#Installation > Step 1" 或标题关键词）
+     - \`target?: string\` — 文档相对路径或精确小节地址（如 "docs/getting-started.md#Installation > Step 1"）
    - **返回**: Markdown 结构大纲或精准小节正文
 
 ### 4. 知识图谱深度探查
@@ -129,7 +128,7 @@ OpenGits MCP 采用高内聚低冗余工具设计，全面支持单仓精搜与 
 When asked about open-source library architecture, tutorial steps, code examples, or troubleshooting:
 1. Call 'list_resources' first to discover available tutorials and their tech stacks.
 2. Call 'search' (mode='docs' or mode='code') to retrieve section addresses and implementation snippets.
-3. Call 'read_document' with a section address (path#headingPath) to read exact content token-efficiently.
+3. Call 'read' with a section address target (path#headingPath) to read exact content token-efficiently.
 4. Call 'explore_concept' (action='path' or 'details') for deep conceptual architecture and learning chains.
 5. Before upgrading dependencies or writing migration code, call 'check_breaking_changes'.
 \`\`\`

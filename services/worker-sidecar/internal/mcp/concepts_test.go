@@ -45,7 +45,7 @@ func TestConceptDetailsFullTemplate(t *testing.T) {
 		"- 核心 SOP 开发步骤:\n  1. 识别调用栈\n  2. 追踪任务队列\n" +
 		"- 关联主题 (Sub Topics): 宏任务、微任务\n" +
 		"- 标签 (Tags): nodejs、async\n" +
-		"\n(Use read_document with \"section\" set to the Address above to read the source section in full.)"
+		"\n(Use read with \"target\" set to the Address above to read the source section in full.)"
 	assert.True(t, strings.HasPrefix(text, want), "details template mismatch:\n got: %q\nwant prefix:\n%q", text, want)
 }
 
@@ -74,7 +74,7 @@ func TestConceptDetailsErrorVariants(t *testing.T) {
 		{
 			name:      "unknown concept not found",
 			arguments: `{"concept":"nope"}`,
-			wantError: `Error: Concept "nope" not found in octo/kit. Use read_document (no arguments; see Knowledge Graph Concepts section) to see available concepts, or search to locate related content.`,
+			wantError: `Error: Concept "nope" not found in octo/kit. Use outline (see Knowledge Graph Concepts section) to see available concepts, or search to locate related content.`,
 		},
 		{
 			name:      "missing concept parameter guard",
@@ -129,7 +129,7 @@ func TestConceptNeighborsEmpty(t *testing.T) {
 	resp, body := callRead(t, ts, "/api/mcp/octo/kit", "concept_neighbors", `{"concept":"event-loop","action":"neighbors"}`)
 	defer resp.Body.Close()
 	text, _ := parseResultText(t, body)
-	want := "🧭 「事件循环」暂无直接邻居概念（图谱边尚未构建）。可尝试 list_documents 查看概念拓扑清单。"
+	want := "🧭 「事件循环」暂无直接邻居概念（图谱边尚未构建）。可尝试 outline 查看概念拓扑清单。"
 	assert.Equal(t, want, text)
 }
 
@@ -293,7 +293,7 @@ func TestCourseMapNavTreeFallbackAndEmpty(t *testing.T) {
 				seedAuth(t, store)
 			},
 			checkOutput: func(t *testing.T, text string) {
-				want := "🗺️ Course Map：该仓库无 codeClusters（非代码教学仓），且 navTree 为空，无法生成课程图。可用 read_document（无参数）查看文档清单。"
+				want := "🗺️ Course Map：该仓库无 codeClusters（非代码教学仓），且 navTree 为空，无法生成课程图。可用 outline 查看文档清单。"
 				assert.Equal(t, want, text)
 			},
 		},

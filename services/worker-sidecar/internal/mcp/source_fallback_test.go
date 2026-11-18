@@ -159,3 +159,56 @@ func TestLoadSemanticGraphForMCP_WorkerBackfill(t *testing.T) {
 	_, statErr := os.Stat(filepath.Join(graphDir, "acme", "kit", sha+".json"))
 	assert.NoError(t, statErr)
 }
+
+func TestSearchAndReadSymbol_OnDemandFileFallback(t *testing.T) {
+	tests := []struct {
+		name     string
+		relPath  string
+		symName  string
+		wantText string
+	}{
+		{
+			name:     "extracts TS symbols on demand from un-graphed repo file via immutable remote fallback",
+			relPath:  "extensions/openai/client.ts",
+			symName:  "createOpenAIClient",
+			wantText: "export function createOpenAIClient",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("ARCHIVE_ROOT", t.TempDir())
+			graphBackfillCache = newTTLCache(5*time.Minute, 256)
+
+			sha := "5555555555555555555555555555555555555555"
+			sourceBody := "export interface OpenAIConfig {\n  apiKey: string;\n}\n\nexport function createOpenAIClient(cfg: OpenAIConfig): string {\n  return cfg.apiKey;\n}\n"
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/octo/kit/"+sha+"/"+tt.relPath {
+					_, _ = w.Write([]byte(sourceBody))
+					return
+				}
+				w.WriteHeader(http.StatusNotFound)
+			}))
+			defer srv.Close()
+			setTestSourceFallbackBase(t, srv.URL)
+
+			store := newReadFakeStore()
+			seedAuth(t, store)
+			store.resolved["octo/kit"].Repository.RepoProfile = []byte(`{"gitSha":"` + sha + `"}`)
+
+			ts := readTestServer(t, store, nil)
+			resp, body := callRead(t, ts, "/api/mcp/octo/kit", "search_symbols", `{"file":"`+tt.relPath+`","query":"createOpenAIClient"}`)
+			defer resp.Body.Close()
+			text, isErr := parseResultText(t, body)
+			assert.False(t, isErr)
+			assert.Contains(t, text, tt.symName)
+			assert.Contains(t, text, tt.relPath)
+
+			resp2, body2 := callRead(t, ts, "/api/mcp/octo/kit", "read_symbol", `{"symbol":"`+tt.symName+`","file":"`+tt.relPath+`","aspect":"contract"}`)
+			defer resp2.Body.Close()
+			text2, isErr2 := parseResultText(t, body2)
+			assert.False(t, isErr2)
+			assert.Contains(t, text2, tt.wantText)
+		})
+	}
+}

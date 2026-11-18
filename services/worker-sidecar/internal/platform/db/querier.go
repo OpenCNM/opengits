@@ -202,6 +202,7 @@ type Querier interface {
 	GetRepoProfile(ctx context.Context, id string) ([]byte, error)
 	GetRepoSemanticGraph(ctx context.Context, arg GetRepoSemanticGraphParams) (GetRepoSemanticGraphRow, error)
 	GetRepoUnpublishState(ctx context.Context, id string) (GetRepoUnpublishStateRow, error)
+	GetRepositoryCuratedProfile(ctx context.Context, arg GetRepositoryCuratedProfileParams) ([]byte, error)
 	GetRepositoryForIngestStatus(ctx context.Context, arg GetRepositoryForIngestStatusParams) (GetRepositoryForIngestStatusRow, error)
 	GetRepositoryForWebSync(ctx context.Context, arg GetRepositoryForWebSyncParams) (GetRepositoryForWebSyncRow, error)
 	GetRepositoryHelpfulCount(ctx context.Context, id string) (int32, error)

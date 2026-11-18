@@ -187,12 +187,12 @@ export function formatCourseMap(repoProfile: unknown, navTree?: NavNode[] | null
   // 兜底：navTree 文件大纲
   const navFiles = flattenNavTreeEntries(navTree ?? undefined);
   if (navFiles.length === 0) {
-    return `🗺️ Course Map：该仓库无 codeClusters（非代码教学仓），且 navTree 为空，无法生成课程图。可用 read_document（无参数）查看文档清单。`;
+    return `🗺️ Course Map：该仓库无 codeClusters（非代码教学仓），且 navTree 为空，无法生成课程图。可用 outline 查看文档清单。`;
   }
   let text = `🗺️ Course Map（文档大纲兜底，${navFiles.length} 篇）\n\n`;
   navFiles.slice(0, 50).forEach((f, i) => {
     text += `${i + 1}. ${f.title} [Path: ${f.path}]\n`;
   });
-  if (navFiles.length > 50) text += `...（其余 ${navFiles.length - 50} 篇见 read_document 大纲）\n`;
+  if (navFiles.length > 50) text += `...（其余 ${navFiles.length - 50} 篇见 outline 大纲）\n`;
   return text;
 }

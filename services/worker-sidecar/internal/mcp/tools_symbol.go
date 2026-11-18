@@ -20,7 +20,7 @@ import (
 
 var (
 	graphBackfillCache = newTTLCache(5*time.Minute, 256)
-	graphBackfillHTTP  = &http.Client{Timeout: 45 * time.Second}
+	graphBackfillHTTP  = &http.Client{Timeout: 75 * time.Second}
 )
 
 // readSymbolArgs read_symbol 工具调用参数。
@@ -131,6 +131,32 @@ func (s *readService) runReadSymbol(ctx context.Context, resolved *ResolvedRepo,
 							}
 						}
 					}
+				}
+			}
+		}
+	}
+
+	// 3b. 若显式指定了 file 且 RSG/codeClusters 未覆盖（常见于巨仓未全量建图的文件），对该文件按需跑单文件 Tree-sitter AST 提取
+	if detail == nil && cleanFile != "" {
+		if onDemand := extractOnDemandFileSymbols(ctx, archiveRoot, repo.Owner, repo.Repo, cleanFile, nonEmptyStrings(sha, repo.Branch)...); len(onDemand) > 0 {
+			for _, candidate := range onDemand {
+				if strings.EqualFold(candidate.Name, cleanSym) {
+					detail = candidate
+					break
+				}
+			}
+			if detail == nil {
+				symLower := strings.ToLower(cleanSym)
+				for _, candidate := range onDemand {
+					if strings.Contains(strings.ToLower(candidate.Name), symLower) {
+						detail = candidate
+						break
+					}
+				}
+			}
+			if detail == nil {
+				for _, candidate := range onDemand {
+					availableCandidates = append(availableCandidates, fmt.Sprintf("%s (%s)", candidate.Name, candidate.File))
 				}
 			}
 		}
@@ -394,6 +420,26 @@ func (s *readService) runSearchSymbols(ctx context.Context, resolved *ResolvedRe
 		}
 	}
 
+	// 3b. 若显式指定了 file 且 RSG/codeClusters 均未命中，对单文件执行按需 Tree-sitter AST 符号抽取（巨仓定向钻取兜底）
+	if len(results) == 0 && cleanFile != "" {
+		archiveRoot := resolveArchiveRoot()
+		if onDemand := extractOnDemandFileSymbols(ctx, archiveRoot, repo.Owner, repo.Repo, cleanFile, nonEmptyStrings(sha, repo.Branch)...); len(onDemand) > 0 {
+			qLower := strings.ToLower(cleanQuery)
+			for _, cand := range onDemand {
+				if cleanRole != "" && cleanRole != "all" && cand.Role != cleanRole {
+					continue
+				}
+				if qLower != "" && !strings.Contains(strings.ToLower(cand.Name), qLower) {
+					continue
+				}
+				results = append(results, cand)
+				if len(results) >= limit {
+					break
+				}
+			}
+		}
+	}
+
 	// 4. 若依然无结果，返回友好提示
 	if len(results) == 0 {
 		s.recordTelemetry(ctx, CallLogEntry{
@@ -518,58 +564,30 @@ func detectSourceLanguage(path string) string {
 	return armor.DetectSourceLanguage(path)
 }
 
-// readSymbolSourceCode 从本地磁盘解压归档中安全提取代码片段（封顶 2MB 防内存膨胀）。
+// readSymbolSourceCode 从本地磁盘解压归档或紧凑包中安全提取代码片段（封顶 2MB 防内存膨胀）。
 func readSymbolSourceCode(archiveRoot, owner, repo, ref, relPath, symName string, startLine, endLine int) string {
 	if archiveRoot == "" || owner == "" || repo == "" || ref == "" || relPath == "" {
 		return ""
 	}
-	base := filepath.Join(archiveRoot, owner, repo, ref)
-	var raw string
-	if st, err := os.Stat(base); err != nil || !st.IsDir() {
-		lowerBase := archive.ArchiveDirFor(archiveRoot, owner, repo, ref)
-		if st2, err2 := os.Stat(lowerBase); err2 == nil && st2.IsDir() {
-			base = lowerBase
-		} else {
-			compactPath := archive.CompactArchivePathFor(archiveRoot, owner, repo, ref)
-			if cst, cerr := os.Stat(compactPath); cerr == nil && !cst.IsDir() {
-				if startLine > 0 && endLine >= startLine {
-					content, err := archive.ReadSingleFileFromCompactArchive(compactPath, relPath, startLine, endLine, maxSourceFileReadBytes)
-					if err == nil {
-						return content
-					}
-					return ""
+	raw := readRawArchiveFileForSymbol(archiveRoot, owner, repo, ref, relPath)
+	if raw == "" {
+		compactPath := archive.CompactArchivePathFor(archiveRoot, owner, repo, ref)
+		if cst, cerr := os.Stat(compactPath); cerr == nil && !cst.IsDir() {
+			if startLine > 0 && endLine >= startLine {
+				if content, err := archive.ReadSingleFileFromCompactArchive(compactPath, relPath, startLine, endLine, maxSourceFileReadBytes); err == nil {
+					return content
 				}
-				content, err := archive.ReadSingleFileFromCompactArchive(compactPath, relPath, 0, 0, maxSourceFileReadBytes)
-				if err != nil || content == "" {
-					return ""
-				}
-				raw = content
+				return ""
 			}
+			content, err := archive.ReadSingleFileFromCompactArchive(compactPath, relPath, 0, 0, maxSourceFileReadBytes)
+			if err != nil || content == "" {
+				return ""
+			}
+			raw = content
 		}
 	}
-
 	if raw == "" {
-		full := filepath.Join(base, filepath.FromSlash(relPath))
-		rel, err := filepath.Rel(base, full)
-		if err != nil || strings.HasPrefix(rel, "..") {
-			return ""
-		}
-		f, err := os.Open(full)
-		if err != nil {
-			return ""
-		}
-		defer f.Close()
-
-		st, err := f.Stat()
-		if err != nil || st.IsDir() || st.Size() > maxSourceFileReadBytes {
-			return ""
-		}
-
-		b, err := io.ReadAll(io.LimitReader(f, maxSourceFileReadBytes+1))
-		if err != nil || int64(len(b)) > maxSourceFileReadBytes {
-			return ""
-		}
-		raw = string(b)
+		return ""
 	}
 	return sliceSymbolSourceContent(raw, symName, startLine, endLine)
 }
@@ -621,6 +639,87 @@ func sliceSymbolSourceContent(raw, symName string, startLine, endLine int) strin
 
 	// 4. 超大文件截断输出前 60 行
 	return strings.Join(lines[:60], "\n") + "\n\n// ... [Truncated: specify symbol start_line/end_line for targeted inspection]"
+}
+
+// extractOnDemandFileSymbols 对显式指定的文件按需执行单文件 Tree-sitter AST 符号抽取（巨仓定向排查兜底）。
+func extractOnDemandFileSymbols(ctx context.Context, archiveRoot, owner, repo, relPath string, refs ...string) []*rsg.SymbolLookupDetail {
+	cleanRel := strings.TrimPrefix(filepath.ToSlash(strings.TrimSpace(relPath)), "./")
+	if cleanRel == "" {
+		return nil
+	}
+	var raw string
+	for _, ref := range refs {
+		if ref == "" {
+			continue
+		}
+		raw = readRawArchiveFileForSymbol(archiveRoot, owner, repo, ref, cleanRel)
+		if raw == "" && archiveRoot != "" {
+			compactPath := archive.CompactArchivePathFor(archiveRoot, owner, repo, ref)
+			if content, err := archive.ReadSingleFileFromCompactArchive(compactPath, cleanRel, 0, 0, maxSourceFileReadBytes); err == nil {
+				raw = content
+			}
+		}
+		if raw == "" {
+			raw = fetchImmutableSourceFile(ctx, archiveRoot, owner, repo, ref, cleanRel)
+		}
+		if raw != "" {
+			break
+		}
+	}
+	if raw == "" {
+		return nil
+	}
+	defs := rsg.DefaultLanguageDefinitions()
+	if defs == nil {
+		return nil
+	}
+	ast := defs.ExtractFileAst(raw, cleanRel)
+	if len(ast.Symbols) == 0 {
+		return nil
+	}
+	out := make([]*rsg.SymbolLookupDetail, 0, len(ast.Symbols))
+	for _, sym := range ast.Symbols {
+		out = append(out, &rsg.SymbolLookupDetail{
+			Name:      sym.Name,
+			Kind:      sym.Kind,
+			File:      cleanRel,
+			StartLine: sym.StartLine,
+			EndLine:   sym.EndLine,
+			Role:      "leaf_utility",
+		})
+	}
+	return out
+}
+
+func readRawArchiveFileForSymbol(archiveRoot, owner, repo, ref, relPath string) string {
+	if archiveRoot == "" || owner == "" || repo == "" || ref == "" || relPath == "" {
+		return ""
+	}
+	for _, base := range []string{
+		filepath.Join(archiveRoot, owner, repo, ref),
+		archive.ArchiveDirFor(archiveRoot, owner, repo, ref),
+	} {
+		full := filepath.Join(base, filepath.FromSlash(relPath))
+		rel, err := filepath.Rel(base, full)
+		if err != nil || strings.HasPrefix(rel, "..") {
+			continue
+		}
+		f, err := os.Open(full)
+		if err != nil {
+			continue
+		}
+		st, err := f.Stat()
+		if err != nil || st.IsDir() || st.Size() > maxSourceFileReadBytes {
+			_ = f.Close()
+			continue
+		}
+		b, err := io.ReadAll(io.LimitReader(f, maxSourceFileReadBytes+1))
+		_ = f.Close()
+		if err == nil && int64(len(b)) <= maxSourceFileReadBytes {
+			return string(b)
+		}
+	}
+	return ""
 }
 
 // extractSymbolSignature 纯确定性状态机提取代码符号接口契约与签名（零语法正则，严格遵守 Chomsky 边界与 GO-004）。
@@ -683,7 +782,7 @@ func (s *readService) loadSemanticGraphForMCP(ctx context.Context, graphDir, own
 			Limit: 1,
 		})
 
-		reqCtx, cancel := context.WithTimeout(ctx, 40*time.Second)
+		reqCtx, cancel := context.WithTimeout(ctx, 65*time.Second)
 		defer cancel()
 
 		req, err := http.NewRequestWithContext(reqCtx, http.MethodPost, s.workerSidecarURL+"/v1/graph/symbol-search", bytes.NewReader(payload))

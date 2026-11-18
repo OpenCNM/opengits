@@ -70,7 +70,7 @@ async function runGetConceptDetails(args: ConceptDetailsArgs, runtime: RepoRunti
 
   if (!concept) {
     return {
-      content: [{ type: 'text' as const, text: `Error: "concept" is required. Pass a concept name or slug (see read_document outline, Knowledge Graph Concepts section).` }],
+      content: [{ type: 'text' as const, text: `Error: "concept" is required. Pass a concept name or slug (see outline, Knowledge Graph Concepts section).` }],
       isError: true,
     };
   }
@@ -85,7 +85,7 @@ async function runGetConceptDetails(args: ConceptDetailsArgs, runtime: RepoRunti
       telemetry: { dimension: 'all', query: concept, resultCount: 0, resultSnapshot: { count: 0, concept } },
       content: [{
         type: 'text' as const,
-        text: `Error: Concept "${concept}" not found in ${ctx.owner}/${ctx.repo}. Use read_document (no arguments; see Knowledge Graph Concepts section) to see available concepts, or search to locate related content.`,
+        text: `Error: Concept "${concept}" not found in ${ctx.owner}/${ctx.repo}. Use outline (see Knowledge Graph Concepts section) to see available concepts, or search to locate related content.`,
       }],
       isError: true,
     };
@@ -168,7 +168,7 @@ async function runGetConceptDetails(args: ConceptDetailsArgs, runtime: RepoRunti
     outputText += `- 标签 (Tags): ${conceptNode.tags.join('、')}\n`;
   }
   if (docPath && conceptNode.headingPath) {
-    outputText += `\n(Use read_document with "section" set to the Address above to read the source section in full.)`;
+    outputText += `\n(Use read with "target" set to the Address above to read the source section in full.)`;
   }
 
   // 图谱邻接增强（设计规范 §4.2）：前置知识链 + 直接邻居（静默，无依赖时不输出）
@@ -210,7 +210,7 @@ async function runConceptNeighbors(args: { repository?: string; concept: string 
 
   if (!concept) {
     return {
-      content: [{ type: 'text' as const, text: `Error: "concept" is required. Pass a concept name or slug (see read_document outline, Knowledge Graph Concepts section).` }],
+      content: [{ type: 'text' as const, text: `Error: "concept" is required. Pass a concept name or slug (see outline, Knowledge Graph Concepts section).` }],
       isError: true,
     };
   }
@@ -222,7 +222,7 @@ async function runConceptNeighbors(args: { repository?: string; concept: string 
       telemetry: { dimension: 'all', query: concept, resultCount: 0, resultSnapshot: { count: 0, concept } },
       content: [{
         type: 'text' as const,
-        text: `Error: Concept "${concept}" not found in ${ctx.owner}/${ctx.repo}. Use read_document (no arguments; see Knowledge Graph Concepts section) to see available concepts, or search to locate related content.`,
+        text: `Error: Concept "${concept}" not found in ${ctx.owner}/${ctx.repo}. Use outline (see Knowledge Graph Concepts section) to see available concepts, or search to locate related content.`,
       }],
       isError: true,
     };
@@ -250,7 +250,7 @@ async function runLearningPath(args: { repository?: string; concept: string }, r
 
   if (!concept) {
     return {
-      content: [{ type: 'text' as const, text: `Error: "concept" is required. Pass a target concept name or slug (see read_document outline, Knowledge Graph Concepts section).` }],
+      content: [{ type: 'text' as const, text: `Error: "concept" is required. Pass a target concept name or slug (see outline, Knowledge Graph Concepts section).` }],
       isError: true,
     };
   }
@@ -262,7 +262,7 @@ async function runLearningPath(args: { repository?: string; concept: string }, r
       telemetry: { dimension: 'all', query: concept, resultCount: 0, resultSnapshot: { count: 0, concept } },
       content: [{
         type: 'text' as const,
-        text: `Error: Concept "${concept}" not found in ${ctx.owner}/${ctx.repo}. Use read_document (no arguments; see Knowledge Graph Concepts section) to see available concepts.`,
+        text: `Error: Concept "${concept}" not found in ${ctx.owner}/${ctx.repo}. Use outline (see Knowledge Graph Concepts section) to see available concepts.`,
       }],
       isError: true,
     };

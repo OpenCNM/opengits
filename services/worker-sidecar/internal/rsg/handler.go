@@ -2,6 +2,7 @@ package rsg
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -50,6 +51,11 @@ type MemoryGate interface {
 
 // ArchiveEnsurer 按需拉取并解压指定 Git SHA 归档的回调契约。
 type ArchiveEnsurer func(ctx context.Context, owner, repo, sha string) (string, error)
+
+// CuratedFileLoader 提供教学聚类精选文件路径（供巨仓有界语义建图优先纳入核心模块）。
+type CuratedFileLoader interface {
+	LoadCuratedPaths(ctx context.Context, owner, repo string) ([]string, error)
+}
 
 // Handler manages HTTP endpoints for the RSG package.
 type Handler struct {
@@ -166,8 +172,170 @@ func (h *Handler) BuildGraphOnDemand(owner, repo, sha string) (*SemanticGraphArt
 // IsGiantNow 的主判据 totalValidFiles > 1000）。
 const graphBuildMaxValidFiles = 1000
 
+// giantRepoScopedMaxFiles 巨仓（>1000 有效文件）按需符号索引的物理有界预算：
+// 教学精选文件 + 顶层目录按深度轮转抽样核心源码，严格守在 MemoryGate / 1000 阈值内。
+const giantRepoScopedMaxFiles = 600
+
 // errGiantRepoBuild 巨仓拒绝建图（调用方回落 404 语义，客户端按契约走 TS 投影兜底）。
 var errGiantRepoBuild = fmt.Errorf("giant repo not eligible for semantic graph build (valid files > %d)", graphBuildMaxValidFiles)
+
+func walkArchiveNodes(archiveDir string) []GitNode {
+	var nodes []GitNode
+	_ = filepath.Walk(archiveDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(archiveDir, path)
+		if err != nil {
+			return nil
+		}
+		nodes = append(nodes, GitNode{
+			Path: filepath.ToSlash(rel),
+			Type: "blob",
+			Size: info.Size(),
+		})
+		return nil
+	})
+	return nodes
+}
+
+// SelectBoundedNodesForGiantRepo 为超大规模仓库筛选有界核心文件集（<= maxFiles）：
+// 1. 优先纳入教学聚类精选源码（codeClusters）与路径别名配置（tsconfig/composer）；
+// 2. 其余按顶层子系统轮转 + 路径浅层优先（入口与契约文件优先于深层叶子）填满预算。
+func SelectBoundedNodesForGiantRepo(
+	nodes []GitNode,
+	curatedPaths []string,
+	defs *LanguageDefinitions,
+	patterns Patterns,
+	maxFiles int,
+) []GitNode {
+	if maxFiles <= 0 {
+		maxFiles = giantRepoScopedMaxFiles
+	}
+	if maxFiles > graphBuildMaxValidFiles {
+		maxFiles = graphBuildMaxValidFiles
+	}
+	if defs == nil {
+		defs = DefaultLanguageDefinitions()
+	}
+	maxBytes := defs.Config.MaxParseFileBytes
+	if maxBytes <= 0 {
+		maxBytes = 1024 * 1024
+	}
+
+	curatedSet := make(map[string]bool, len(curatedPaths))
+	for _, p := range curatedPaths {
+		norm := strings.ToLower(strings.TrimPrefix(filepath.ToSlash(strings.TrimSpace(p)), "./"))
+		if norm != "" {
+			curatedSet[norm] = true
+		}
+	}
+
+	var curatedNodes, configNodes, testNodes []GitNode
+	nonTestByTop := make(map[string][]GitNode)
+
+	for _, n := range nodes {
+		if n.Type != "blob" {
+			continue
+		}
+		if patterns != nil && (patterns.IsNonContentDir(n.Path) || patterns.IsNonContentFile(n.Path)) {
+			continue
+		}
+		cleanPath := strings.TrimPrefix(filepath.ToSlash(n.Path), "./")
+		if strings.HasSuffix(cleanPath, "composer.json") || (strings.HasSuffix(cleanPath, ".json") && isTsConfigPath(cleanPath)) {
+			if n.Size <= int64(maxBytes) {
+				configNodes = append(configNodes, n)
+			}
+			continue
+		}
+		if defs.DetectLanguage(cleanPath) == nil || n.Size > int64(maxBytes) {
+			continue
+		}
+		if curatedSet[strings.ToLower(cleanPath)] {
+			curatedNodes = append(curatedNodes, n)
+			continue
+		}
+		if defs.IsTestFile(cleanPath) {
+			testNodes = append(testNodes, n)
+			continue
+		}
+		top := ""
+		if idx := strings.IndexByte(cleanPath, '/'); idx >= 0 {
+			top = cleanPath[:idx]
+		}
+		nonTestByTop[top] = append(nonTestByTop[top], n)
+	}
+
+	sortByDepthThenPath := func(s []GitNode) {
+		sort.Slice(s, func(i, j int) bool {
+			di := strings.Count(s[i].Path, "/")
+			dj := strings.Count(s[j].Path, "/")
+			if di != dj {
+				return di < dj
+			}
+			return s[i].Path < s[j].Path
+		})
+	}
+	sortByDepthThenPath(curatedNodes)
+	sortByDepthThenPath(configNodes)
+	if len(configNodes) > 20 {
+		configNodes = configNodes[:20]
+	}
+
+	topDirs := make([]string, 0, len(nonTestByTop))
+	for top, bucket := range nonTestByTop {
+		sortByDepthThenPath(bucket)
+		nonTestByTop[top] = bucket
+		topDirs = append(topDirs, top)
+	}
+	sort.Strings(topDirs)
+
+	selected := make([]GitNode, 0, maxFiles)
+	appendWithinBudget := func(n GitNode) bool {
+		if len(selected) >= maxFiles {
+			return false
+		}
+		selected = append(selected, n)
+		return true
+	}
+
+	for _, n := range configNodes {
+		if !appendWithinBudget(n) {
+			return selected
+		}
+	}
+	for _, n := range curatedNodes {
+		if !appendWithinBudget(n) {
+			return selected
+		}
+	}
+
+	for idx := 0; len(selected) < maxFiles; idx++ {
+		progressed := false
+		for _, top := range topDirs {
+			bucket := nonTestByTop[top]
+			if idx < len(bucket) {
+				progressed = true
+				if !appendWithinBudget(bucket[idx]) {
+					return selected
+				}
+			}
+		}
+		if !progressed {
+			break
+		}
+	}
+
+	if len(selected) == 0 && len(testNodes) > 0 {
+		sortByDepthThenPath(testNodes)
+		for _, n := range testNodes {
+			if !appendWithinBudget(n) {
+				break
+			}
+		}
+	}
+	return selected
+}
 
 // countValidBlobs 有效内容文件计数（非内容目录/文件剔除；builder 侧还有语言与
 // 体积过滤，此计数为保守超集——只会更早拒绝，不会漏拒）。
@@ -218,21 +386,7 @@ func (h *Handler) buildGraphArtifact(ctx context.Context, req GraphBuildRequest)
 	archiveDir := archive.ArchiveDirFor(archiveRoot, req.Owner, req.Repo, req.Sha)
 	nodes := req.Nodes
 	if len(nodes) == 0 {
-		_ = filepath.Walk(archiveDir, func(path string, info os.FileInfo, err error) error {
-			if err != nil || info.IsDir() {
-				return nil
-			}
-			rel, err := filepath.Rel(archiveDir, path)
-			if err != nil {
-				return nil
-			}
-			nodes = append(nodes, GitNode{
-				Path: filepath.ToSlash(rel),
-				Type: "blob",
-				Size: info.Size(),
-			})
-			return nil
-		})
+		nodes = walkArchiveNodes(archiveDir)
 	}
 
 	defs := h.getLanguageDefs()
@@ -312,12 +466,15 @@ func (h *Handler) LoadOrBuildSemanticGraph(ctx context.Context, owner, repo, sha
 			}
 		}
 
+		buildCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 90*time.Second)
+		defer cancel()
+
 		archiveDir := archive.ArchiveDirFor(archiveRoot, owner, repo, sha)
 		if !hasArchiveFiles(archiveDir) {
 			if h.ensureArchive == nil || strings.EqualFold(owner, "web-docs") {
 				return nil, os.ErrNotExist
 			}
-			if _, eerr := h.ensureArchive(ctx, owner, repo, sha); eerr != nil {
+			if _, eerr := h.ensureArchive(buildCtx, owner, repo, sha); eerr != nil {
 				return nil, eerr
 			}
 			if !hasArchiveFiles(archiveDir) {
@@ -325,7 +482,33 @@ func (h *Handler) LoadOrBuildSemanticGraph(ctx context.Context, owner, repo, sha
 			}
 		}
 
-		return h.buildGraphArtifact(ctx, GraphBuildRequest{Owner: owner, Repo: repo, Sha: sha})
+		art, berr := h.buildGraphArtifact(buildCtx, GraphBuildRequest{Owner: owner, Repo: repo, Sha: sha})
+		if errors.Is(berr, errGiantRepoBuild) {
+			var curated []string
+			if loader, ok := h.graphRepo.(CuratedFileLoader); ok {
+				if paths, lerr := loader.LoadCuratedPaths(buildCtx, owner, repo); lerr == nil {
+					curated = paths
+				}
+			}
+			scopedNodes := SelectBoundedNodesForGiantRepo(
+				walkArchiveNodes(archiveDir),
+				curated,
+				h.getLanguageDefs(),
+				h.getIngestPatterns(),
+				giantRepoScopedMaxFiles,
+			)
+			if len(scopedNodes) == 0 {
+				return nil, berr
+			}
+			log.Printf("[rsg] giant repo %s/%s@%s scoped semantic graph build (curated=%d, sampled=%d)", owner, repo, sha, len(curated), len(scopedNodes))
+			return h.buildGraphArtifact(buildCtx, GraphBuildRequest{
+				Owner: owner,
+				Repo:  repo,
+				Sha:   sha,
+				Nodes: scopedNodes,
+			})
+		}
+		return art, berr
 	})
 	if err != nil {
 		return nil, err

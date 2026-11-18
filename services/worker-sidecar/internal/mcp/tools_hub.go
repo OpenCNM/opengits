@@ -424,7 +424,7 @@ func (s *readService) runHubSkillCoverage(ctx context.Context, userID, skill str
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("\n(对覆盖仓调用 explore_concept(action='path') 看完整前置链，read_document(section=Address) 精读)")
+	b.WriteString("\n(对覆盖仓调用 explore_concept(action='path') 看完整前置链，read(target=Address, repository=...) 精读)")
 	return readResult{Text: b.String()}
 }
 
@@ -514,7 +514,7 @@ func (s *readService) runHubRecommend(ctx context.Context, userID, clientName, d
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("(对推荐教程调用 explore_concept(action='course_map') 看结构，read_document(section=Address) 精读覆盖概念)")
+	b.WriteString("(对推荐教程调用 explore_concept(action='course_map') 看结构，read(target=Address, repository=...) 精读覆盖概念)")
 	return readResult{Text: b.String()}
 }
 

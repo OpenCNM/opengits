@@ -370,9 +370,16 @@ func formatLocatorOutput(header string, hits []LocatorHit) string {
 		fmt.Fprintf(&b, "Address: %s\n", buildSectionAddress(h.Path, addressHeading))
 		fmt.Fprintf(&b, "Snippet: %s\n\n", h.Snippet)
 	}
-	b.WriteString(`(Use read_document with "section" set to an Address above to fetch the complete section; pass "path" for the whole page.)`)
+	b.WriteString(hintReadSectionByTarget)
 	return b.String()
 }
+
+const (
+	hintReadSectionByTarget    = `(Use read with "target" set to an Address above to fetch the complete section, or pass a document path for the whole page.)`
+	hintHubReadSectionByTarget = `(Use read with "repository" and "target" set to an Address above to fetch the complete section, or pass a document path for the whole page.)`
+	hintConceptRequiredMsg     = `Error: "concept" is required. Pass a concept name or slug (see outline, Knowledge Graph Concepts section).`
+	hintConceptReadSection     = "\n(Use read with \"target\" set to the Address above to read the source section in full.)"
+)
 
 // ── 概念富化注入（对齐 doc-search.ts injectConceptEnrichments 全链） ──
 

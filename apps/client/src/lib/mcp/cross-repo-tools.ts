@@ -168,7 +168,7 @@ export function formatCrossRepoConceptSearch(
     }
   }
 
-  text += `\n(对任一命中调用 explore_concept(action='details', concept=..., repository=...) 深入，read_document(section=Address) 精读原文)`;
+  text += `\n(对任一命中调用 explore_concept(action='details', concept=..., repository=...) 深入，read(target=Address, repository=...) 精读原文)`;
   return text;
 }
 
@@ -278,7 +278,7 @@ export function formatRecommendTutorial(description: string, ranked: RepoCoverag
     if (r.matchedConcepts.length > 12) text += `...（另有 ${r.matchedConcepts.length - 12} 个）\n`;
     text += `\n`;
   });
-  text += `(对推荐教程调用 explore_concept(action='course_map') 看结构，read_document(section=Address) 精读覆盖概念)`;
+  text += `(对推荐教程调用 explore_concept(action='course_map') 看结构，read(target=Address, repository=...) 精读覆盖概念)`;
   return text;
 }
 
@@ -329,6 +329,6 @@ export function formatSkillCoverage(skill: string, hits: SkillCoverageHit[]): st
     if (h.address) text += ` [Address: ${h.address}]`;
     text += `\n`;
   }
-  text += `\n(对覆盖仓调用 explore_concept(action='path') 看完整前置链，read_document(section=Address) 精读)`;
+  text += `\n(对覆盖仓调用 explore_concept(action='path') 看完整前置链，read(target=Address, repository=...) 精读)`;
   return text;
 }

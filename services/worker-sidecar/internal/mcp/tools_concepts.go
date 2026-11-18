@@ -86,7 +86,7 @@ func (s *readService) runConceptQuiz(ctx context.Context, repo RepoRow, userID, 
 			ToolName: "explore_concept", UserID: userID, ClientName: clientName, RepositoryID: repo.ID,
 			Dimension: "documents", Status: "BLIND_SPOT", ResultCount: 0, ResponseTimeMs: time.Since(startTime).Milliseconds(),
 		})
-		return readResult{Text: fmt.Sprintf("Concept %q not found; pass a concept name from read_document outline.", concept), IsError: true}
+		return readResult{Text: fmt.Sprintf("Concept %q not found; pass a concept name from outline (Knowledge Graph Concepts section).", concept), IsError: true}
 	}
 	quizzes, err := s.store.GetDocumentQuizzesByPath(ctx, repo.ID, *node.DocumentPath)
 	if err != nil {
@@ -367,7 +367,7 @@ func renderSubsystemArchitecture(repo RepoRow, concept string) string {
 func (s *readService) runConceptDetails(ctx context.Context, repo RepoRow, userID, clientName, concept string) readResult {
 	startTime := time.Now()
 	if concept == "" {
-		return readResult{Text: `Error: "concept" is required. Pass a concept name or slug (see read_document outline, Knowledge Graph Concepts section).`, IsError: true}
+		return readResult{Text: hintConceptRequiredMsg, IsError: true}
 	}
 	node, _ := s.store.ResolveConceptNode(ctx, repo.ID, concept)
 	if node == nil {
@@ -453,7 +453,7 @@ func (s *readService) runConceptDetails(ctx context.Context, repo RepoRow, userI
 		b.WriteString("- 标签 (Tags): " + strings.Join(node.Tags, "、") + "\n")
 	}
 	if docPath != "" && deref(node.HeadingPath) != "" {
-		b.WriteString("\n(Use read_document with \"section\" set to the Address above to read the source section in full.)")
+		b.WriteString(hintConceptReadSection)
 	}
 
 	// 依赖提示 + 内联邻居（静默，无则不输出）
@@ -482,7 +482,7 @@ func (s *readService) runConceptDetails(ctx context.Context, repo RepoRow, userI
 }
 
 func conceptNotFoundMsg(concept, owner, repo string, withSearchHint bool) string {
-	msg := fmt.Sprintf("Error: Concept %q not found in %s/%s. Use read_document (no arguments; see Knowledge Graph Concepts section) to see available concepts", concept, owner, repo)
+	msg := fmt.Sprintf("Error: Concept %q not found in %s/%s. Use outline (see Knowledge Graph Concepts section) to see available concepts", concept, owner, repo)
 	if withSearchHint {
 		msg += ", or search to locate related content"
 	}
@@ -494,7 +494,7 @@ func conceptNotFoundMsg(concept, owner, repo string, withSearchHint bool) string
 func (s *readService) runConceptNeighbors(ctx context.Context, repo RepoRow, userID, clientName, concept string) readResult {
 	startTime := time.Now()
 	if concept == "" {
-		return readResult{Text: `Error: "concept" is required. Pass a concept name or slug (see read_document outline, Knowledge Graph Concepts section).`, IsError: true}
+		return readResult{Text: hintConceptRequiredMsg, IsError: true}
 	}
 	node, _ := s.store.ResolveConceptNode(ctx, repo.ID, concept)
 	if node == nil {
@@ -517,7 +517,7 @@ func (s *readService) runConceptNeighbors(ctx context.Context, repo RepoRow, use
 // formatNeighborsOutput 对齐 concept-graph-formatter.ts（含空态/归并/Address/证据声明）。
 func formatNeighborsOutput(conceptName string, neighbors []neighborItem) string {
 	if len(neighbors) == 0 {
-		return "🧭 「" + conceptName + "」暂无直接邻居概念（图谱边尚未构建）。可尝试 list_documents 查看概念拓扑清单。"
+		return "🧭 「" + conceptName + "」暂无直接邻居概念（图谱边尚未构建）。可尝试 outline 查看概念拓扑清单。"
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "🧭 概念邻居（Concept Neighbors）— %s\n\n", conceptName)
@@ -565,7 +565,7 @@ type pathChainItem struct {
 func (s *readService) runLearningPath(ctx context.Context, repo RepoRow, userID, clientName, concept string) readResult {
 	startTime := time.Now()
 	if concept == "" {
-		return readResult{Text: `Error: "concept" is required. Pass a target concept name or slug (see read_document outline, Knowledge Graph Concepts section).`, IsError: true}
+		return readResult{Text: hintConceptRequiredMsg, IsError: true}
 	}
 	node, _ := s.store.ResolveConceptNode(ctx, repo.ID, concept)
 	if node == nil {

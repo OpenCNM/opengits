@@ -176,7 +176,7 @@ export function formatNeighborsOutput(
   }>
 ): string {
   if (neighbors.length === 0) {
-    return `🧭 「${conceptName}」暂无直接邻居概念（图谱边尚未构建）。可尝试 list_documents 查看概念拓扑清单。`;
+    return `🧭 「${conceptName}」暂无直接邻居概念（图谱边尚未构建）。可尝试 outline 查看概念拓扑清单。`;
   }
   let text = `🧭 概念邻居（Concept Neighbors）— ${conceptName}\n\n`;
   for (const n of neighbors) {

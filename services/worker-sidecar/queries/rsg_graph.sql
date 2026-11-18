@@ -12,3 +12,10 @@ DO UPDATE SET
   "payload" = EXCLUDED."payload",
   "symbolCount" = EXCLUDED."symbolCount",
   "updatedAt" = NOW();
+
+-- name: GetRepositoryCuratedProfile :one
+SELECT "repoProfile"
+FROM "Repository"
+WHERE LOWER("owner") = LOWER(sqlc.arg(owner)) AND LOWER("repo") = LOWER(sqlc.arg(repo))
+ORDER BY "updatedAt" DESC
+LIMIT 1;

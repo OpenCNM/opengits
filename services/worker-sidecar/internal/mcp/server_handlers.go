@@ -110,7 +110,7 @@ func (s *server) handleNativePromptsGet(w http.ResponseWriter, params json.RawMe
 		text := fmt.Sprintf(`请按以下工作流讲解「%s」的架构：
 1. 调用 search 检索 "%s" 相关章节（mode='architecture', detail='locator'）%s
 2. 若 search 输出含「核心概念/图位置/依赖提示」，对该概念调用 explore_concept(action='details') 获取原理/SOP/作者思考；如需递进背景调用 explore_concept(action='path')
-3. 对得分最高的 2-3 个命中调用 read_document(section=Address) 读取完整章节（Address 取自第 1 步输出）
+3. 对得分最高的 2-3 个命中调用 read(target=Address) 读取完整章节（Address 取自第 1 步输出）
 4. 综合输出%s`, topic, topic, repoSuffix, summaryPart)
 
 		res = GetPromptResult{
@@ -128,7 +128,7 @@ func (s *server) handleNativePromptsGet(w http.ResponseWriter, params json.RawMe
 		text := fmt.Sprintf(`请按以下工作流规划「%s」的项目搭建：
 1. 选教程：调用 list_resources(query="%s") 筛选最契合的书架教程；单仓模式直接用 search(mode='architecture', query="%s") 检索技术栈初始化章节（detail='locator'）%s
 2. 对选定教程调用 explore_concept(action='course_map') 看整体结构，再用 check_breaking_changes 审计破坏性变更与迁移风险%s
-3. 对命中的关键章节调用 read_document(section=Address) 精读（Address 取自第 1 步输出）
+3. 对命中的关键章节调用 read(target=Address) 精读（Address 取自第 1 步输出）
 4. 输出项目搭建计划：技术选型确认、初始化步骤清单（每步附溯源 Address）、风险等级（BLOCKER/MAJOR/MINOR）`, goal, goal, goal, repoSuffix, repoSuffix)
 
 		res = GetPromptResult{
@@ -145,7 +145,7 @@ func (s *server) handleNativePromptsGet(w http.ResponseWriter, params json.RawMe
 		}
 		text := fmt.Sprintf(`请按以下工作流审计「%s」的破坏性变更与迁移风险：
 1. 调用 check_breaking_changes（query="%s"，detail='locator'）%s
-2. 对命中的关键章节调用 read_document(section=Address) 精读
+2. 对命中的关键章节调用 read(target=Address) 精读
 3. 输出迁移清单：受影响 API、破坏点、迁移步骤、风险等级（BLOCKER/MAJOR/MINOR）`, target, target, repoSuffix)
 
 		res = GetPromptResult{
@@ -162,7 +162,7 @@ func (s *server) handleNativePromptsGet(w http.ResponseWriter, params json.RawMe
 		}
 		text := fmt.Sprintf(`请按以下工作流带我递进掌握「%s」：
 1. 调用 explore_concept（concept="%s", action='path'）%s 获取前置知识链
-2. 按链上顺序（先前置后目标）逐个调用 explore_concept(action='details') 深钻原理/SOP，必要时 read_document(section=Address) 精读溯源章节
+2. 按链上顺序（先前置后目标）逐个调用 explore_concept(action='details') 深钻原理/SOP，必要时 read(target=Address) 精读溯源章节
 3. 输出学习清单：每一步的概念、核心原理一句话、溯源 Address，以及最后的综合小结`, concept, concept, repoSuffix)
 
 		res = GetPromptResult{

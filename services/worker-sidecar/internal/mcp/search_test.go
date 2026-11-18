@@ -268,7 +268,7 @@ func TestNativeSearchLocatorTemplate(t *testing.T) {
 	assert.True(t, strings.HasPrefix(text, "Search Results for \"deploy\" across octo/kit [Locator Mode]\n\n"))
 	assert.Contains(t, text, "--- Result 1 (Score: ")
 	assert.Contains(t, text, "Snippet: ")
-	assert.True(t, strings.HasSuffix(text, `(Use read_document with "section" set to an Address above to fetch the complete section; pass "path" for the whole page.)`))
+	assert.True(t, strings.HasSuffix(text, `(Use read with "target" set to an Address above to fetch the complete section, or pass a document path for the whole page.)`))
 }
 
 func TestNativeSearchFullModeTemplate(t *testing.T) {
