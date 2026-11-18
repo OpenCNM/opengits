@@ -299,7 +299,7 @@ async function queryPublicHomeData(sort: HomeSortKey): Promise<PublicHomeData> {
   // 书架费展示价（收费透明化）：劳动账本 × 系数。展示口径统一——豁免/私有不在此判定
   // （收藏时精确计算），让用户先看到锚定价，鼓励「贡献即免费」的预期。
   const { getDynamicCreditsConfig } = await import('@/lib/credits-config');
-  const { computeShelfFee } = await import('@/lib/credits/shelf-fee');
+  const { resolveEffectiveShelfFee } = await import('@/lib/credits/shelf-fee');
   const config = await getDynamicCreditsConfig();
   const shelfFees: Record<string, number> = {};
   for (const repo of hydratedPublicRepos) {
@@ -308,11 +308,12 @@ async function queryPublicHomeData(sort: HomeSortKey): Promise<PublicHomeData> {
       repo._count?.documents ??
       docsByRepoBaseline[repo.id]?.length ??
       0;
-    shelfFees[repo.id] = computeShelfFee(
-      repo.transcriptionCreditsEarned ?? 0,
-      config.shelfFeeMultiplier,
-      docCount
-    );
+    shelfFees[repo.id] = resolveEffectiveShelfFee({
+      shelfFeeOverride: repo.shelfFeeOverride,
+      transcriptionCreditsEarned: repo.transcriptionCreditsEarned,
+      shelfFeeMultiplier: config.shelfFeeMultiplier,
+      docCount,
+    });
   }
 
   return {
@@ -334,8 +335,8 @@ function getCachedGetter(sort: HomeSortKey): () => Promise<PublicHomeData> {
   if (!getter) {
     getter = unstable_cache(
       () => queryPublicHomeData(sort),
-      // v5：全面透出 repoProfile.siteTitle 与一句话简介 (description)
-      ['public-home-data-v5', sort],
+      // v6：支持 Repository.shelfFeeOverride 单仓书架费覆盖
+      ['public-home-data-v6', sort],
       {
         tags: [PUBLIC_HOME_CACHE_TAG],
         revalidate: ENGINE_CONFIG.pagination.homeCacheTtlSeconds,

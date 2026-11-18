@@ -266,6 +266,46 @@ describe('chargeShelfFeeAndSave', () => {
       expect.anything()
     );
   });
+
+  it('管理员显式设置 shelfFeeOverride=0 时绕过账本与篇数保底，按 0 积分免费入架', async () => {
+    const { chargeShelfFeeAndSave, resolveEffectiveShelfFee } = await mod();
+    expect(
+      resolveEffectiveShelfFee({
+        shelfFeeOverride: 0,
+        transcriptionCreditsEarned: 230,
+        shelfFeeMultiplier: 1.0,
+        docCount: 24,
+      })
+    ).toBe(0);
+    expect(
+      resolveEffectiveShelfFee({
+        shelfFeeOverride: null,
+        transcriptionCreditsEarned: 230,
+        shelfFeeMultiplier: 1.0,
+        docCount: 24,
+      })
+    ).toBe(230);
+
+    repoFindUniqueMock.mockResolvedValue({
+      isPublic: true,
+      transcriptionCreditsEarned: 230,
+      shelfFeeOverride: 0,
+      _count: { documents: 24 },
+    });
+    callSidecarMock.mockResolvedValueOnce({
+      ok: true,
+      fee: 0,
+      signupGift: 0,
+      alreadySaved: false,
+    });
+    const res = await chargeShelfFeeAndSave('u1', 'r-free', true);
+    expect(res).toEqual({ ok: true, fee: 0, signupGift: 0, alreadySaved: false });
+    expect(callSidecarMock).toHaveBeenCalledWith(
+      '/v1/credits/shelf-fee/charge',
+      expect.objectContaining({ userId: 'u1', repositoryId: 'r-free', autoFollow: true, fee: 0 }),
+      expect.anything()
+    );
+  });
 });
 
 
@@ -277,6 +317,7 @@ describe('独立身价写入已退役', () => {
       'chargeShelfFeeAndSave',
       'computeShelfFee',
       'isShelfFeeExempt',
+      'resolveEffectiveShelfFee',
     ]);
     expect(repoUpdateMock).not.toHaveBeenCalled();
   });

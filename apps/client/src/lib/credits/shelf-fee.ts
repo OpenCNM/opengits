@@ -40,6 +40,26 @@ export function computeShelfFee(
 }
 
 /**
+ * 书架最终定价单一事实源：存在管理员显式覆盖价（shelfFeeOverride，0=免费）时优先采用，
+ * 否则回落按劳动账本与文档保底规模的公式计算。
+ */
+export function resolveEffectiveShelfFee(params: {
+  shelfFeeOverride?: number | null;
+  transcriptionCreditsEarned?: number | null;
+  shelfFeeMultiplier: number;
+  docCount?: number;
+}): number {
+  if (typeof params.shelfFeeOverride === 'number' && Number.isFinite(params.shelfFeeOverride)) {
+    return Math.max(0, Math.round(params.shelfFeeOverride));
+  }
+  return computeShelfFee(
+    params.transcriptionCreditsEarned ?? 0,
+    params.shelfFeeMultiplier,
+    params.docCount
+  );
+}
+
+/**
  * 豁免判定：导入者（含维护者）或本仓转录贡献者免收藏费。
  * 无法确认豁免资格时中止操作，不能把数据库故障解释为用户需要付费。
  */
@@ -85,6 +105,7 @@ export async function chargeShelfFeeAndSave(
     select: {
       isPublic: true,
       transcriptionCreditsEarned: true,
+      shelfFeeOverride: true,
       _count: { select: { documents: true } },
     },
   });
@@ -95,11 +116,12 @@ export async function chargeShelfFeeAndSave(
     (await isShelfFeeExempt(userId, repositoryId));
   const rawFee = exempt
     ? 0
-    : computeShelfFee(
-        repo?.transcriptionCreditsEarned ?? 0,
-        config.shelfFeeMultiplier,
-        repo?._count?.documents
-      );
+    : resolveEffectiveShelfFee({
+        shelfFeeOverride: repo?.shelfFeeOverride,
+        transcriptionCreditsEarned: repo?.transcriptionCreditsEarned,
+        shelfFeeMultiplier: config.shelfFeeMultiplier,
+        docCount: repo?._count?.documents,
+      });
   const fee = typeof rawFee === 'number' && Number.isFinite(rawFee) ? Math.max(0, Math.round(rawFee)) : 0;
 
   const { executeSidecarShelfFeeCharge } = await import('@/engine/credits-driver');

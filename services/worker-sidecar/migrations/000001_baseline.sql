@@ -104,6 +104,7 @@ CREATE TABLE "Repository" (
     "publishGiftAt" TIMESTAMP(3),
     "relayNotifiedAt" TIMESTAMP(3),
     "transcriptionCreditsEarned" INTEGER NOT NULL DEFAULT 0,
+    "shelfFeeOverride" INTEGER,
     "category" TEXT,
     "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "views" INTEGER NOT NULL DEFAULT 0,

@@ -160,6 +160,8 @@ model Repository {
   /// 转录劳动账本（累计）：市场两段 + JIT 首译 + 导入转录奖励的实发积分之和，
   /// 书架费定价基数（× shelfFeeMultiplier）。发放点经 incrementTranscriptionLedger 记账。
   transcriptionCreditsEarned Int       @default(0)
+  /// 书架费定价覆盖（Admin 可控）：null = 按系统公式计算；0 = 免费加入书架；>0 = 指定积分。
+  shelfFeeOverride           Int?
   category                   String?
   tags                       String[]  @default([])
   views                      Int       @default(0)
