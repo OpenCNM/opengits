@@ -167,6 +167,16 @@ func Run(args []string) error {
 	llmGW := client.NewLlmGatewayClient(cfg.LlmGatewayURL, cfg.InternalToken)
 	webInternal := client.NewInternalWebClient(cfg.WebInternalURL, cfg.InternalToken)
 
+	// 共享语言定义与 PG 图谱仓储：供 Go ingest（导入收尾建图）与 Go transcription（Grounding + 章节增量固化）复用
+	var sharedLangs *rsg.LanguageDefinitions
+	if (cfg.ImportJobsEnabled && cfg.ImportJobExecutor == "go") || (cfg.TranscriptionEnabled && cfg.TranscriptionExecutor == "go") {
+		sharedLangs = rsg.DefaultLanguageDefinitions()
+		if sharedTsEngineRef != nil {
+			sharedLangs.SetTsEngine(sharedTsEngineRef)
+		}
+	}
+	sharedGraphRepo := rsg.NewPgGraphStore(pool)
+
 	var transcriptionRunner *transcription.TranscriptionRunner
 
 	var jobRunner *jobs.Runner
@@ -181,10 +191,6 @@ func Run(args []string) error {
 		store.SetImportReward(webClient)
 		if cfg.ImportJobExecutor == "go" {
 			patterns := serverPatterns
-			langs := rsg.DefaultLanguageDefinitions()
-			if sharedTsEngineRef != nil {
-				langs.SetTsEngine(sharedTsEngineRef)
-			}
 			jobRunner.SetBodyDeps(ingest.IngestBodyDeps{
 				Store:       store,
 				Archive:     ingest.NewLocalArchiveClient(archiveEnsure),
@@ -192,9 +198,9 @@ func Run(args []string) error {
 				SettleJob:   store.SettleImportJob,
 				ArchiveRoot: cfg.ArchiveRoot,
 				Patterns:    patterns,
-				Languages:   langs,
+				Languages:   sharedLangs,
 				GraphDir:    cfg.SemanticGraphDir,
-				GraphRepo:   rsg.NewPgGraphStore(pool),
+				GraphRepo:   sharedGraphRepo,
 				LLM:         llmGW,
 				Firecrawl:   scout.NewFirecrawlClient(cfg.FirecrawlAPIURL, ""),
 				Gate:        memoryGate,
@@ -232,6 +238,13 @@ func Run(args []string) error {
 				Llm:           llmGW,
 				Store:         store,
 				FinalizeStore: store,
+				GraphRepo:     sharedGraphRepo,
+				ExtractFileSymbols: func(content, filePath string) []cognitive.SymbolEntry {
+					if sharedLangs == nil {
+						return nil
+					}
+					return sharedLangs.ExtractFileAst(content, filePath).Symbols
+				},
 				OnIndexRefresh: func(repoId string) {
 					if indexBuilder != nil {
 						indexBuilder.ScheduleRefresh(repoId)

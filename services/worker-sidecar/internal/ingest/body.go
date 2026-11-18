@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/opengits/worker-sidecar/internal/archive"
 	"github.com/opengits/worker-sidecar/internal/cognitive"
 	"github.com/opengits/worker-sidecar/internal/jobs"
+	"github.com/opengits/worker-sidecar/internal/mdpat"
 	"github.com/opengits/worker-sidecar/internal/reputation"
 	"github.com/opengits/worker-sidecar/internal/rsg"
 	"github.com/opengits/worker-sidecar/internal/webdoc"
@@ -574,6 +576,10 @@ func runIngestBody(ctx context.Context, cfg Config, deps IngestBodyDeps, job Job
 	if out != ingestDone {
 		return out
 	}
+
+	// 5.5 归档热盘期收尾固化有界 RSG 符号图谱（必须在后台 CompactArchive 收卷前完成，且在当前 Gate 租约内直接传入 nil gate 避免重入死锁；Fail-Soft 不阻断已落库主流程）
+	ensurePostCommitSemanticGraph(ctx, cfg, deps, job, sha, nodes, plan.Chapters, plan.ProfilePatch, scan.IsGiant)
+
 	reporter.Report(ctx, "导入完成", 100, true)
 	log.Printf("[ingest-body] job %s done: %s/%s@%s docs=%d (go path)", job.Id, job.Owner, job.Repo, sha[:min(7, len(sha))], created)
 
@@ -607,6 +613,106 @@ func runIngestBody(ctx context.Context, cfg Config, deps IngestBodyDeps, job Job
 	}
 
 	return ingestDone
+}
+
+// extractCuratedPathsFromPlan 从已收敛的 chapters 与 profilePatch.codeClusters 中抽取物理代码文件路径。
+func extractCuratedPathsFromPlan(chapters []ChapterInput, profilePatch map[string]any) []string {
+	seen := make(map[string]bool)
+	var out []string
+	addPath := func(raw string) {
+		p, _ := mdpat.SplitPathAnchor(strings.TrimSpace(raw))
+		if p != "" && !seen[p] {
+			seen[p] = true
+			out = append(out, p)
+		}
+	}
+	for _, ch := range chapters {
+		for _, f := range ch.Files {
+			addPath(f.Path)
+		}
+	}
+	if profilePatch != nil {
+		switch clusters := profilePatch["codeClusters"].(type) {
+		case []ModuleSnapshot:
+			for _, c := range clusters {
+				for _, f := range c.Files {
+					addPath(f)
+				}
+			}
+		case []any:
+			for _, item := range clusters {
+				if m, ok := item.(map[string]any); ok {
+					if files, ok := m["files"].([]any); ok {
+						for _, f := range files {
+							if s, ok := f.(string); ok {
+								addPath(s)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return out
+}
+
+// ensurePostCommitSemanticGraph 在 commitIngest 之后、后台收卷前，趁归档热在本地磁盘为非纯文档仓固化有界语义图谱。
+// 若 ladderRSGProjection 之前已建图则毫秒级复用/入库；若命中巨仓/上层大纲跳过，则此处补齐并入库。
+func ensurePostCommitSemanticGraph(
+	ctx context.Context,
+	cfg Config,
+	deps IngestBodyDeps,
+	job JobRow,
+	sha string,
+	nodes []GitNode,
+	chapters []ChapterInput,
+	profilePatch map[string]any,
+	isGiant bool,
+) {
+	if deps.Languages == nil || sha == "" || strings.EqualFold(job.Owner, "web-docs") {
+		return
+	}
+	archiveRoot := deps.ArchiveRoot
+	if archiveRoot == "" {
+		archiveRoot = cfg.ArchiveRoot
+	}
+	graphDir := deps.GraphDir
+	if graphDir == "" {
+		graphDir = cfg.SemanticGraphDir
+	}
+
+	var candidateNodes []GitNode
+	if !isGiant {
+		candidateNodes = nodes
+	}
+	curatedPaths := extractCuratedPathsFromPlan(chapters, profilePatch)
+
+	rsgCtx, cancel := context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+
+	var pat rsg.Patterns
+	if deps.Patterns != nil {
+		pat = deps.Patterns
+	}
+	if _, err := rsg.EnsureBoundedSemanticGraph(
+		rsgCtx,
+		archiveRoot,
+		graphDir,
+		job.Owner,
+		job.Repo,
+		sha,
+		deps.Languages,
+		pat,
+		candidateNodes,
+		curatedPaths,
+		deps.GraphRepo,
+		nil, // runIngestBody 外层已持有 MemoryGate 租约（line 484），禁重入以免死锁
+	); err != nil {
+		msg := err.Error()
+		if !strings.Contains(msg, "no parseable source files") && !strings.Contains(msg, "no eligible source files") {
+			log.Printf("[ingest-body] post-commit semantic graph build skipped/warn for %s/%s@%s: %v", job.Owner, job.Repo, sha[:min(7, len(sha))], err)
+		}
+	}
 }
 
 // DraftOutlineFile 大纲章节文件条目。

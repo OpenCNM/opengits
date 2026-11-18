@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/opengits/worker-sidecar/internal/armor"
 	"github.com/opengits/worker-sidecar/internal/cognitive"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -516,4 +517,122 @@ func TestRunCodeChapterTranscription_GroundingGateReject(t *testing.T) {
 	require.Error(t, err)
 	assert.Equal(t, bodyFailed, outcome)
 	assert.Contains(t, err.Error(), "hallucinations persist")
+}
+
+type fakeIncrementalGraphRepo struct {
+	artifacts  map[string]*cognitive.SemanticGraphArtifact
+	mergeCalls int
+}
+
+func (f *fakeIncrementalGraphRepo) LoadArtifact(_ context.Context, owner, repo, sha string) (*cognitive.SemanticGraphArtifact, error) {
+	return f.artifacts[owner+"/"+repo+"@"+sha], nil
+}
+
+func (f *fakeIncrementalGraphRepo) SaveArtifact(_ context.Context, owner, repo, sha string, artifact *cognitive.SemanticGraphArtifact) error {
+	f.artifacts[owner+"/"+repo+"@"+sha] = artifact
+	return nil
+}
+
+func (f *fakeIncrementalGraphRepo) MergeFileSymbols(_ context.Context, owner, repo, sha string, fileSymbols map[string][]cognitive.SymbolEntry) (*cognitive.SemanticGraphArtifact, error) {
+	f.mergeCalls++
+	key := owner + "/" + repo + "@" + sha
+	merged, changed := cognitive.MergeSymbolsIntoArtifact(f.artifacts[key], sha, fileSymbols)
+	if changed {
+		f.artifacts[key] = merged
+	}
+	return merged, nil
+}
+
+func TestBuildGroundingIndexWithDeps_DBFallbackAndIncrementalMerge(t *testing.T) {
+	sha := "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+	tests := []struct {
+		name           string
+		setupRepo      func(f *fakeIncrementalGraphRepo)
+		chapterFiles   []string
+		snippets       []armor.ArmorAllocatedSnippet
+		extractFn      func(content, filePath string) []cognitive.SymbolEntry
+		wantMergeCalls int
+		check          func(t *testing.T, idx cognitive.GroundingIndex, graphDir string, repo *fakeIncrementalGraphRepo)
+	}{
+		{
+			name: "warms missing local disk graphDir from persisted DB artifact",
+			setupRepo: func(f *fakeIncrementalGraphRepo) {
+				f.artifacts["o/r@"+sha] = &cognitive.SemanticGraphArtifact{
+					Version: 2,
+					GitSha:  sha,
+					Nodes: []cognitive.SemanticGraphArtifactNode{
+						{Path: "src/core.ts", Language: "ts"},
+					},
+					SymbolsByFile: map[string][]cognitive.SymbolEntry{
+						"src/core.ts": {{Name: "InitCore", Kind: "function", StartLine: 1, EndLine: 5}},
+					},
+				}
+			},
+			chapterFiles:   []string{"src/core.ts"},
+			wantMergeCalls: 0,
+			check: func(t *testing.T, idx cognitive.GroundingIndex, graphDir string, _ *fakeIncrementalGraphRepo) {
+				assert.Contains(t, idx.Paths, "src/core.ts")
+				require.Len(t, idx.SymbolsByFile["src/core.ts"], 1)
+				assert.Equal(t, "InitCore", idx.SymbolsByFile["src/core.ts"][0].Name)
+
+				diskArt, err := cognitive.LoadSemanticGraphArtifact(graphDir, "o", "r", sha)
+				require.NoError(t, err)
+				require.NotNil(t, diskArt)
+			},
+		},
+		{
+			name: "extracts symbols for un-graphed chapter snippet and merges into DB",
+			setupRepo: func(f *fakeIncrementalGraphRepo) {
+				f.artifacts["o/r@"+sha] = &cognitive.SemanticGraphArtifact{
+					Version: 2,
+					GitSha:  sha,
+					Nodes:   []cognitive.SemanticGraphArtifactNode{{Path: "src/core.ts"}},
+					SymbolsByFile: map[string][]cognitive.SymbolEntry{
+						"src/core.ts": {{Name: "InitCore", Kind: "function", StartLine: 1, EndLine: 5}},
+					},
+				}
+			},
+			chapterFiles: []string{"extensions/tail/plugin.ts"},
+			snippets: []armor.ArmorAllocatedSnippet{
+				{Path: "extensions/tail/plugin.ts", Snippet: "export function RegisterTail() { return true; }\n"},
+			},
+			extractFn: func(content, filePath string) []cognitive.SymbolEntry {
+				return []cognitive.SymbolEntry{{Name: "RegisterTail", Kind: "function", StartLine: 1, EndLine: 1, Exported: true}}
+			},
+			wantMergeCalls: 1,
+			check: func(t *testing.T, idx cognitive.GroundingIndex, _ string, repo *fakeIncrementalGraphRepo) {
+				require.Len(t, idx.SymbolsByFile["extensions/tail/plugin.ts"], 1)
+				assert.Equal(t, "RegisterTail", idx.SymbolsByFile["extensions/tail/plugin.ts"][0].Name)
+				persisted := repo.artifacts["o/r@"+sha]
+				require.NotNil(t, persisted)
+				require.Len(t, persisted.SymbolsByFile["extensions/tail/plugin.ts"], 1)
+				assert.Equal(t, "RegisterTail", persisted.SymbolsByFile["extensions/tail/plugin.ts"][0].Name)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			graphDir := t.TempDir()
+			repo := &fakeIncrementalGraphRepo{artifacts: make(map[string]*cognitive.SemanticGraphArtifact)}
+			tt.setupRepo(repo)
+
+			idx := buildGroundingIndexWithDeps(
+				context.Background(),
+				"",
+				graphDir,
+				"o",
+				"r",
+				sha,
+				"main",
+				tt.chapterFiles,
+				tt.snippets,
+				repo,
+				tt.extractFn,
+			)
+			assert.Equal(t, tt.wantMergeCalls, repo.mergeCalls)
+			tt.check(t, idx, graphDir, repo)
+		})
+	}
 }

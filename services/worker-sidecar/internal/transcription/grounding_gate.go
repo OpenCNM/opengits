@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/opengits/worker-sidecar/internal/armor"
+	"github.com/opengits/worker-sidecar/internal/chapter"
 	"github.com/opengits/worker-sidecar/internal/cognitive"
 	"github.com/opengits/worker-sidecar/internal/mdpat"
 )
@@ -84,6 +86,100 @@ func (e *GroundingRejectError) Error() string {
 		parts = append(parts, fmt.Sprintf("symbol '%s' not declared in '%s'", s.Symbol, s.File))
 	}
 	return fmt.Sprintf("hallucinations persist after rewrite for %s: %s", e.DocPath, strings.Join(parts, "; "))
+}
+
+// buildGroundingIndexWithDeps 在 buildGroundingIndex 之上叠加 PostgreSQL DB 回退与章节源码增量 AST 固化：
+// 1. 本地图谱盘缺失时先尝试从 DB 恢复并回暖本地磁盘；
+// 2. 对本章未入图（如巨仓未抽样）源码文件即时跑单文件 AST 提取并立即注入 GroundingIndex + 异步/原子回写 DB。
+func buildGroundingIndexWithDeps(
+	ctx context.Context,
+	archiveRoot, graphDir, owner, repo, sha, branch string,
+	chapterFilePaths []string,
+	snippets []armor.ArmorAllocatedSnippet,
+	graphRepo cognitive.GraphArtifactRepo,
+	extractSymbols func(content, filePath string) []cognitive.SymbolEntry,
+) cognitive.GroundingIndex {
+	if graphRepo != nil && graphDir != "" && owner != "" && repo != "" && sha != "" {
+		if _, err := cognitive.OpenSemanticGraphArtifactLazy(graphDir, owner, repo, sha); err != nil {
+			if _, lerr := cognitive.LoadSemanticGraphArtifact(graphDir, owner, repo, sha); lerr != nil {
+				if persisted, derr := graphRepo.LoadArtifact(ctx, owner, repo, sha); derr == nil && persisted != nil {
+					_, _ = cognitive.SaveSemanticGraphArtifact(graphDir, owner, repo, sha, persisted)
+				}
+			}
+		}
+	}
+
+	idx := buildGroundingIndex(graphDir, owner, repo, sha, chapterFilePaths)
+	if extractSymbols == nil || len(chapterFilePaths) == 0 && len(snippets) == 0 {
+		return idx
+	}
+
+	snippetByPath := make(map[string]string, len(snippets))
+	for _, s := range snippets {
+		cleanP, _ := mdpat.SplitPathAnchor(s.Path)
+		if cleanP != "" && s.Snippet != "" && snippetByPath[cleanP] == "" {
+			snippetByPath[cleanP] = s.Snippet
+		}
+	}
+
+	// 收集候选文件路径（章节清单 + snippets）
+	candSet := make(map[string]bool, len(chapterFilePaths)+len(snippets))
+	var candPaths []string
+	for _, rawP := range chapterFilePaths {
+		cleanP, _ := mdpat.SplitPathAnchor(rawP)
+		if cleanP != "" && !candSet[cleanP] {
+			candSet[cleanP] = true
+			candPaths = append(candPaths, cleanP)
+		}
+	}
+	for cleanP := range snippetByPath {
+		if !candSet[cleanP] {
+			candSet[cleanP] = true
+			candPaths = append(candPaths, cleanP)
+		}
+	}
+
+	newFileSymbols := make(map[string][]cognitive.SymbolEntry)
+	for _, cleanP := range candPaths {
+		if len(idx.SymbolsByFile[cleanP]) > 0 {
+			continue
+		}
+		var raw string
+		if archiveRoot != "" && owner != "" && repo != "" {
+			for _, ref := range []string{sha, branch} {
+				if ref == "" {
+					continue
+				}
+				if raw = chapter.ReadLocalArchiveFile(archiveRoot, owner, repo, ref, cleanP); raw != "" {
+					break
+				}
+			}
+		}
+		if raw == "" {
+			raw = snippetByPath[cleanP]
+		}
+		if raw == "" {
+			continue
+		}
+		syms := extractSymbols(raw, cleanP)
+		if len(syms) == 0 {
+			continue
+		}
+		if idx.SymbolsByFile == nil {
+			idx.SymbolsByFile = make(map[string][]cognitive.SymbolEntry)
+		}
+		idx.SymbolsByFile[cleanP] = syms
+		newFileSymbols[cleanP] = syms
+	}
+
+	if len(newFileSymbols) > 0 {
+		if incRepo, ok := graphRepo.(cognitive.IncrementalGraphRepo); ok && owner != "" && repo != "" && sha != "" {
+			if merged, err := incRepo.MergeFileSymbols(ctx, owner, repo, sha, newFileSymbols); err == nil && merged != nil && graphDir != "" {
+				_, _ = cognitive.SaveSemanticGraphArtifact(graphDir, owner, repo, sha, merged)
+			}
+		}
+	}
+	return idx
 }
 
 // buildGroundingIndex 全仓语义图谱优先构建校验索引（消除"路径存在于仓库

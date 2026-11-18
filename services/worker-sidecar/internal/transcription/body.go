@@ -64,6 +64,10 @@ type BodyDeps struct {
 	// GoTransform Go 原生 transform 执行体（M5 第一期；nil=未启用，
 	// fetchDocContent 回落 web 微端点）
 	GoTransform func(ctx context.Context, owner, repo, branch string, gitSha *string, path string) (string, error)
+	// GraphRepo 语义图谱持久化仓储（可选；用于 Grounding DB 回退与章节源码符号增量固化）
+	GraphRepo cognitive.GraphArtifactRepo
+	// ExtractFileSymbols 单文件 Tree-sitter 符号提取回调（可选；对未入图章节源码即时抽取符号）
+	ExtractFileSymbols func(content, filePath string) []cognitive.SymbolEntry
 }
 
 type TranscriptionBodyDeps = BodyDeps
@@ -783,7 +787,19 @@ func runCodeChapterTranscription(ctx context.Context, cfg Config, deps BodyDeps,
 	if prep.Doc.Repository.GitSha != nil {
 		groundingSha = *prep.Doc.Repository.GitSha
 	}
-	groundingIndex := buildGroundingIndex(cfg.SemanticGraphDir, prep.Doc.Repository.Owner, prep.Doc.Repository.Repo, groundingSha, filePaths)
+	groundingIndex := buildGroundingIndexWithDeps(
+		ctx,
+		cfg.ArchiveRoot,
+		cfg.SemanticGraphDir,
+		prep.Doc.Repository.Owner,
+		prep.Doc.Repository.Repo,
+		groundingSha,
+		prep.Doc.Repository.Branch,
+		filePaths,
+		snippets,
+		deps.GraphRepo,
+		deps.ExtractFileSymbols,
+	)
 	filesSummary := chapter.BuildFilesSummary(snippets, groundingIndex.SymbolsByFile)
 
 	scaffold := ""

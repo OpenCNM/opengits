@@ -172,14 +172,21 @@ func (h *Handler) BuildGraphOnDemand(owner, repo, sha string) (*SemanticGraphArt
 // IsGiantNow 的主判据 totalValidFiles > 1000）。
 const graphBuildMaxValidFiles = 1000
 
+// GraphBuildMaxValidFiles 导出建图有效文件护栏阈值。
+const GraphBuildMaxValidFiles = graphBuildMaxValidFiles
+
 // giantRepoScopedMaxFiles 巨仓（>1000 有效文件）按需符号索引的物理有界预算：
 // 教学精选文件 + 顶层目录按深度轮转抽样核心源码，严格守在 MemoryGate / 1000 阈值内。
 const giantRepoScopedMaxFiles = 600
 
+// GiantRepoScopedMaxFiles 导出巨仓有界符号索引上限。
+const GiantRepoScopedMaxFiles = giantRepoScopedMaxFiles
+
 // errGiantRepoBuild 巨仓拒绝建图（调用方回落 404 语义，客户端按契约走 TS 投影兜底）。
 var errGiantRepoBuild = fmt.Errorf("giant repo not eligible for semantic graph build (valid files > %d)", graphBuildMaxValidFiles)
 
-func walkArchiveNodes(archiveDir string) []GitNode {
+// WalkArchiveNodes 遍历本地解压归档目录并产出所有文件节点元数据（仅路径与尺寸，不读取正文）。
+func WalkArchiveNodes(archiveDir string) []GitNode {
 	var nodes []GitNode
 	_ = filepath.Walk(archiveDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
@@ -197,6 +204,11 @@ func walkArchiveNodes(archiveDir string) []GitNode {
 		return nil
 	})
 	return nodes
+}
+
+// CountValidBlobs 统计剔除非内容目录/文件后的有效 blob 数量。
+func CountValidBlobs(nodes []GitNode, patterns Patterns) int {
+	return countValidBlobs(nodes, patterns)
 }
 
 // SelectBoundedNodesForGiantRepo 为超大规模仓库筛选有界核心文件集（<= maxFiles）：
@@ -386,7 +398,7 @@ func (h *Handler) buildGraphArtifact(ctx context.Context, req GraphBuildRequest)
 	archiveDir := archive.ArchiveDirFor(archiveRoot, req.Owner, req.Repo, req.Sha)
 	nodes := req.Nodes
 	if len(nodes) == 0 {
-		nodes = walkArchiveNodes(archiveDir)
+		nodes = WalkArchiveNodes(archiveDir)
 	}
 
 	defs := h.getLanguageDefs()
@@ -491,7 +503,7 @@ func (h *Handler) LoadOrBuildSemanticGraph(ctx context.Context, owner, repo, sha
 				}
 			}
 			scopedNodes := SelectBoundedNodesForGiantRepo(
-				walkArchiveNodes(archiveDir),
+				WalkArchiveNodes(archiveDir),
 				curated,
 				h.getLanguageDefs(),
 				h.getIngestPatterns(),
@@ -515,6 +527,93 @@ func (h *Handler) LoadOrBuildSemanticGraph(ctx context.Context, owner, repo, sha
 	}
 	art, _ := res.(*SemanticGraphArtifact)
 	return art, nil
+}
+
+// EnsureBoundedSemanticGraph 在导入收尾（归档热盘期）确保生成并持久化有界语义图谱：
+// 1. 若本地磁盘或 DB 已存在同 (owner, repo, sha) 图谱（例如 ladderRSGProjection 已生成），直接返回；
+// 2. 若有效文件 <= 1000，构建全量图谱；若 > 1000（巨仓），按 curatedPaths + 顶层目录浅层轮转抽样 <= 600 文件有界建图；
+// 3. 落盘并写入 GraphArtifactRepo。
+func EnsureBoundedSemanticGraph(
+	ctx context.Context,
+	archiveRoot, graphDir, owner, repo, sha string,
+	defs *LanguageDefinitions,
+	patterns Patterns,
+	rawNodes []GitNode,
+	curatedPaths []string,
+	graphRepo GraphArtifactRepo,
+	gate MemoryGate,
+) (*SemanticGraphArtifact, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if owner == "" || repo == "" || sha == "" || strings.EqualFold(owner, "web-docs") {
+		return nil, os.ErrNotExist
+	}
+	if defs == nil {
+		return nil, fmt.Errorf("language definitions not loaded")
+	}
+	if graphDir == "" {
+		graphDir = "storage/graphs"
+	}
+	if archiveRoot == "" {
+		archiveRoot = "storage/repos"
+		if envDir := strings.TrimSpace(os.Getenv("TARBALL_CACHE_DIR")); envDir != "" {
+			archiveRoot = envDir
+		}
+	}
+
+	if existing, err := LoadSemanticGraphArtifact(graphDir, owner, repo, sha); err == nil && existing != nil {
+		if graphRepo != nil {
+			_ = graphRepo.SaveArtifact(ctx, owner, repo, sha, existing)
+		}
+		return existing, nil
+	}
+	if graphRepo != nil {
+		if persisted, err := graphRepo.LoadArtifact(ctx, owner, repo, sha); err == nil && persisted != nil {
+			_, _ = SaveSemanticGraphArtifact(graphDir, owner, repo, sha, persisted)
+			return persisted, nil
+		}
+	}
+
+	archiveDir := archive.ArchiveDirFor(archiveRoot, owner, repo, sha)
+	if !hasArchiveFiles(archiveDir) {
+		return nil, os.ErrNotExist
+	}
+
+	buildNodes := rawNodes
+	if len(buildNodes) == 0 {
+		buildNodes = WalkArchiveNodes(archiveDir)
+	}
+	// ScanArchiveStream 在到达 giant 阈值后会提前截断 rawNodes，因此只要计数达到护栏即全盘重扫路径并执行有界抽样
+	if countValidBlobs(buildNodes, patterns) >= graphBuildMaxValidFiles {
+		allNodes := buildNodes
+		if len(rawNodes) > 0 {
+			allNodes = WalkArchiveNodes(archiveDir)
+		}
+		buildNodes = SelectBoundedNodesForGiantRepo(allNodes, curatedPaths, defs, patterns, giantRepoScopedMaxFiles)
+	}
+	if len(buildNodes) == 0 {
+		return nil, fmt.Errorf("no eligible source files for semantic graph in %s/%s@%s", owner, repo, sha)
+	}
+
+	if gate != nil {
+		weight := gate.CalculateJobWeight(len(buildNodes), true)
+		if err := gate.Acquire(ctx, weight); err != nil {
+			return nil, err
+		}
+		defer gate.Release(weight)
+	}
+
+	artifact, err := BuildRepoSemanticGraph(ctx, archiveRoot, graphDir, owner, repo, sha, defs, patterns, buildNodes)
+	if err == nil && artifact != nil && graphRepo != nil {
+		if serr := graphRepo.SaveArtifact(ctx, owner, repo, sha, artifact); serr != nil {
+			log.Printf("[rsg] persist bounded semantic graph to DB failed (%s/%s@%s): %v", owner, repo, sha, serr)
+		}
+	}
+	return artifact, err
 }
 
 // HandleTopologySlice handles POST /v1/graph/slice-context.

@@ -76,3 +76,63 @@ func TestArtifactPayloadRoundTrip(t *testing.T) {
 		})
 	}
 }
+
+func TestMergeSymbolsIntoArtifact(t *testing.T) {
+	existingBase := func() *SemanticGraphArtifact {
+		return &SemanticGraphArtifact{
+			Version: 2,
+			GitSha:  "sha123",
+			Nodes:   []SemanticGraphArtifactNode{{Path: "src/app.ts", Role: RoleEntryPoint, PageRank: 0.5}},
+			SymbolsByFile: map[string][]SymbolEntry{
+				"src/app.ts": {{Name: "startApp", Kind: "function", StartLine: 1, EndLine: 10, Exported: true}},
+			},
+		}
+	}
+
+	tests := []struct {
+		name        string
+		base        *SemanticGraphArtifact
+		additions   map[string][]SymbolEntry
+		wantChanged bool
+		wantFiles   []string
+	}{
+		{
+			name: "creates new artifact when base is nil",
+			base: nil,
+			additions: map[string][]SymbolEntry{
+				"extensions/extra.ts": {{Name: "runHook", Kind: "function", StartLine: 3, EndLine: 9}},
+			},
+			wantChanged: true,
+			wantFiles:   []string{"extensions/extra.ts"},
+		},
+		{
+			name: "merges new file into existing artifact while preserving prior symbols",
+			base: existingBase(),
+			additions: map[string][]SymbolEntry{
+				"extensions/deep/worker.ts": {{Name: "handleTask", Kind: "function", StartLine: 5, EndLine: 20}},
+			},
+			wantChanged: true,
+			wantFiles:   []string{"src/app.ts", "extensions/deep/worker.ts"},
+		},
+		{
+			name: "re-merging already populated file is idempotent no-op",
+			base: existingBase(),
+			additions: map[string][]SymbolEntry{
+				"src/app.ts": {{Name: "other", Kind: "function", StartLine: 1, EndLine: 2}},
+			},
+			wantChanged: false,
+			wantFiles:   []string{"src/app.ts"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			merged, changed := MergeSymbolsIntoArtifact(tt.base, "sha123", tt.additions)
+			assert.Equal(t, tt.wantChanged, changed)
+			require.NotNil(t, merged)
+			for _, f := range tt.wantFiles {
+				assert.NotEmpty(t, merged.SymbolsByFile[f], "expected symbols preserved/added for %s", f)
+			}
+		})
+	}
+}
