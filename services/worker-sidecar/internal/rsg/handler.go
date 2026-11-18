@@ -176,11 +176,14 @@ const graphBuildMaxValidFiles = 1000
 const GraphBuildMaxValidFiles = graphBuildMaxValidFiles
 
 // giantRepoScopedMaxFiles 巨仓（>1000 有效文件）按需符号索引的物理有界预算：
-// 教学精选文件 + 顶层目录按深度轮转抽样核心源码，严格守在 MemoryGate / 1000 阈值内。
-const giantRepoScopedMaxFiles = 600
+// 教学精选文件 + 顶层目录按深度轮转抽样核心源码，适配低核 VPS WASM Tree-sitter 耗时并严格守在 MemoryGate 内。
+const giantRepoScopedMaxFiles = 120
 
 // GiantRepoScopedMaxFiles 导出巨仓有界符号索引上限。
 const GiantRepoScopedMaxFiles = giantRepoScopedMaxFiles
+
+// giantRepoSampledMaxFileBytes 巨仓非精选抽样单文件体积上限（64KB），防止大体积自动生成文件拖慢 WASM 解析。
+const giantRepoSampledMaxFileBytes = 64 * 1024
 
 // errGiantRepoBuild 巨仓拒绝建图（调用方回落 404 语义，客户端按契约走 TS 投影兜底）。
 var errGiantRepoBuild = fmt.Errorf("giant repo not eligible for semantic graph build (valid files > %d)", graphBuildMaxValidFiles)
@@ -267,8 +270,10 @@ func SelectBoundedNodesForGiantRepo(
 			curatedNodes = append(curatedNodes, n)
 			continue
 		}
-		if defs.IsTestFile(cleanPath) {
-			testNodes = append(testNodes, n)
+		if defs.IsTestFile(cleanPath) || n.Size > giantRepoSampledMaxFileBytes {
+			if defs.IsTestFile(cleanPath) {
+				testNodes = append(testNodes, n)
+			}
 			continue
 		}
 		top := ""
@@ -478,7 +483,7 @@ func (h *Handler) LoadOrBuildSemanticGraph(ctx context.Context, owner, repo, sha
 			}
 		}
 
-		buildCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 90*time.Second)
+		buildCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Minute)
 		defer cancel()
 
 		archiveDir := archive.ArchiveDirFor(archiveRoot, owner, repo, sha)
@@ -513,12 +518,18 @@ func (h *Handler) LoadOrBuildSemanticGraph(ctx context.Context, owner, repo, sha
 				return nil, berr
 			}
 			log.Printf("[rsg] giant repo %s/%s@%s scoped semantic graph build (curated=%d, sampled=%d)", owner, repo, sha, len(curated), len(scopedNodes))
-			return h.buildGraphArtifact(buildCtx, GraphBuildRequest{
+			scopedArt, serr := h.buildGraphArtifact(buildCtx, GraphBuildRequest{
 				Owner: owner,
 				Repo:  repo,
 				Sha:   sha,
 				Nodes: scopedNodes,
 			})
+			if serr != nil {
+				log.Printf("[rsg] giant repo %s/%s@%s scoped build failed: %v", owner, repo, sha, serr)
+			} else if scopedArt != nil {
+				log.Printf("[rsg] giant repo %s/%s@%s scoped build succeeded (nodes=%d)", owner, repo, sha, len(scopedArt.Nodes))
+			}
+			return scopedArt, serr
 		}
 		return art, berr
 	})

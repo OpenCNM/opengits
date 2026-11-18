@@ -6,8 +6,10 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/opengits/worker-sidecar/internal/archive"
@@ -131,47 +133,85 @@ func (d *LanguageDefinitions) buildSemanticGraphCollecting(ctx context.Context, 
 	parseEligible := selectParseBudget(sortedFiles, d, maxParse, maxBytes)
 
 	fileInfos := make([]fileInfo, len(sortedFiles))
-	var bundleSnapshots []extractionSnapshot
+	snaps := make([]*extractionSnapshot, len(sortedFiles))
+	var parseIndices []int
 	for i, f := range sortedFiles {
-		if ctx != nil && i%20 == 0 {
-			if err := ctx.Err(); err != nil {
-				return nil, nil, err
-			}
-		}
 		lang := d.DetectLanguage(f.Path)
 		langName := "unknown"
 		if lang != nil {
 			langName = lang.Name
 		}
-
+		isTest := d.IsTestFile(f.Path)
 		if !parseEligible[f.Path] {
 			fileInfos[i] = fileInfo{
 				path:    f.Path,
 				lang:    langName,
 				skipped: true,
-				isTest:  d.IsTestFile(f.Path),
+				isTest:  isTest,
 			}
 			continue
 		}
-
-		ast := d.ExtractFileAstWithSha(f.Content, f.Path, f.Sha)
 		fileInfos[i] = fileInfo{
-			path:    f.Path,
-			lang:    langName,
-			imports: ast.RawImports,
-			isTest:  d.IsTestFile(f.Path),
-			ast:     ast,
+			path:   f.Path,
+			lang:   langName,
+			isTest: isTest,
 		}
-		// bundle 快照：键与 ExtractFileAstWithSha 内部使用的缓存键一致
-		//（Sha 为空时内部即 contentSha）
-		snapSha := f.Sha
-		if snapSha == "" {
-			snapSha = ComputeContentSha(f.Content)
+		parseIndices = append(parseIndices, i)
+	}
+
+	if len(parseIndices) > 0 {
+		workers := min(runtime.GOMAXPROCS(0), 4)
+		if workers < 1 {
+			workers = 1
 		}
-		bundleSnapshots = append(bundleSnapshots, extractionSnapshot{
-			Key:        MakeAstCacheKey(snapSha, langName),
-			Extraction: ast,
-		})
+		if workers > len(parseIndices) {
+			workers = len(parseIndices)
+		}
+
+		jobsCh := make(chan int, len(parseIndices))
+		for _, idx := range parseIndices {
+			jobsCh <- idx
+		}
+		close(jobsCh)
+
+		var wg sync.WaitGroup
+		for w := 0; w < workers; w++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for i := range jobsCh {
+					if ctx != nil && ctx.Err() != nil {
+						return
+					}
+					f := sortedFiles[i]
+					ast := d.ExtractFileAstWithSha(f.Content, f.Path, f.Sha)
+					fileInfos[i].imports = ast.RawImports
+					fileInfos[i].ast = ast
+
+					snapSha := f.Sha
+					if snapSha == "" {
+						snapSha = ComputeContentSha(f.Content)
+					}
+					snaps[i] = &extractionSnapshot{
+						Key:        MakeAstCacheKey(snapSha, fileInfos[i].lang),
+						Extraction: ast,
+					}
+				}
+			}()
+		}
+		wg.Wait()
+		if ctx != nil {
+			if err := ctx.Err(); err != nil {
+				return nil, nil, err
+			}
+		}
+	}
+
+	bundleSnapshots := make([]extractionSnapshot, 0, len(parseIndices))
+	for _, i := range parseIndices {
+		if snaps[i] != nil {
+			bundleSnapshots = append(bundleSnapshots, *snaps[i])
+		}
 	}
 
 	adjacencyMap := make(map[string][]string, len(allPaths))
