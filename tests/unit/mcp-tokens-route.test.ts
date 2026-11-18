@@ -104,11 +104,27 @@ describe('MCP Tokens Route Handler (Fix 3)', () => {
 
     const json = await res.json();
     expect(json.success).toBe(true);
+    expect(json.data.id).toBe('tok_1');
     expect(json.data.token).toBe(plain);
     expect(json.data.name).toBe('Default');
   });
 
-  it('GET /api/mcp/tokens/default: 无可用 Token 时自动初始化并返回', async () => {
+  it('GET /api/mcp/tokens/default: 无可用 Token 时只读返回 null 且不自动创建', async () => {
+    tokenFindManyMock.mockResolvedValueOnce([]);
+
+    const { GET } = await import('@/app/api/mcp/tokens/default/route');
+    const req = new NextRequest('http://localhost:3000/api/mcp/tokens/default');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const json = await res.json();
+    expect(json.success).toBe(true);
+    expect(json.data.token).toBeNull();
+    expect(json.data.name).toBeNull();
+    expect(callSidecarMock).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/mcp/tokens/default: 无可用 Token 时按需创建 Default Token 并返回 201', async () => {
     tokenFindManyMock.mockResolvedValueOnce([]);
     callSidecarMock.mockResolvedValueOnce({
       ok: true,
@@ -119,14 +135,53 @@ describe('MCP Tokens Route Handler (Fix 3)', () => {
       },
     });
 
-    const { GET } = await import('@/app/api/mcp/tokens/default/route');
-    const req = new NextRequest('http://localhost:3000/api/mcp/tokens/default');
-    const res = await GET(req);
+    const { POST } = await import('@/app/api/mcp/tokens/default/route');
+    const req = new NextRequest('http://localhost:3000/api/mcp/tokens/default', { method: 'POST' });
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+
+    const json = await res.json();
+    expect(json.success).toBe(true);
+    expect(json.data.id).toBe('tok_new');
+    expect(json.data.token).toMatch(/^opgts_[a-f0-9]{32}$/);
+    expect(json.data.name).toBe('Default');
+    expect(json.data.created).toBe(true);
+  });
+
+  it('POST /api/mcp/tokens/default: 已有可用 Token 时幂等返回而不重复创建', async () => {
+    const { encryptApiKey } = await import('@/lib/crypto/api-key-cipher');
+    const plain = 'opgts_1234567890abcdef1234567890abcdef';
+    tokenFindManyMock.mockResolvedValueOnce([
+      { id: 'tok_1', name: 'Default', prefix: 'opgts_12', encryptedToken: encryptApiKey(plain), revokedAt: null },
+    ]);
+
+    const { POST } = await import('@/app/api/mcp/tokens/default/route');
+    const req = new NextRequest('http://localhost:3000/api/mcp/tokens/default', { method: 'POST' });
+    const res = await POST(req);
     expect(res.status).toBe(200);
 
     const json = await res.json();
     expect(json.success).toBe(true);
-    expect(json.data.token).toMatch(/^opgts_[a-f0-9]{32}$/);
-    expect(json.data.name).toBe('Default');
+    expect(json.data.token).toBe(plain);
+    expect(json.data.created).toBe(false);
+    expect(callSidecarMock).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/mcp/tokens/default: 超过 Token 上限时返回 409 MAX_TOKENS_EXCEEDED', async () => {
+    tokenFindManyMock.mockResolvedValueOnce([]);
+    callSidecarMock.mockResolvedValueOnce({
+      ok: false,
+      code: 'MAX_TOKENS_EXCEEDED',
+      error: 'Maximum active tokens limit reached (20). Please revoke unused tokens first.',
+    });
+
+    const { POST } = await import('@/app/api/mcp/tokens/default/route');
+    const req = new NextRequest('http://localhost:3000/api/mcp/tokens/default', { method: 'POST' });
+    const res = await POST(req);
+    expect(res.status).toBe(409);
+
+    const json = await res.json();
+    expect(json.success).toBe(false);
+    expect(json.code).toBe('MAX_TOKENS_EXCEEDED');
   });
 });

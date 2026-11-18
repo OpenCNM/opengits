@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatedModal } from '@/components/ui/AnimatedModal';
 import * as m from '@/paraglide/messages';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -12,14 +12,15 @@ import {
   BookOpen,
   Layers,
   Info,
-  Sparkles,
   ChevronDown,
   Eye,
   EyeOff,
+  RefreshCw,
+  AlertTriangle,
 } from 'lucide-react';
 import { McpConnectDialogProps } from './types';
 import { McpTokensManager } from '@/components/settings/McpTokensManager';
-import { api } from '@/lib/api/client';
+import { api, ApiClientError } from '@/lib/api/client';
 
 import {
   type ClientType,
@@ -44,6 +45,13 @@ interface SavedRepoItem {
   progress?: number;
 }
 
+interface ActiveMcpToken {
+  id?: string | null;
+  token: string;
+  name: string;
+  prefix?: string | null;
+}
+
 export function McpConnectWizardDialog({
   isOpen,
   onClose,
@@ -54,45 +62,149 @@ export function McpConnectWizardDialog({
   const [savedRepos, setSavedRepos] = useState<SavedRepoItem[]>([]);
   const [disabledMcpRepoIds, setDisabledMcpRepoIds] = useState<string[]>([]);
   const [isTokensExpanded, setIsTokensExpanded] = useState(false);
-  const [defaultToken, setDefaultToken] = useState<string | null>(null);
+  const [activeToken, setActiveToken] = useState<ActiveMcpToken | null>(null);
+  const [isLoadingToken, setIsLoadingToken] = useState(false);
+  const [isCreatingToken, setIsCreatingToken] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [createdJustNow, setCreatedJustNow] = useState(false);
+  const [copyNeedsRetry, setCopyNeedsRetry] = useState(false);
+  const [tokensRefreshTrigger, setTokensRefreshTrigger] = useState(0);
   const [showPlainToken, setShowPlainToken] = useState(false);
 
   const { copy, isCopied } = useClipboard({ showToast: false });
+  const aiPromptCopied = isCopied('ai-prompt');
 
   const isGlobalHub = !owner || owner === 'bookshelf' || owner === 'global' || owner === 'hub';
   const origin = getClientOrigin();
 
-  useEffect(() => {
-    if (isOpen) {
-      api
-        .get<{ savedRepositories?: SavedRepoItem[]; disabledMcpRepoIds?: string[] }>('/api/user/preferences', {
-          onUnauthorized: 'throw',
-        })
-        .then((prefData) => {
-          setSavedRepos(prefData?.savedRepositories ?? []);
-          setDisabledMcpRepoIds(prefData?.disabledMcpRepoIds ?? []);
-        })
-        .catch(() => {});
+  const fetchDefaultToken = useCallback(async () => {
+    setIsLoadingToken(true);
+    setTokenError(null);
+    try {
+      const res = await api.get<{
+        id?: string | null;
+        token?: string | null;
+        name?: string | null;
+        prefix?: string | null;
+      }>('/api/mcp/tokens/default', {
+        onUnauthorized: 'throw',
+        skipDedup: true,
+      });
 
-      api
-        .get<{ token?: string }>('/api/mcp/tokens/default', {
-          onUnauthorized: 'throw',
-        })
-        .then((res) => {
-          if (res?.token) {
-            setDefaultToken(res.token);
-          }
-        })
-        .catch(() => {});
+      if (res?.token) {
+        setActiveToken({
+          id: res.id ?? null,
+          token: res.token,
+          name: res.name || 'Default',
+          prefix: res.prefix ?? null,
+        });
+      } else {
+        setActiveToken(null);
+      }
+    } catch (err) {
+      setActiveToken(null);
+      setTokenError(err instanceof Error && err.message ? err.message : m.mcp_token_load_error_hint());
+    } finally {
+      setIsLoadingToken(false);
     }
-  }, [isOpen]);
+  }, []);
+
+  useEffect(() => {
+    if (!aiPromptCopied) {
+      setCreatedJustNow(false);
+    }
+  }, [aiPromptCopied]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShowPlainToken(false);
+      setTokenError(null);
+      setCreatedJustNow(false);
+      setCopyNeedsRetry(false);
+      return;
+    }
+
+    api
+      .get<{ savedRepositories?: SavedRepoItem[]; disabledMcpRepoIds?: string[] }>('/api/user/preferences', {
+        onUnauthorized: 'throw',
+      })
+      .then((prefData) => {
+        setSavedRepos(prefData?.savedRepositories ?? []);
+        setDisabledMcpRepoIds(prefData?.disabledMcpRepoIds ?? []);
+      })
+      .catch((err) => {
+        console.error('Failed to load MCP repo preferences:', err);
+      });
+
+    void fetchDefaultToken();
+  }, [isOpen, fetchDefaultToken]);
 
   const endpointUrl = isGlobalHub
     ? `${origin}/api/mcp/hub`
     : `${origin}/api/mcp/${owner}/${repo}`;
 
-  const handleCopy = (text: string, key: string) => {
-    copy(text, key);
+  const handlePrimaryCopyAction = async () => {
+    if (isLoadingToken || isCreatingToken) return;
+    setTokenError(null);
+
+    if (activeToken?.token) {
+      const wasRetryAfterCreate = copyNeedsRetry;
+      const copied = await copy(
+        getClientAiPrompt(activeClient, endpointUrl, activeToken.token),
+        'ai-prompt'
+      );
+      if (copied) {
+        setCopyNeedsRetry(false);
+        if (wasRetryAfterCreate) {
+          setCreatedJustNow(true);
+        }
+      }
+      return;
+    }
+
+    setIsCreatingToken(true);
+    try {
+      const res = await api.post<{
+        id?: string | null;
+        token?: string | null;
+        name?: string | null;
+        prefix?: string | null;
+      }>('/api/mcp/tokens/default', undefined, {
+        onUnauthorized: 'throw',
+      });
+
+      if (!res?.token) {
+        throw new Error(m.mcp_token_load_error_hint());
+      }
+
+      const nextToken: ActiveMcpToken = {
+        id: res.id ?? null,
+        token: res.token,
+        name: res.name || 'Default',
+        prefix: res.prefix ?? null,
+      };
+      setActiveToken(nextToken);
+      setTokensRefreshTrigger((prev) => prev + 1);
+
+      const copied = await copy(
+        getClientAiPrompt(activeClient, endpointUrl, nextToken.token),
+        'ai-prompt'
+      );
+      if (copied) {
+        setCreatedJustNow(true);
+        setCopyNeedsRetry(false);
+      } else {
+        setCreatedJustNow(false);
+        setCopyNeedsRetry(true);
+      }
+    } catch (err) {
+      if (err instanceof ApiClientError && err.code === 'MAX_TOKENS_EXCEEDED') {
+        setIsTokensExpanded(true);
+      }
+      setTokenError(err instanceof Error && err.message ? err.message : m.toast_action_failed());
+    } finally {
+      setIsCreatingToken(false);
+    }
   };
 
   const handleToggleRepoMcp = async (repoId: string, enable: boolean) => {
@@ -109,8 +221,7 @@ export function McpConnectWizardDialog({
     }
   };
 
-  const tokenValue = defaultToken || undefined;
-  const rawSnippet = getClientConfigJson(activeClient, endpointUrl, tokenValue);
+  const defaultToken = activeToken?.token ?? null;
   const displayToken = defaultToken
     ? (showPlainToken ? defaultToken : maskToken(defaultToken))
     : undefined;
@@ -166,8 +277,17 @@ export function McpConnectWizardDialog({
             <div className="p-4 rounded-xl border border-theme-border/60 bg-theme-surface/30 flex-1 flex flex-col justify-between space-y-3">
               {/* 客户端选择器 (高质感现代胶囊栏 - 固定高度/禁止折行/超长省略号) */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm text-theme-muted">
+                <div className="flex items-center justify-between text-sm text-theme-muted gap-2">
                   <span className="font-semibold text-theme-foreground">{m.mcp_client_config_heading()}</span>
+                  {activeToken && (
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 truncate max-w-[220px]"
+                      title={`${activeToken.name} (${maskToken(activeToken.token)})`}
+                    >
+                      <KeyRound className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{m.mcp_active_token_badge({ name: activeToken.name })}</span>
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center h-9 p-1 bg-theme-bg border border-theme-border/70 rounded-xl gap-1">
                   {SUPPORTED_CLIENT_TYPES.map((type) => {
@@ -221,37 +341,66 @@ export function McpConnectWizardDialog({
                 <div className="space-y-1.5 pt-0.5">
                   <button
                     type="button"
-                    onClick={() => handleCopy(getClientAiPrompt(activeClient, endpointUrl, tokenValue), 'ai-prompt')}
-                    className="w-full flex items-center justify-center gap-2 py-2 px-3.5 rounded-lg border border-theme-primary/40 bg-theme-primary/10 hover:bg-theme-primary/20 text-theme-primary text-sm font-medium transition-all cursor-pointer shadow-2xs"
+                    disabled={isLoadingToken || isCreatingToken}
+                    onClick={() => void handlePrimaryCopyAction()}
+                    className={cn(
+                      'w-full flex items-center justify-center gap-2 py-2 px-3.5 rounded-lg border text-sm font-medium transition-all cursor-pointer shadow-2xs disabled:opacity-60 disabled:cursor-not-allowed',
+                      copyNeedsRetry
+                        ? 'border-emerald-500/50 bg-emerald-500/15 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                        : 'border-theme-primary/40 bg-theme-primary/10 hover:bg-theme-primary/20 text-theme-primary'
+                    )}
                   >
-                    {isCopied('ai-prompt') ? (
+                    {isCreatingToken ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>{m.mcp_creating_token_and_copying()}</span>
+                      </>
+                    ) : isLoadingToken ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>{m.common_loading()}</span>
+                      </>
+                    ) : aiPromptCopied ? (
                       <>
                         <Check className="w-4 h-4 text-emerald-600" />
                         <span className="text-emerald-600">
-                          {defaultToken
-                            ? m.common_copied()
+                          {createdJustNow
+                            ? m.mcp_token_created_and_copied()
                             : m.common_copied()}
                         </span>
                       </>
-                    ) : (
+                    ) : copyNeedsRetry ? (
                       <>
                         <Copy className="w-4 h-4" />
-                        <span>
-                          {defaultToken
-                            ? m.mcp_copy_config_with_token()
-                            : m.mcp_copy_config()}
-                        </span>
+                        <span>{m.mcp_token_ready_click_copy()}</span>
+                      </>
+                    ) : defaultToken ? (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>{m.mcp_copy_config_with_token()}</span>
+                      </>
+                    ) : (
+                      <>
+                        <KeyRound className="w-4 h-4" />
+                        <span>{m.mcp_create_token_and_copy()}</span>
                       </>
                     )}
                   </button>
                   <p className="text-xs text-theme-muted text-center flex items-center justify-center gap-1.5 pt-0.5">
-                    {defaultToken ? (
+                    {tokenError ? (
+                      <>
+                        <AlertTriangle className="w-3.5 h-3.5 text-theme-accent shrink-0" />
+                        <span className="text-theme-accent">{tokenError}</span>
+                      </>
+                    ) : isLoadingToken ? (
+                      <span>{m.common_loading()}</span>
+                    ) : defaultToken ? (
                       <>
                         <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                         <span>{m.mcp_token_included_hint()}</span>
                       </>
                     ) : (
-                      <span>{m.mcp_replace_token_hint()}</span>
+                      <span>{m.mcp_no_token_auto_create_hint()}</span>
                     )}
                   </p>
                 </div>
@@ -363,7 +512,25 @@ export function McpConnectWizardDialog({
         {/* 4. 可展开的 MCP 访问令牌管理区域 */}
         {isTokensExpanded && (
           <div className="pt-3 border-t border-theme-border/40 space-y-3">
-            <McpTokensManager isModal={true} onTokenCreated={(t) => setDefaultToken(t)} />
+            <McpTokensManager
+              isModal={true}
+              refreshTrigger={tokensRefreshTrigger}
+              onTokenCreated={(created) => {
+                setActiveToken({
+                  id: created.id ?? null,
+                  token: created.plainToken,
+                  name: created.name,
+                  prefix: created.prefix,
+                });
+                setTokenError(null);
+                setCopyNeedsRetry(false);
+              }}
+              onTokenRevoked={() => {
+                setCreatedJustNow(false);
+                setCopyNeedsRetry(false);
+                void fetchDefaultToken();
+              }}
+            />
           </div>
         )}
 

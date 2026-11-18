@@ -36,12 +36,23 @@ function formatTime(value: string | null): string {
   });
 }
 
+export interface McpTokenCreatedPayload {
+  id?: string;
+  name: string;
+  prefix: string;
+  plainToken: string;
+}
+
 export function McpTokensManager({
   isModal = false,
+  refreshTrigger = 0,
   onTokenCreated,
+  onTokenRevoked,
 }: {
   isModal?: boolean;
-  onTokenCreated?: (plainToken: string) => void;
+  refreshTrigger?: number;
+  onTokenCreated?: (token: McpTokenCreatedPayload) => void;
+  onTokenRevoked?: (id: string) => void;
 }) {
   const [tokens, setTokens] = useState<McpTokenItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +81,7 @@ export function McpTokensManager({
 
   useEffect(() => {
     fetchTokens();
-  }, [fetchTokens]);
+  }, [fetchTokens, refreshTrigger]);
 
   const handleCreate = async () => {
     if (!name.trim()) {
@@ -93,7 +104,12 @@ export function McpTokensManager({
       const created = data.data?.token || data.token;
       setNewToken(created);
       if (created?.plainToken) {
-        onTokenCreated?.(created.plainToken);
+        onTokenCreated?.({
+          id: created.id,
+          name: created.name,
+          prefix: created.prefix,
+          plainToken: created.plainToken,
+        });
       }
       setShowPlainToken(false);
       setName('');
@@ -114,6 +130,7 @@ export function McpTokensManager({
       setTokens((prev) =>
         prev.map((t) => (t.id === id ? { ...t, revokedAt: new Date().toISOString() } : t))
       );
+      onTokenRevoked?.(id);
     } catch (err: any) {
       setError(err.message || m.common_delete_failed());
     } finally {
