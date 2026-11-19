@@ -13,6 +13,12 @@ import type { LlmReviewResult } from '@/lib/review/llm-review';
 import { decideReview } from '@/lib/review/decision';
 
 let isCycleRunning = false;
+/**
+ * 跳过已留审且内容与审核基准均未变化的条目，避免前 10 条留审项堵死队列并每 30 秒刷屏日志。
+ * key: repositoryId, value: `${repo.updatedAt.toISOString()}|${reviewConfigUpdatedAt}`
+ */
+const heldSignatureCache = new Map<string, string>();
+const MAX_LLM_EVALS_PER_CYCLE = 10;
 
 export interface AutoReviewLogItem {
   id: string;
@@ -234,15 +240,15 @@ export async function runAutoReviewCycle(options?: {
         id: true,
         owner: true,
         repo: true,
+        updatedAt: true,
         reviewPipeline: true,
         reviewLlm: true,
       },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-      take: 10,
+      take: 100,
     });
 
-    scanned = pendingItems.length;
-    if (scanned === 0) {
+    if (pendingItems.length === 0) {
       return {
         scanned: 0,
         approved: 0,
@@ -266,9 +272,26 @@ export async function runAutoReviewCycle(options?: {
       confidenceMin: reviewConfig?.confidenceThreshold ?? 0.7,
       enforceQualityGate: reviewConfig?.enforceQualityGate ?? false,
     };
+    const configVersion = reviewConfig?.updatedAt ? reviewConfig.updatedAt.toISOString() : 'default';
+
+    let llmEvalsThisCycle = 0;
 
     for (const item of pendingItems) {
       const repoRef = `${item.owner}/${item.repo}`;
+      const existingLlm = item.reviewLlm as LlmReviewResult | null;
+      const needsLlmEval = !existingLlm || (existingLlm as any).unavailable;
+      const itemSignature = `${item.updatedAt.toISOString()}|${configVersion}`;
+
+      // 非强制巡检时，跳过已判定留审且教程内容与基线均未变化的条目，防止前序留审项堵死队列
+      if (!options?.force && !needsLlmEval && heldSignatureCache.get(item.id) === itemSignature) {
+        continue;
+      }
+
+      if (needsLlmEval && llmEvalsThisCycle >= MAX_LLM_EVALS_PER_CYCLE) {
+        continue;
+      }
+
+      scanned++;
       try {
         // 1. 确保管线分可用
         let pipelineScore = item.reviewPipeline as unknown as PipelineScore | null;
@@ -282,8 +305,9 @@ export async function runAutoReviewCycle(options?: {
         }
 
         // 2. 补齐 LLM 评估
-        let llmReview = item.reviewLlm as LlmReviewResult | null;
-        if (!llmReview || (llmReview as any).unavailable) {
+        let llmReview = existingLlm;
+        if (needsLlmEval) {
+          llmEvalsThisCycle++;
           llmReview = await reviewTutorialByPlatform(item.id, undefined, { timeoutMs: 120000 });
           if (llmReview.unavailable) {
             failed++;
@@ -311,9 +335,10 @@ export async function runAutoReviewCycle(options?: {
         }
 
         // 3. 运行裁决引擎
-        const decision = decideReview(pipelineScore, llmReview, thresholds);
+        const decision = decideReview(pipelineScore, llmReview!, thresholds);
 
         if (decision.action === 'AUTO_PUBLISH') {
+          heldSignatureCache.delete(item.id);
           await approveRepositoryTx(item, options?.adminUserId, '无人值守自动评估达标公开');
           approved++;
           await prisma.adminAuditLog.create({
@@ -323,9 +348,9 @@ export async function runAutoReviewCycle(options?: {
               target: repoRef,
               detailsJson: {
                 pipelineScore: pipelineScore.total,
-                llmScore: llmReview.overallScore,
-                confidence: llmReview.confidence,
-                archetype: llmReview.archetype,
+                llmScore: llmReview!.overallScore,
+                confidence: llmReview!.confidence,
+                archetype: llmReview!.archetype,
                 rationale: decision.rationale,
                 status: 'APPROVED',
                 timestamp: new Date().toISOString(),
@@ -333,6 +358,7 @@ export async function runAutoReviewCycle(options?: {
             },
           });
         } else {
+          heldSignatureCache.set(item.id, itemSignature);
           held++;
           await prisma.adminAuditLog.create({
             data: {
@@ -341,10 +367,10 @@ export async function runAutoReviewCycle(options?: {
               target: repoRef,
               detailsJson: {
                 pipelineScore: pipelineScore.total,
-                llmScore: llmReview.overallScore,
-                confidence: llmReview.confidence,
-                safetyFlag: llmReview.safetyFlag,
-                concerns: llmReview.concerns,
+                llmScore: llmReview!.overallScore,
+                confidence: llmReview!.confidence,
+                safetyFlag: llmReview!.safetyFlag,
+                concerns: llmReview!.concerns,
                 rationale: decision.rationale,
                 status: 'HELD',
                 timestamp: new Date().toISOString(),
@@ -370,21 +396,23 @@ export async function runAutoReviewCycle(options?: {
     }
 
     const durationMs = Date.now() - startTime;
-    await prisma.adminAuditLog.create({
-      data: {
-        adminUserId: options?.adminUserId || null,
-        action: 'AUTO_REVIEW_CYCLE_SUMMARY',
-        target: 'System',
-        detailsJson: {
-          scanned,
-          approved,
-          held,
-          failed,
-          durationMs,
-          timestamp: new Date().toISOString(),
+    if (scanned > 0 || options?.force) {
+      await prisma.adminAuditLog.create({
+        data: {
+          adminUserId: options?.adminUserId || null,
+          action: 'AUTO_REVIEW_CYCLE_SUMMARY',
+          target: 'System',
+          detailsJson: {
+            scanned,
+            approved,
+            held,
+            failed,
+            durationMs,
+            timestamp: new Date().toISOString(),
+          },
         },
-      },
-    });
+      });
+    }
 
     return {
       scanned,
