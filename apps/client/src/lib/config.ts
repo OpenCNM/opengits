@@ -98,6 +98,9 @@ export const ENGINE_CONFIG = {
     // 流程图按需深度切换限流（POST /api/ai/diagram-lens）
     diagramLensMaxRequests: Number(process.env.DIAGRAM_LENS_RATE_MAX) || 20,
     diagramLensWindowMs: (Number(process.env.DIAGRAM_LENS_RATE_WINDOW_MIN) || 5) * 60 * 1000,
+    // 大纲重排需求 AI 扩写限流（POST /api/ai/expand-outline-prompt）
+    outlineExpandMaxRequests: Number(process.env.OUTLINE_EXPAND_RATE_MAX) || 30,
+    outlineExpandWindowMs: (Number(process.env.OUTLINE_EXPAND_RATE_WINDOW_MIN) || 5) * 60 * 1000,
     // 公开读路径限流（公开仓匿名可读后的失控脚本兜底）
     // 维度：登录按 userId（CGNAT/校园网/企业出口共 IP 不连坐——session 为 JWT 校验零 DB 成本），
     // 匿名按 IP 且阈值按「NAT 聚合」口径放宽：目标是拦失控脚本（必然瞬间数千次/分），

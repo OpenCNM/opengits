@@ -951,6 +951,40 @@ Requirements:
     },
   },
   {
+    key: 'outline_prompt_expand',
+    name: '课程大纲重排需求 AI 扩写',
+    module: 'scout',
+    modelConfig: { temperature: 0.35, maxTokens: 500 },
+    promptSchema: {
+      role: 'You are a Senior Technical Curriculum Architect and Repository Analyst.',
+      taskDescription: `Expand or draft a concise, actionable course-outline reorganization instruction in {{targetLanguage}} based on the user's draft intent, the live repository metadata, and the current outline structure.
+
+Project Context:
+- Repository: {{repoSlug}}
+- Domain: {{domain}}
+- Tech Tags: {{tags}}
+- Scope Prefix: {{scopePrefix}}
+
+Current Outline Skeleton:
+{{outlineSummary}}
+
+User's Draft Input:
+{{userInputSection}}`,
+      rules: [
+        'Return a JSON object containing only the field "expandedPrompt".',
+        'Keep "expandedPrompt" concise and high-density (80-160 Chinese characters or 30-60 English words) as plain text without greetings, preambles, markdown headings, bullet lists, or outer quotes.',
+        'GROUNDING RULE: Reference ONLY chapters, parts, modules, or file paths that actually exist in Current Outline Skeleton or Tech Tags. Never fabricate nonexistent modules.',
+        'FIDELITY RULE: Preserve the user\'s explicit focus or exclusions (e.g. if the user wants to focus only on state machines or skip basics, explicitly instruct pruning unrelated chapters and deepening the requested ones).',
+        'If User\'s Draft Input is empty, analyze Current Outline Skeleton and propose one concrete, high-value reorganization instruction tailored to this repository.',
+      ],
+      language: 'zh-CN',
+      outputSchemaHint: {
+        expandedPrompt:
+          '精简通用基础搭建章节；重点围绕《第2章：会话认证核心》的状态流转与《第4章：Stripe 订阅支付》的结账状态机，深入剖析核心模块的设计模式、状态边界与异常恢复逻辑。',
+      },
+    },
+  },
+  {
     key: 'webdoc_container_probe',
     name: 'WebDoc 站点级容器骨架角色映射探测',
     module: 'webdoc',
