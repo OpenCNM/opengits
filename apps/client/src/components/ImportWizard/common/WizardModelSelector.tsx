@@ -175,13 +175,14 @@ export function useActiveWizardModel() {
 
   const userProviders = useModelProviderStore((s) => s.userProviders);
   const isInitialized = useModelProviderStore((s) => s.isInitialized);
+  const loadedUserId = useModelProviderStore((s) => s.loadedUserId);
   const loadProviders = useModelProviderStore((s) => s.loadProviders);
 
   useEffect(() => {
-    if (!isInitialized) {
+    if (!isInitialized || (userId && loadedUserId !== userId)) {
       void loadProviders(userId);
     }
-  }, [isInitialized, loadProviders, userId]);
+  }, [isInitialized, loadedUserId, loadProviders, userId]);
 
   const configuredProviders = userProviders.filter(
     (p) => Boolean(p.hasApiKey || p.apiKey) && p.models.length > 0

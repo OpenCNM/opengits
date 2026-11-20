@@ -105,3 +105,6 @@ dev-worker-sidecar*
 
 # worker-sidecar 运行时归档/图谱/树缓存（真实流量产物，勿入库）
 /services/worker-sidecar/storage/
+
+# Go build artifacts (go build ./cmd/pbtool at module root)
+services/worker-sidecar/pbtool

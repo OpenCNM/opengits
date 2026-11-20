@@ -68,8 +68,10 @@ export function useInkSpiritEvents({
         if (isChatOpen) {
           setIsChatOpen(false);
         } else {
-          setIsChatOpen(true);
-          requestAnimationFrame(() => chatInputRef.current?.focus());
+          requireAiCapability(() => {
+            setIsChatOpen(true);
+            requestAnimationFrame(() => chatInputRef.current?.focus());
+          }, m.gate_reason_ai_chat());
         }
       }
     };
