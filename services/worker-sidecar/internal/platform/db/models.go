@@ -517,16 +517,18 @@ type McpApiToken struct {
 }
 
 type McpBundle struct {
-	ID           string           `db:"id" json:"id"`
-	Title        string           `db:"title" json:"title"`
-	Description  pgtype.Text      `db:"description" json:"description"`
-	Slug         string           `db:"slug" json:"slug"`
-	Badge        pgtype.Text      `db:"badge" json:"badge"`
-	IsPinned     bool             `db:"isPinned" json:"isPinned"`
-	DisplayOrder int32            `db:"displayOrder" json:"displayOrder"`
-	UseCount     int32            `db:"useCount" json:"useCount"`
-	CreatedAt    pgtype.Timestamp `db:"createdAt" json:"createdAt"`
-	UpdatedAt    pgtype.Timestamp `db:"updatedAt" json:"updatedAt"`
+	ID              string           `db:"id" json:"id"`
+	Title           string           `db:"title" json:"title"`
+	Description     pgtype.Text      `db:"description" json:"description"`
+	Slug            string           `db:"slug" json:"slug"`
+	Badge           pgtype.Text      `db:"badge" json:"badge"`
+	IsPinned        bool             `db:"isPinned" json:"isPinned"`
+	IsStarterPack   bool             `db:"isStarterPack" json:"isStarterPack"`
+	StarterCategory pgtype.Text      `db:"starterCategory" json:"starterCategory"`
+	DisplayOrder    int32            `db:"displayOrder" json:"displayOrder"`
+	UseCount        int32            `db:"useCount" json:"useCount"`
+	CreatedAt       pgtype.Timestamp `db:"createdAt" json:"createdAt"`
+	UpdatedAt       pgtype.Timestamp `db:"updatedAt" json:"updatedAt"`
 }
 
 type McpCallLog struct {

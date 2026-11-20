@@ -571,6 +571,8 @@ CREATE TABLE "McpBundle" (
     "slug" TEXT NOT NULL,
     "badge" TEXT DEFAULT '❖ 官方精选',
     "isPinned" BOOLEAN NOT NULL DEFAULT true,
+    "isStarterPack" BOOLEAN NOT NULL DEFAULT false,
+    "starterCategory" TEXT,
     "displayOrder" INTEGER NOT NULL DEFAULT 0,
     "useCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1255,6 +1257,9 @@ CREATE UNIQUE INDEX "McpBundle_slug_key" ON "McpBundle"("slug");
 
 -- CreateIndex
 CREATE INDEX "McpBundle_slug_idx" ON "McpBundle"("slug");
+
+-- CreateIndex
+CREATE INDEX "McpBundle_isStarterPack_isPinned_displayOrder_idx" ON "McpBundle"("isStarterPack", "isPinned", "displayOrder");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AdminUser_email_key" ON "AdminUser"("email");

@@ -84,34 +84,38 @@ func (q *Queries) IncrementBundleUseCount(ctx context.Context, id string) error 
 const insertMcpBundle = `-- name: InsertMcpBundle :one
 INSERT INTO "McpBundle" (
     "id", "title", "slug", "description", "badge",
-    "isPinned", "displayOrder", "useCount", "createdAt", "updatedAt"
+    "isPinned", "isStarterPack", "starterCategory", "displayOrder", "useCount", "createdAt", "updatedAt"
 ) VALUES (
     gen_random_uuid()::text, $1, $2, $3, $4,
-    $5, $6, 0, NOW(), NOW()
+    $5, $6, $7, $8, 0, NOW(), NOW()
 )
-RETURNING "id", "title", "slug", "description", "badge", "isPinned", "displayOrder", "useCount", "createdAt", "updatedAt"
+RETURNING "id", "title", "slug", "description", "badge", "isPinned", "isStarterPack", "starterCategory", "displayOrder", "useCount", "createdAt", "updatedAt"
 `
 
 type InsertMcpBundleParams struct {
-	Title        string      `db:"title" json:"title"`
-	Slug         string      `db:"slug" json:"slug"`
-	Description  pgtype.Text `db:"description" json:"description"`
-	Badge        pgtype.Text `db:"badge" json:"badge"`
-	IsPinned     bool        `db:"isPinned" json:"isPinned"`
-	DisplayOrder int32       `db:"displayOrder" json:"displayOrder"`
+	Title           string      `db:"title" json:"title"`
+	Slug            string      `db:"slug" json:"slug"`
+	Description     pgtype.Text `db:"description" json:"description"`
+	Badge           pgtype.Text `db:"badge" json:"badge"`
+	IsPinned        bool        `db:"isPinned" json:"isPinned"`
+	IsStarterPack   bool        `db:"isStarterPack" json:"isStarterPack"`
+	StarterCategory pgtype.Text `db:"starterCategory" json:"starterCategory"`
+	DisplayOrder    int32       `db:"displayOrder" json:"displayOrder"`
 }
 
 type InsertMcpBundleRow struct {
-	ID           string           `db:"id" json:"id"`
-	Title        string           `db:"title" json:"title"`
-	Slug         string           `db:"slug" json:"slug"`
-	Description  pgtype.Text      `db:"description" json:"description"`
-	Badge        pgtype.Text      `db:"badge" json:"badge"`
-	IsPinned     bool             `db:"isPinned" json:"isPinned"`
-	DisplayOrder int32            `db:"displayOrder" json:"displayOrder"`
-	UseCount     int32            `db:"useCount" json:"useCount"`
-	CreatedAt    pgtype.Timestamp `db:"createdAt" json:"createdAt"`
-	UpdatedAt    pgtype.Timestamp `db:"updatedAt" json:"updatedAt"`
+	ID              string           `db:"id" json:"id"`
+	Title           string           `db:"title" json:"title"`
+	Slug            string           `db:"slug" json:"slug"`
+	Description     pgtype.Text      `db:"description" json:"description"`
+	Badge           pgtype.Text      `db:"badge" json:"badge"`
+	IsPinned        bool             `db:"isPinned" json:"isPinned"`
+	IsStarterPack   bool             `db:"isStarterPack" json:"isStarterPack"`
+	StarterCategory pgtype.Text      `db:"starterCategory" json:"starterCategory"`
+	DisplayOrder    int32            `db:"displayOrder" json:"displayOrder"`
+	UseCount        int32            `db:"useCount" json:"useCount"`
+	CreatedAt       pgtype.Timestamp `db:"createdAt" json:"createdAt"`
+	UpdatedAt       pgtype.Timestamp `db:"updatedAt" json:"updatedAt"`
 }
 
 func (q *Queries) InsertMcpBundle(ctx context.Context, arg InsertMcpBundleParams) (InsertMcpBundleRow, error) {
@@ -121,6 +125,8 @@ func (q *Queries) InsertMcpBundle(ctx context.Context, arg InsertMcpBundleParams
 		arg.Description,
 		arg.Badge,
 		arg.IsPinned,
+		arg.IsStarterPack,
+		arg.StarterCategory,
 		arg.DisplayOrder,
 	)
 	var i InsertMcpBundleRow
@@ -131,6 +137,8 @@ func (q *Queries) InsertMcpBundle(ctx context.Context, arg InsertMcpBundleParams
 		&i.Description,
 		&i.Badge,
 		&i.IsPinned,
+		&i.IsStarterPack,
+		&i.StarterCategory,
 		&i.DisplayOrder,
 		&i.UseCount,
 		&i.CreatedAt,
@@ -161,32 +169,38 @@ SET "title" = COALESCE(NULLIF($2, ''), "title"),
     "description" = COALESCE($3, "description"),
     "badge" = COALESCE($4, "badge"),
     "isPinned" = $5,
-    "displayOrder" = $6,
+    "isStarterPack" = $6,
+    "starterCategory" = $7,
+    "displayOrder" = $8,
     "updatedAt" = NOW()
 WHERE "id" = $1
-RETURNING "id", "title", "slug", "description", "badge", "isPinned", "displayOrder", "useCount", "createdAt", "updatedAt"
+RETURNING "id", "title", "slug", "description", "badge", "isPinned", "isStarterPack", "starterCategory", "displayOrder", "useCount", "createdAt", "updatedAt"
 `
 
 type UpdateMcpBundleParams struct {
-	ID           string      `db:"id" json:"id"`
-	Column2      interface{} `db:"column_2" json:"column_2"`
-	Description  pgtype.Text `db:"description" json:"description"`
-	Badge        pgtype.Text `db:"badge" json:"badge"`
-	IsPinned     bool        `db:"isPinned" json:"isPinned"`
-	DisplayOrder int32       `db:"displayOrder" json:"displayOrder"`
+	ID              string      `db:"id" json:"id"`
+	Column2         interface{} `db:"column_2" json:"column_2"`
+	Description     pgtype.Text `db:"description" json:"description"`
+	Badge           pgtype.Text `db:"badge" json:"badge"`
+	IsPinned        bool        `db:"isPinned" json:"isPinned"`
+	IsStarterPack   bool        `db:"isStarterPack" json:"isStarterPack"`
+	StarterCategory pgtype.Text `db:"starterCategory" json:"starterCategory"`
+	DisplayOrder    int32       `db:"displayOrder" json:"displayOrder"`
 }
 
 type UpdateMcpBundleRow struct {
-	ID           string           `db:"id" json:"id"`
-	Title        string           `db:"title" json:"title"`
-	Slug         string           `db:"slug" json:"slug"`
-	Description  pgtype.Text      `db:"description" json:"description"`
-	Badge        pgtype.Text      `db:"badge" json:"badge"`
-	IsPinned     bool             `db:"isPinned" json:"isPinned"`
-	DisplayOrder int32            `db:"displayOrder" json:"displayOrder"`
-	UseCount     int32            `db:"useCount" json:"useCount"`
-	CreatedAt    pgtype.Timestamp `db:"createdAt" json:"createdAt"`
-	UpdatedAt    pgtype.Timestamp `db:"updatedAt" json:"updatedAt"`
+	ID              string           `db:"id" json:"id"`
+	Title           string           `db:"title" json:"title"`
+	Slug            string           `db:"slug" json:"slug"`
+	Description     pgtype.Text      `db:"description" json:"description"`
+	Badge           pgtype.Text      `db:"badge" json:"badge"`
+	IsPinned        bool             `db:"isPinned" json:"isPinned"`
+	IsStarterPack   bool             `db:"isStarterPack" json:"isStarterPack"`
+	StarterCategory pgtype.Text      `db:"starterCategory" json:"starterCategory"`
+	DisplayOrder    int32            `db:"displayOrder" json:"displayOrder"`
+	UseCount        int32            `db:"useCount" json:"useCount"`
+	CreatedAt       pgtype.Timestamp `db:"createdAt" json:"createdAt"`
+	UpdatedAt       pgtype.Timestamp `db:"updatedAt" json:"updatedAt"`
 }
 
 func (q *Queries) UpdateMcpBundle(ctx context.Context, arg UpdateMcpBundleParams) (UpdateMcpBundleRow, error) {
@@ -196,6 +210,8 @@ func (q *Queries) UpdateMcpBundle(ctx context.Context, arg UpdateMcpBundleParams
 		arg.Description,
 		arg.Badge,
 		arg.IsPinned,
+		arg.IsStarterPack,
+		arg.StarterCategory,
 		arg.DisplayOrder,
 	)
 	var i UpdateMcpBundleRow
@@ -206,6 +222,8 @@ func (q *Queries) UpdateMcpBundle(ctx context.Context, arg UpdateMcpBundleParams
 		&i.Description,
 		&i.Badge,
 		&i.IsPinned,
+		&i.IsStarterPack,
+		&i.StarterCategory,
 		&i.DisplayOrder,
 		&i.UseCount,
 		&i.CreatedAt,

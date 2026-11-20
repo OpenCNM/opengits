@@ -51,6 +51,7 @@ export default async function HomePage({
   };
 
   let myRepos: any[] = [];
+  let hasPreferencesSet = false;
   let pinnedRepoIds = new Set<string>();
   let disabledMcpRepoIds = new Set<string>();
   let savedRepoIds = new Set<string>();
@@ -156,6 +157,7 @@ export default async function HomePage({
     }
 
     myRepos = savedRows.map((sr) => sr.repository);
+    hasPreferencesSet = Boolean(userWithRepos?.hasPreferencesSet);
     autoFollowByRepoId = new Map(savedRows.map((sr) => [sr.repository.id, sr.autoFollow]));
     pinnedRepoIds = new Set(userWithRepos?.pinnedRepoIds || []);
     disabledMcpRepoIds = new Set(userWithRepos?.disabledMcpRepoIds || []);
@@ -621,6 +623,7 @@ export default async function HomePage({
       initialRepos={displayPublicRepos}
       initialMyRepos={displayMyRepos}
       userId={userId}
+      hasPreferencesSet={hasPreferencesSet}
       activeTab={activeTab}
       sort={sort}
       announcements={announcements}

@@ -21,39 +21,45 @@ type BundleRepoItem struct {
 
 // BundleDetail represents full McpBundle entity with linked repositories.
 type BundleDetail struct {
-	ID           string           `json:"id"`
-	Title        string           `json:"title"`
-	Slug         string           `json:"slug"`
-	Description  *string          `json:"description"`
-	Badge        *string          `json:"badge"`
-	IsPinned     bool             `json:"isPinned"`
-	DisplayOrder int              `json:"displayOrder"`
-	UseCount     int              `json:"useCount"`
-	Repositories []BundleRepoItem `json:"repositories"`
-	CreatedAt    string           `json:"createdAt"`
-	UpdatedAt    string           `json:"updatedAt"`
+	ID              string           `json:"id"`
+	Title           string           `json:"title"`
+	Slug            string           `json:"slug"`
+	Description     *string          `json:"description"`
+	Badge           *string          `json:"badge"`
+	IsPinned        bool             `json:"isPinned"`
+	IsStarterPack   bool             `json:"isStarterPack"`
+	StarterCategory *string          `json:"starterCategory"`
+	DisplayOrder    int              `json:"displayOrder"`
+	UseCount        int              `json:"useCount"`
+	Repositories    []BundleRepoItem `json:"repositories"`
+	CreatedAt       string           `json:"createdAt"`
+	UpdatedAt       string           `json:"updatedAt"`
 }
 
 // BundleCreateInput contains fields for creating a new bundle.
 type BundleCreateInput struct {
-	Title         string   `json:"title"`
-	Slug          string   `json:"slug"`
-	Description   *string  `json:"description"`
-	Badge         *string  `json:"badge"`
-	IsPinned      bool     `json:"isPinned"`
-	DisplayOrder  int      `json:"displayOrder"`
-	RepositoryIDs []string `json:"repositoryIds"`
+	Title           string   `json:"title"`
+	Slug            string   `json:"slug"`
+	Description     *string  `json:"description"`
+	Badge           *string  `json:"badge"`
+	IsPinned        bool     `json:"isPinned"`
+	IsStarterPack   bool     `json:"isStarterPack"`
+	StarterCategory *string  `json:"starterCategory"`
+	DisplayOrder    int      `json:"displayOrder"`
+	RepositoryIDs   []string `json:"repositoryIds"`
 }
 
 // BundleUpdateInput contains fields for updating an existing bundle.
 type BundleUpdateInput struct {
-	ID            string   `json:"id"`
-	Title         string   `json:"title"`
-	Description   *string  `json:"description"`
-	Badge         *string  `json:"badge"`
-	IsPinned      bool     `json:"isPinned"`
-	DisplayOrder  int      `json:"displayOrder"`
-	RepositoryIDs []string `json:"repositoryIds"`
+	ID              string   `json:"id"`
+	Title           string   `json:"title"`
+	Description     *string  `json:"description"`
+	Badge           *string  `json:"badge"`
+	IsPinned        bool     `json:"isPinned"`
+	IsStarterPack   bool     `json:"isStarterPack"`
+	StarterCategory *string  `json:"starterCategory"`
+	DisplayOrder    int      `json:"displayOrder"`
+	RepositoryIDs   []string `json:"repositoryIds"`
 }
 
 // IncrementBundleUseCount increments the use count of a bundle by id or slug.
@@ -97,14 +103,20 @@ func (s *PgxStore) CreateBundle(ctx context.Context, input BundleCreateInput) (*
 		if badge != "" {
 			bBadge = pgtype.Text{String: badge, Valid: true}
 		}
+		var starterCat pgtype.Text
+		if input.StarterCategory != nil && *input.StarterCategory != "" {
+			starterCat = pgtype.Text{String: *input.StarterCategory, Valid: true}
+		}
 
 		row, err := q.InsertMcpBundle(ctx, db.InsertMcpBundleParams{
-			Title:        input.Title,
-			Slug:         input.Slug,
-			Description:  desc,
-			Badge:        bBadge,
-			IsPinned:     input.IsPinned,
-			DisplayOrder: int32(input.DisplayOrder),
+			Title:           input.Title,
+			Slug:            input.Slug,
+			Description:     desc,
+			Badge:           bBadge,
+			IsPinned:        input.IsPinned,
+			IsStarterPack:   input.IsStarterPack,
+			StarterCategory: starterCat,
+			DisplayOrder:    int32(input.DisplayOrder),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to insert mcp bundle: %w", err)
@@ -120,6 +132,10 @@ func (s *PgxStore) CreateBundle(ctx context.Context, input BundleCreateInput) (*
 			detail.Badge = &row.Badge.String
 		}
 		detail.IsPinned = row.IsPinned
+		detail.IsStarterPack = row.IsStarterPack
+		if row.StarterCategory.Valid {
+			detail.StarterCategory = &row.StarterCategory.String
+		}
 		detail.DisplayOrder = int(row.DisplayOrder)
 		detail.UseCount = int(row.UseCount)
 		createdAt = row.CreatedAt.Time
@@ -198,14 +214,20 @@ func (s *PgxStore) UpdateBundle(ctx context.Context, input BundleUpdateInput) (*
 		if badge != nil {
 			bBadge = pgtype.Text{String: *badge, Valid: true}
 		}
+		var starterCat pgtype.Text
+		if input.StarterCategory != nil && *input.StarterCategory != "" {
+			starterCat = pgtype.Text{String: *input.StarterCategory, Valid: true}
+		}
 
 		row, err := q.UpdateMcpBundle(ctx, db.UpdateMcpBundleParams{
-			ID:           input.ID,
-			Column2:      input.Title,
-			Description:  desc,
-			Badge:        bBadge,
-			IsPinned:     input.IsPinned,
-			DisplayOrder: int32(input.DisplayOrder),
+			ID:              input.ID,
+			Column2:         input.Title,
+			Description:     desc,
+			Badge:           bBadge,
+			IsPinned:        input.IsPinned,
+			IsStarterPack:   input.IsStarterPack,
+			StarterCategory: starterCat,
+			DisplayOrder:    int32(input.DisplayOrder),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to update mcp bundle: %w", err)
@@ -221,6 +243,10 @@ func (s *PgxStore) UpdateBundle(ctx context.Context, input BundleUpdateInput) (*
 			detail.Badge = &row.Badge.String
 		}
 		detail.IsPinned = row.IsPinned
+		detail.IsStarterPack = row.IsStarterPack
+		if row.StarterCategory.Valid {
+			detail.StarterCategory = &row.StarterCategory.String
+		}
 		detail.DisplayOrder = int(row.DisplayOrder)
 		detail.UseCount = int(row.UseCount)
 		createdAt = row.CreatedAt.Time

@@ -9,6 +9,7 @@ import {
   Trash2,
   Globe,
   ExternalLink,
+  Sparkles,
 } from 'lucide-react';
 import { DisplayRepo } from '@/lib/home-data';
 import { isWebDocRepository, resolveRepositoryDisplayName } from '@/lib/repository-resolver';
@@ -32,6 +33,7 @@ export interface ManageProjectsDialogProps {
   onTogglePin?: (repo: DisplayRepo) => void;
   onRemoveRepo?: (repo: DisplayRepo) => Promise<void> | void;
   onOpenDetail?: (repo: DisplayRepo) => void;
+  onOpenStarterPacks?: () => void;
 }
 
 export function ManageProjectsDialog({
@@ -41,6 +43,7 @@ export function ManageProjectsDialog({
   onTogglePin,
   onRemoveRepo,
   onOpenDetail,
+  onOpenStarterPacks,
 }: ManageProjectsDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [removingRepo, setRemovingRepo] = useState<DisplayRepo | null>(null);
@@ -94,6 +97,21 @@ export function ManageProjectsDialog({
                   {m.dashboard_manage_dialog_desc()}
                 </DialogDescription>
               </div>
+              {onOpenStarterPacks && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onOpenStarterPacks();
+                  }}
+                  className="shrink-0 mr-7 text-xs gap-1.5 rounded-full"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-theme-primary" />
+                  <span>{m.starter_pack_trigger_btn()}</span>
+                </Button>
+              )}
             </div>
           </DialogHeader>
 

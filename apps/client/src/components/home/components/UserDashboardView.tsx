@@ -17,7 +17,10 @@ import { DashboardMcpClientsPanel } from './dashboard/DashboardMcpClientsPanel';
 import { DashboardFeedSection } from './dashboard/DashboardFeedSection';
 import { TutorialDetailDialog } from './dashboard/TutorialDetailDialog';
 import { ManageProjectsDialog } from './dashboard/ManageProjectsDialog';
+import { StarterPackOnboardingDialog } from './dashboard/StarterPackOnboardingDialog';
 import { DashboardSearchHub } from './dashboard/DashboardSearchHub';
+import { api } from '@/lib/api/client';
+import type { StarterPackItem } from '@/lib/starter-packs/starter-packs';
 import { DashboardSourceFilterPills } from './dashboard/DashboardSourceFilterPills';
 import { calculateSourceTypeCounts, type DashboardSourceType } from '@/lib/search/smart-repo-search';
 import { HomeFooter } from './HomeFooter';
@@ -50,6 +53,10 @@ interface UserDashboardViewProps {
   setMcpDialogRepo: (repo: { owner: string; repo: string; title?: string } | null) => void;
   /** 登录态（接力工作台的认领引导消费；缺省 false） */
   isLoggedIn?: boolean;
+  /** 真实 GitHub 登录态（非游客模式） */
+  isAuthenticated?: boolean;
+  /** 用户是否已完成首次偏好/场景引导 */
+  hasPreferencesSet?: boolean;
   initialActiveTab?: string;
   initialSort?: string;
   searchQuery?: string;
@@ -74,6 +81,8 @@ export function UserDashboardView({
   handleRemoveRepo,
   setMcpDialogRepo,
   isLoggedIn = false,
+  isAuthenticated = false,
+  hasPreferencesSet = true,
   initialActiveTab,
   initialSort,
   searchQuery = '',
@@ -145,6 +154,53 @@ export function UserDashboardView({
     repo: string;
   } | null>(null);
   const [isMcpWizardOpen, setIsMcpWizardOpen] = useState(false);
+  const [starterPacks, setStarterPacks] = useState<StarterPackItem[]>([]);
+  const [isStarterPackDialogOpen, setIsStarterPackDialogOpen] = useState(false);
+  const [isFirstTimeOnboarding, setIsFirstTimeOnboarding] = useState(false);
+  const hasAutoPromptedStarterRef = React.useRef(false);
+
+  // 首次登录且书架为空时，静默拉取可用场景包；仅当存在免费场景包时才轻柔弹出引导
+  useEffect(() => {
+    if (!isAuthenticated || hasPreferencesSet || myRepos.length > 0 || hasAutoPromptedStarterRef.current) {
+      return;
+    }
+    hasAutoPromptedStarterRef.current = true;
+    let cancelled = false;
+    api
+      .get<{ packs?: StarterPackItem[]; hasPreferencesSet?: boolean }>('/api/starter-packs', {
+        onUnauthorized: 'throw',
+      })
+      .then((res) => {
+        if (cancelled) return;
+        const packs = res?.packs || [];
+        if (packs.length > 0 && !res?.hasPreferencesSet) {
+          setStarterPacks(packs);
+          setIsFirstTimeOnboarding(true);
+          setIsStarterPackDialogOpen(true);
+        }
+      })
+      .catch((err) => {
+        // 容错降级: 首次引导拉取失败时不阻塞用户正常使用工作台
+        console.warn('[UserDashboardView] fetch starter packs failed:', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, hasPreferencesSet, myRepos.length]);
+
+  const openStarterPacksDialog = React.useCallback(async () => {
+    try {
+      const res = await api.get<{ packs?: StarterPackItem[] }>('/api/starter-packs');
+      const packs = res?.packs || [];
+      if (packs.length === 0) return;
+      setStarterPacks(packs);
+      setIsFirstTimeOnboarding(false);
+      setIsStarterPackDialogOpen(true);
+    } catch (err) {
+      // 容错降级: 手动打开场景包失败时记录告警并提示重试
+      console.warn('[UserDashboardView] openStarterPacksDialog failed:', err);
+    }
+  }, []);
   const { openWizardForEdition, openWizard, setUrl } = useImportWizard();
 
   const handleSearchTag = React.useCallback(
@@ -327,6 +383,7 @@ export function UserDashboardView({
             onEditionSavedChange={handleEditionSavedChange}
             onCreateEdition={(owner, repo) => requireApiKey(() => openWizardForEdition(owner, repo))}
             onOpenDetail={setDetailRepo}
+            onOpenStarterPacks={isAuthenticated ? openStarterPacksDialog : undefined}
           />
         </div>
 
@@ -526,8 +583,10 @@ export function UserDashboardView({
         }}
         onToggleSave={handleToggleSave}
         onStartImport={(url) => {
-          if (url) setUrl(url);
-          openWizard();
+          requireApiKey(() => {
+            if (url) setUrl(url);
+            openWizard();
+          }, m.apikey_continue_parse());
         }}
         onSelectTab={(tab) => setActiveTab(tab)}
         onSearchTag={handleSearchTag}
@@ -541,6 +600,16 @@ export function UserDashboardView({
         onTogglePin={handleTogglePin}
         onRemoveRepo={handleRemoveRepo}
         onOpenDetail={setDetailRepo}
+        onOpenStarterPacks={isAuthenticated ? openStarterPacksDialog : undefined}
+      />
+
+      {/* ✨ 场景预设包流体胶囊弹窗 */}
+      <StarterPackOnboardingDialog
+        open={isStarterPackDialogOpen}
+        onOpenChange={setIsStarterPackDialogOpen}
+        packs={starterPacks}
+        isFirstTimeOnboarding={isFirstTimeOnboarding}
+        onApplied={() => router.refresh()}
       />
     </main>
   );

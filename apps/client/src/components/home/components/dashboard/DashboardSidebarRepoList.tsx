@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Globe, Layers, ArrowUpCircle, Pin } from 'lucide-react';
+import { Globe, Layers, ArrowUpCircle, Pin, Sparkles } from 'lucide-react';
 import { DisplayRepo, EditionChip } from '@/lib/home-data';
 import { isWebDocRepository, resolveRepositoryDisplayName } from '@/lib/repository-resolver';
 import { GithubIcon } from '@/components/repo/RepoGithubOriginPopover';
@@ -22,6 +22,7 @@ interface DashboardSidebarRepoListProps {
   onEditionSavedChange?: (chip: EditionChip, isSaved: boolean) => void;
   onCreateEdition?: (owner: string, repo: string) => void;
   onOpenDetail?: (repo: DisplayRepo) => void;
+  onOpenStarterPacks?: () => void;
 }
 
 export function DashboardSidebarRepoList({
@@ -36,18 +37,29 @@ export function DashboardSidebarRepoList({
   onEditionSavedChange: _onEditionSavedChange,
   onCreateEdition: _onCreateEdition,
   onOpenDetail,
+  onOpenStarterPacks,
 }: DashboardSidebarRepoListProps) {
   return (
     <ScrollArea className="flex-1 min-h-0" scrollFade scrollbarGutter>
         <div className="space-y-1 font-sans text-sm pr-1 py-0.5">
           {repos.length === 0 ? (
-          <div className="py-6 px-3 border border-dashed border-theme-border/80 rounded-lg text-center space-y-1 my-2">
+          <div className="py-6 px-3 border border-dashed border-theme-border/80 rounded-lg text-center space-y-2 my-2">
             {isFiltered ? (
               <p className="text-xs font-medium text-theme-muted">{m.dashboard_manage_empty()}</p>
             ) : (
               <>
                 <p className="text-xs font-medium text-theme-foreground/80">{m.empty_no_bookshelf()}</p>
                 <p className="text-micro text-theme-muted/70">{m.mcp_empty_bookshelf_hint()}</p>
+                {onOpenStarterPacks && (
+                  <button
+                    type="button"
+                    onClick={onOpenStarterPacks}
+                    className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-theme-surface border border-theme-border hover:border-theme-primary text-xs font-medium text-theme-foreground transition-colors cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-theme-primary" />
+                    <span>{m.starter_pack_empty_cta()}</span>
+                  </button>
+                )}
               </>
             )}
           </div>

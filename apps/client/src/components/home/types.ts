@@ -7,6 +7,7 @@ export interface GitHubHomeViewProps {
   initialRepos: DisplayRepo[];
   initialMyRepos?: DisplayRepo[];
   userId: string | null;
+  hasPreferencesSet?: boolean;
   activeTab?: string;
   sort: string;
   announcements?: AnnouncementItem[];

@@ -31,6 +31,7 @@ export function GitHubHomeView({
   initialRepos,
   initialMyRepos = [],
   userId: initialUserId,
+  hasPreferencesSet = false,
   activeTab,
   sort,
   announcements,
@@ -360,7 +361,7 @@ export function GitHubHomeView({
               description: err?.message || m.shelf_insufficient_desc(),
               actionProps: {
                 children: m.shelf_go_earn(),
-                onClick: () => openWizard(),
+                onClick: () => requireApiKey(() => openWizard(), m.apikey_continue_parse()),
               },
             });
             return;
@@ -514,6 +515,8 @@ export function GitHubHomeView({
             handleRemoveRepo={handleRemoveRepo}
             setMcpDialogRepo={handleOpenMcpDialog}
             isLoggedIn={effectiveLoggedInMode}
+            isAuthenticated={Boolean(initialUserId)}
+            hasPreferencesSet={hasPreferencesSet}
             initialActiveTab={activeTab}
             initialSort={sort}
             searchQuery={searchQuery}
