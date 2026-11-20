@@ -1666,5 +1666,10 @@
   "starter_pack_applied_desc": "{count} free tutorials added",
   "starter_pack_already_saved": "In projects",
   "starter_pack_trigger_btn": "Starter Packs",
-  "starter_pack_empty_cta": "Add free tutorials by scenario"
+  "starter_pack_empty_cta": "Add free tutorials by scenario",
+  "workbench_rollup_label": "Exploration level",
+  "workbench_rollup_deepen": "Go deeper",
+  "workbench_rollup_shallow": "Shallower",
+  "workbench_rollup_max_hint": "Deepest level reached. Use a custom prompt to target specific areas",
+  "workbench_rollup_replan_note": "Adjusting re-plans the whole outline"
 }

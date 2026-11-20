@@ -36,6 +36,7 @@ func main() {
 	mode := flag.String("mode", "fake", "fake | real")
 	lang := flag.String("lang", "zh-CN", "目标语言")
 	userID := flag.String("user-id", "", "BYOK 归属用户（real 模式必填；网关 keyOrigin=user fail-closed 契约，亦可经 PBTOOL_USER_ID 环境变量注入）")
+	rollupLevel := flag.Int("rollup-level", 0, "探查配额档位 0-3（0=默认 3 路径×1 层；3=8 路径×2 层天花板——离线攒不同档位样本）")
 	skeleton := flag.Bool("skeleton", false, "只打印顶级骨架图(不下模型)")
 	depth2 := flag.Bool("depth2", false, "深度 2 下钻(规划→并行子树→汇编)")
 	batch := flag.String("batch", "", "批量跑批清单 <manifest.json>（Phase 1.1 离线长尾压测）")
@@ -85,7 +86,7 @@ func main() {
 	if *depth2 {
 		ctx, cancel := context.WithTimeout(context.Background(), 300*time.Second)
 		defer cancel()
-		runDepth2(ctx, m, *mode, *lang, *userID, patterns)
+		runDepth2(ctx, m, *mode, *lang, *userID, *rollupLevel, patterns)
 		return
 	}
 
@@ -251,7 +252,7 @@ func (fakePlannerStub) Plan(_ context.Context, skeleton string, _ map[string]str
 	return string(b), nil
 }
 
-func runDepth2(ctx context.Context, m *pipelineb.RepoMap, mode, lang, userID string, patterns cognitive.Patterns) {
+func runDepth2(ctx context.Context, m *pipelineb.RepoMap, mode, lang, userID string, rollupLevel int, patterns cognitive.Patterns) {
 	var planner pipelineb.PlannerModel
 	var subModel pipelineb.OutlineModel
 	switch mode {
@@ -267,7 +268,7 @@ func runDepth2(ctx context.Context, m *pipelineb.RepoMap, mode, lang, userID str
 		fmt.Fprintln(os.Stderr, "mode 必须是 fake|real")
 		os.Exit(2)
 	}
-	res, err := pipelineb.RunDrill(ctx, m, planner, subModel, patterns, lang, "")
+	res, err := pipelineb.RunDrill(ctx, m, planner, subModel, patterns, lang, "", rollupLevel)
 	status := "ok"
 	if err != nil {
 		status = "error: " + err.Error()

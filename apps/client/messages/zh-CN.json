@@ -1666,5 +1666,10 @@
   "starter_pack_applied_desc": "已为你装配 {count} 本免费教程",
   "starter_pack_already_saved": "已在项目中",
   "starter_pack_trigger_btn": "场景预设包",
-  "starter_pack_empty_cta": "按开发场景一键添加免费教程"
+  "starter_pack_empty_cta": "按开发场景一键添加免费教程",
+  "workbench_rollup_label": "探查档位",
+  "workbench_rollup_deepen": "更深入",
+  "workbench_rollup_shallow": "更浅",
+  "workbench_rollup_max_hint": "已达最深档位，可用定制提示词定向展开",
+  "workbench_rollup_replan_note": "调整将重新规划整份大纲"
 }

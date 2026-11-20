@@ -294,7 +294,7 @@ func TestRunCoverageGateDepth2ObservabilityOnly(t *testing.T) {
 	]}`}
 	model := &coverageFakeModel{first: covAlphaBetaChapters, depth: TeachingDepthDeep}
 
-	res, err := RunDrill(context.Background(), m, planner, model, patterns, "zh-CN", TeachingDepthDeep)
+	res, err := RunDrill(context.Background(), m, planner, model, patterns, "zh-CN", TeachingDepthDeep, 0)
 	require.NoError(t, err)
 
 	// 深度 2 门禁仅观测：绝不触发重规划（Plan 1 次）与子树 LLM 重跑（0 次）
@@ -363,7 +363,7 @@ func TestRunDrillDepth2CoverageConflictRules_TableDriven(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			logBuf := captureStdlibLog(t)
-			res, err := RunDrill(context.Background(), buildRepo(), tt.planner, tt.model, patterns, "zh-CN", TeachingDepthDeep)
+			res, err := RunDrill(context.Background(), buildRepo(), tt.planner, tt.model, patterns, "zh-CN", TeachingDepthDeep, 0)
 			require.NoError(t, err)
 			require.Len(t, res.Chapters, 2)
 			out := logBuf.String()

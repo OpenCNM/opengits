@@ -93,6 +93,12 @@ export function ImportWorkbench() {
   const [prepHint, setPrepHint] = useState<string | null>(null);
   const [outlineGenError, setOutlineGenError] = useState<string | null>(null);
   const [outlineGenErrorCode, setOutlineGenErrorCode] = useState<string | null>(null);
+  /** 探查配额档位 0-3：用户「更深入/更浅」反馈式控制（判断权归用户、预算权归代码） */
+  const [rollupLevel, setRollupLevel] = useState(0);
+  /** 本次大纲的路由深度（1=小仓骨架全可见无 rollup；2=巨仓下钻——控件仅此态显示） */
+  const [outlineDepth, setOutlineDepth] = useState<1 | 2 | undefined>(undefined);
+  /** 上一次响应的 needRollupCapped（点击埋点用，ref 不触发渲染） */
+  const rollupCappedRef = useRef(false);
   const [technicalDetail, setTechnicalDetail] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState(false);
 
@@ -115,6 +121,9 @@ export function ImportWorkbench() {
       setRateLimitRetrying(false);
       setOutlineGenError(null);
       setTechnicalDetail(null);
+      setRollupLevel(0);
+      setOutlineDepth(undefined);
+      rollupCappedRef.current = false;
       wizardSetters.setOutlineGenError(null);
     }
   }, [step, currentTargetKey]);
@@ -232,6 +241,9 @@ export function ImportWorkbench() {
     setIsGeneratingOutline(false);
     wizardSetters.setDraftLoading(false);
     setHasCompletedGen(false);
+    setRollupLevel(0);
+    setOutlineDepth(undefined);
+    rollupCappedRef.current = false;
     triggeredKeyRef.current = '';
     currentKeyRef.current = '';
     wizardFlow.goBackToScope();
@@ -289,6 +301,8 @@ export function ImportWorkbench() {
     prepPoll?: number;
     /** 显式重试标识：清空前序失败并强制重新点火准备管线 */
     retry?: boolean;
+    /** 探查配额档位 0-3；缺省继承当前 rollupLevel（重编排/重配 Key 等入口不静默退档） */
+    rollupLevel?: number;
   }) => {
     if (!scoutData?.owner || !scoutData?.repo) {
       const errMsg = m.import_outline_error_desc();
@@ -327,6 +341,9 @@ export function ImportWorkbench() {
     wizardSetters.setOutlineGenError(null);
 
     const promptToSend = options?.customPrompt !== undefined ? options.customPrompt : customPrompt;
+    // 档位统一收口：显式 options 优先，否则继承当前档位（点「更深入」后点
+    // 「AI 重新编排」/重配 Key/空态重生成均保持档位，不静默退回 0）
+    const effectiveRollupLevel = options?.rollupLevel ?? rollupLevel;
     if (options?.customPrompt !== undefined) {
       wizardSetters.setCustomPrompt(options.customPrompt);
     }
@@ -352,6 +369,7 @@ export function ImportWorkbench() {
           pacing: options?.pacing || undefined,
           teachingDepth: teachingDepth || undefined,
           learnerArchetype: options?.learnerArchetype || undefined,
+          rollupLevel: effectiveRollupLevel ?? undefined,
           retry: options?.retry || undefined,
         }),
       });
@@ -525,6 +543,9 @@ export function ImportWorkbench() {
         }));
       }
 
+      setOutlineDepth(data.depth === 2 ? 2 : 1);
+      rollupCappedRef.current = Boolean(data.stats?.diagnostics?.needRollupCapped);
+
       let chaptersToSet = data.chapters ?? [];
       if (data.depth === 2 && data.courseTree) {
         const tree = data.courseTree;
@@ -613,7 +634,22 @@ export function ImportWorkbench() {
         }
       }
     }
-  }, [scoutData, targetLanguage, generativeLanguage, selectedPrefix, excludedPaths, customPrompt, teachingDepth, parseOutlineError, fetchRepoMetadata]);
+  }, [scoutData, targetLanguage, generativeLanguage, selectedPrefix, excludedPaths, customPrompt, teachingDepth, rollupLevel, parseOutlineError, fetchRepoMetadata]);
+  /** 探查档位调整（用户反馈式）：每次点击 = 授权一档固定增量，重新规划整份大纲 */
+  const handleRollupAdjust = useCallback((direction: 'deeper' | 'shallower') => {
+    const next = direction === 'deeper'
+      ? Math.min(rollupLevel + 1, 3)
+      : Math.max(rollupLevel - 1, 0);
+    if (next === rollupLevel) return;
+    trackEvent({
+      eventType: 'OUTLINE_DEEPENING_CLICKED',
+      metadata: { level: next, direction, prevCapped: rollupCappedRef.current },
+    });
+    setRollupLevel(next);
+    triggeredKeyRef.current = '';
+    void generateTreeOutline({ rollupLevel: next });
+  }, [rollupLevel, generateTreeOutline]);
+
 
   useEffect(() => {
     if (
@@ -861,7 +897,7 @@ export function ImportWorkbench() {
                   type="button"
                   onClick={() => {
                     triggeredKeyRef.current = '';
-                    void generateTreeOutline({ retry: true });
+                    void generateTreeOutline({ retry: true, rollupLevel });
                   }}
                   className="px-4 py-1.5 bg-theme-primary text-theme-primary-fg text-xs font-medium rounded-lg hover:opacity-90 transition-all cursor-pointer font-serif shadow-2xs"
                 >
@@ -907,7 +943,37 @@ export function ImportWorkbench() {
             </div>
           </div>
         ) : (
-          <WorkbenchOutlineEditor onReorganize={generateTreeOutline} />
+          <div className="flex-1 min-h-0 flex flex-col space-y-2">
+            {outlineDepth === 2 && (
+              <div className="flex items-center justify-between gap-3 px-1">
+                <div className="inline-flex items-center bg-theme-bg/60 p-0.5 rounded-lg border border-theme-border">
+                  <button
+                    type="button"
+                    disabled={rollupLevel <= 0}
+                    onClick={() => handleRollupAdjust('shallower')}
+                    className="px-3 py-1 text-xs text-theme-muted hover:text-theme-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    − {m.workbench_rollup_shallow()}
+                  </button>
+                  <span className="px-2 text-xs text-theme-muted font-medium whitespace-nowrap">
+                    {m.workbench_rollup_label()} {rollupLevel}/3
+                  </span>
+                  <button
+                    type="button"
+                    disabled={rollupLevel >= 3}
+                    onClick={() => handleRollupAdjust('deeper')}
+                    className="px-3 py-1 text-xs text-theme-muted hover:text-theme-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer font-medium"
+                  >
+                    ＋ {m.workbench_rollup_deepen()}
+                  </button>
+                </div>
+                <span className="text-micro text-theme-muted truncate">
+                  {rollupLevel >= 3 ? m.workbench_rollup_max_hint() : m.workbench_rollup_replan_note()}
+                </span>
+              </div>
+            )}
+            <WorkbenchOutlineEditor onReorganize={generateTreeOutline} />
+          </div>
         )
       ) : (
         <div className="flex-1 min-h-0 flex flex-col space-y-4">

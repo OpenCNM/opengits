@@ -111,6 +111,9 @@ export interface SidecarTreeOutlineResponse {
       planDegenerateTriggered?: boolean;
       planDegenerateRecovered?: boolean;
       uncoveredSubsystemCount?: number;
+      /** 生效的探查配额档位（路径数/下钻深度——Go RollupBudgetForLevel 回显） */
+      needRollupQuota?: number;
+      needRollupDepth?: number;
     };
   };
   /** 冷启动准备中（HTTP 202）：巨仓归档下载+建图在后台进行，本响应无大纲产物，
@@ -146,6 +149,8 @@ interface TreeOutlineRequest {
   teachingDepth?: 'overview' | 'standard' | 'deep';
   /** 学习者画像与定位 (architecture_overview: 架构速通, deep_dive_internals: 源码攻坚, cross_language_migrant: 跨语言迁移, pedagogical_beginner: 零基础入门) */
   learnerArchetype?: 'architecture_overview' | 'deep_dive_internals' | 'cross_language_migrant' | 'pedagogical_beginner';
+  /** 探查配额档位 0-3（用户「更深入」点击；0=默认 3 路径×1 层，3=8×2 天花板） */
+  rollupLevel?: number;
   /**
    * 调用方总预算（毫秒）：客户端 fetch 超时的显式契约。sidecar 以其推导
    * 整条处理链的 ctx 上限，LLM 切片按剩余额度动态钳制——服务端不再猜测
@@ -295,6 +300,8 @@ export async function executeSidecarTreeOutline(
     pacing: req.pacing || undefined,
     teachingDepth: req.teachingDepth || undefined,
     learnerArchetype: req.learnerArchetype || undefined,
+    // ?? 显式语义：rollupLevel=0 是合法档位（默认），不可被 || 吞成 undefined
+    rollupLevel: req.rollupLevel ?? undefined,
     budgetMs: req.budgetMs || undefined,
     retry: req.retry || undefined,
   };

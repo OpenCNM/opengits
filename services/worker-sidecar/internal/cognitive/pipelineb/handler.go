@@ -61,6 +61,9 @@ type TreeOutlineRequest struct {
 	BudgetMs int64 `json:"budgetMs,omitempty"`
 	/** 是否强制重置/重试（清理前序失败或陈旧状态） */
 	Retry bool `json:"retry,omitempty"`
+	/** 探查配额档位（0=默认 3 路径×1 层；用户「更深入」点击递增，天花板 3=
+	 * 8 路径×2 层——判断权归用户、预算权归代码，默认档行为与历史一致） */
+	RollupLevel int `json:"rollupLevel,omitempty"`
 }
 
 // Handler 树大纲端点依赖。
@@ -948,7 +951,7 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := RunDrill(ctx, m, h.plannerForReq(req.UserID, req.CustomPrompt, req.Pacing, req.TeachingDepth, req.LearnerArchetype), h.modelForReq(req.UserID, req.CustomPrompt, req.TeachingDepth, req.LearnerArchetype, req.Pacing), patterns, lang, req.TeachingDepth, cb)
+	res, err := RunDrill(ctx, m, h.plannerForReq(req.UserID, req.CustomPrompt, req.Pacing, req.TeachingDepth, req.LearnerArchetype), h.modelForReq(req.UserID, req.CustomPrompt, req.TeachingDepth, req.LearnerArchetype, req.Pacing), patterns, lang, req.TeachingDepth, req.RollupLevel, cb)
 	if err != nil {
 		sendPipelineError("tree outline failed: ", err)
 		return

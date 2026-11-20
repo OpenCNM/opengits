@@ -230,7 +230,7 @@ func runRepoReport(ctx context.Context, r batchRepo, lang, userID string, patter
 		subModel = &pipelineb.GatewayModel{Client: gw, UserID: &uid}
 	}
 	start := time.Now()
-	res, err := pipelineb.RunDrill(ctx, m, planner, subModel, patterns, lang, "")
+	res, err := pipelineb.RunDrill(ctx, m, planner, subModel, patterns, lang, "", 0)
 	summary["durationMs"] = time.Since(start).Milliseconds()
 	if err != nil {
 		// 失败样本的诊断也进摘要（PlanErrorWithDiagnostics 携带时提取）——

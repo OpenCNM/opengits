@@ -82,7 +82,7 @@ func TestRunDrillAssemblesAcrossSubtrees(t *testing.T) {
 		{"name":"第 2 章:核心","summary":"s","targetPaths":["core"],"phase":"实战"},
 		{"name":"第 3 章:网络","summary":"s","targetPaths":["net"],"phase":"实战"}
 	]}`}
-	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "", 0)
 	if err != nil {
 		t.Fatalf("RunDrill: %v", err)
 	}
@@ -109,7 +109,7 @@ func TestRunDrillSkipsFailedTree(t *testing.T) {
 		{"name":"章 C","summary":"s","targetPaths":["util"],"phase":"实战"},
 		{"name":"章 G","summary":"s","targetPaths":["ghost/nope"],"phase":"实战"}
 	]}`}
-	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "", 0)
 	if err != nil {
 		t.Fatalf("RunDrill: %v", err)
 	}
@@ -137,7 +137,7 @@ func TestRunDrillBoundedReplan(t *testing.T) {
 			{"name":"修订后·工具","summary":"s","targetPaths":["util"],"phase":"实战"}
 		]}`,
 	}
-	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "", 0)
 	if err != nil {
 		t.Fatalf("RunDrill: %v", err)
 	}
@@ -206,7 +206,7 @@ func TestRunDrillBoundedDepthCapping(t *testing.T) {
 		{"name":"第 3 章:light 模块","summary":"s","targetPaths":["light"],"phase":"实战"}
 	]}`}
 
-	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "", 0)
 	if err != nil {
 		t.Fatalf("RunDrill 有界深度 2 下钻失败: %v", err)
 	}
@@ -233,7 +233,7 @@ func TestDrillSingleModeFallbackToMatrix(t *testing.T) {
 		{"name":"第 3 章:util","summary":"s","targetPaths":["util"],"phase":"实战"}
 	]}`}
 
-	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "", 0)
 	if err != nil {
 		t.Fatalf("RunDrill: %v", err)
 	}
@@ -300,7 +300,7 @@ func TestRunDrillFirstPrinciplesCognitiveBudgetAndLLMCuration(t *testing.T) {
 	]}`}
 
 	recModel := &recordingModel{}
-	res, err := RunDrill(context.Background(), m, planner, recModel, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, recModel, patterns, "zh-CN", "", 0)
 	if err != nil {
 		t.Fatalf("RunDrill failed: %v", err)
 	}
@@ -377,7 +377,7 @@ func TestRunDrillPlanADeterministicZeroLLMSubtree(t *testing.T) {
 	]}`}
 
 	recModel := &recordingModel{}
-	res, err := RunDrill(context.Background(), m, planner, recModel, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, recModel, patterns, "zh-CN", "", 0)
 	require.NoError(t, err)
 
 	// 核心断言 1：子树模型调用次数严格为 0（彻底贯彻方案 A，零额外 LLM 开销）
@@ -486,7 +486,7 @@ func TestObtainPlanDegenerateFailClosed_TableDriven(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, replanned, _, err := obtainPlan(context.Background(), tt.planner, m.Tree, "zh-CN")
+			resp, replanned, _, err := obtainPlan(context.Background(), tt.planner, m.Tree, "zh-CN", 3, 1)
 			if tt.wantErr {
 				require.Error(t, err, "持续退化应 fail-closed 报错")
 				assert.Contains(t, err.Error(), "degenerated")
@@ -522,7 +522,7 @@ func TestRootIsolationInDrillLevel(t *testing.T) {
 		{"name":"第 3 章:网络通信","summary":"s","targetPaths":["net"],"phase":"实战"}
 	]}`}
 
-	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "", 0)
 	require.NoError(t, err)
 	require.Len(t, res.Chapters, 3, "所有 3 章均应保留，第 2/3 章不被第 1 章掏空")
 
@@ -693,7 +693,7 @@ func TestRunDrillBoundedConcurrency(t *testing.T) {
 	planner := &fakePlanner{first: planJSON}
 	tracker := &trackingSubModel{}
 
-	res, err := RunDrill(context.Background(), m, planner, tracker, patterns, "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, tracker, patterns, "zh-CN", "", 0)
 	require.NoError(t, err)
 	assert.Len(t, res.Chapters, 10)
 
@@ -772,7 +772,7 @@ func TestRunDrillProgressCallback(t *testing.T) {
 		steps = append(steps, step)
 	}
 
-	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "", cb)
+	res, err := RunDrill(context.Background(), m, planner, subModel{}, patterns, "zh-CN", "", 0, cb)
 	require.NoError(t, err)
 	assert.NotEmpty(t, res.Chapters)
 
@@ -811,7 +811,7 @@ func TestRunDrillContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // 预先取消
 
-	_, err := RunDrill(ctx, m, planner, subModel{}, patterns, "zh-CN", "")
+	_, err := RunDrill(ctx, m, planner, subModel{}, patterns, "zh-CN", "", 0)
 	require.Error(t, err)
 	assert.Equal(t, context.Canceled, err)
 }
@@ -835,7 +835,7 @@ func TestObtainPlanTransientRetryRecovery(t *testing.T) {
 			failErr:   &client.LlmGatewayError{Code: client.ErrCodeGenerationFailed, Status: 502, Message: "streamed output contains no complete JSON object (len=358)"},
 			success:   goodPlan,
 		}
-		resp, replanned, _, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+		resp, replanned, _, err := obtainPlan(context.Background(), planner, root, "zh-CN", 3, 1)
 		require.NoError(t, err)
 		assert.False(t, replanned)
 		require.NotNil(t, resp)
@@ -849,7 +849,7 @@ func TestObtainPlanTransientRetryRecovery(t *testing.T) {
 			failErr:   &client.LlmGatewayError{Code: client.ErrCodeMissingApiKey, Status: 409, Message: "missing api key"},
 			success:   goodPlan,
 		}
-		_, _, _, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+		_, _, _, err := obtainPlan(context.Background(), planner, root, "zh-CN", 3, 1)
 		require.Error(t, err)
 		assert.Equal(t, 1, planner.calls, "致命配置错误应立即 fail-fast，严禁空耗重试")
 	})
@@ -862,7 +862,7 @@ func TestObtainPlanTransientRetryRecovery(t *testing.T) {
 			failErr:   &client.LlmGatewayError{Code: client.ErrCodeKeyDecryptFailed, Status: 409, Message: "云端已保存的 AI 密钥无法解密"},
 			success:   goodPlan,
 		}
-		_, _, _, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+		_, _, _, err := obtainPlan(context.Background(), planner, root, "zh-CN", 3, 1)
 		require.Error(t, err)
 		assert.Equal(t, 1, planner.calls, "解密失败应立即 fail-fast 并保留可区分错误码")
 	})

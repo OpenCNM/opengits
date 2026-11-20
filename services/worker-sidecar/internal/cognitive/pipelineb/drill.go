@@ -98,6 +98,10 @@ type PipelineDiagnostics struct {
 	// UncoveredSubsystemCount 深度 2 后置覆盖率门禁缺失核心子系统数
 	//（仅观测；customPrompt/overview 豁免时为 0——语义见 coverage.go）。
 	UncoveredSubsystemCount int `json:"uncoveredSubsystemCount,omitempty"`
+	// NeedRollupQuota 本次请求生效的探查配额档位（路径数/下钻深度，Go↔TS
+	// 契约回显——观测面直接关联档位与结果，用户反馈式扩容的证据字段）。
+	NeedRollupQuota int `json:"needRollupQuota,omitempty"`
+	NeedRollupDepth int `json:"needRollupDepth,omitempty"`
 }
 
 // drillChapterFileCap 汇编单章文件上限(认知预算硬上限,防巨型章膨胀)。
@@ -134,10 +138,51 @@ const (
 	TeachingDepthDeep     = "deep"
 )
 
+// ─────────────────────────────────────────────────────────────
+// 探查配额档位（2026-11 用户反馈式 rollup 控制）。
+//
+// 大纲规划后由用户判断深浅：点「更深入」rollupLevel+1 重新规划，
+// 判断权归用户、预算权归代码——每次点击即用户授权的一档固定增量。
+// 默认档 = 现状（3 路径 × 1 层），零点击用户行为零变化。
+// ─────────────────────────────────────────────────────────────
+
+const (
+	// RollupLevelMax 探查档位天花板（UI 到顶置灰，提示改用定制提示词）。
+	RollupLevelMax = 3
+	// rollup 路径配额与下钻深度的档位表值。
+	rollupQuotaL0, rollupDepthL0 = 3, 1 // 默认：现状语义
+	rollupQuotaL1, rollupDepthL1 = 4, 1 // 更深入一档
+	rollupQuotaL2, rollupDepthL2 = 5, 2 // 更深 + 展开第二层
+	rollupQuotaL3, rollupDepthL3 = 8, 2 // 天花板
+)
+
+// RollupBudgetForLevel 档位查表（唯一事实源）：返回该档位的
+// needRollup 路径配额与单路径下钻深度。越界收敛到 [0, RollupLevelMax]。
+func RollupBudgetForLevel(level int) (quota, depth int) {
+	if level < 0 {
+		level = 0
+	}
+	if level > RollupLevelMax {
+		level = RollupLevelMax
+	}
+	switch level {
+	case 1:
+		return rollupQuotaL1, rollupDepthL1
+	case 2:
+		return rollupQuotaL2, rollupDepthL2
+	case 3:
+		return rollupQuotaL3, rollupDepthL3
+	default:
+		return rollupQuotaL0, rollupDepthL0
+	}
+}
+
 // RunDrill 深度自适应下钻主编排。
 // 契约 C8：teachingDepth 显式参数（overview/standard/deep，空串 = 未指定），
 // 驱动确定性选材加权（scoreSubtreeFile）与覆盖率门禁的深度观测。
-func RunDrill(ctx context.Context, m *RepoMap, planner PlannerModel, model OutlineModel, patterns cognitive.Patterns, targetLanguage string, teachingDepth string, progressFn ...ProgressCallback) (*DrillResult, error) {
+// rollupLevel：探查配额档位（0=默认 3 路径×1 层；用户「更深入」点击递增，
+// 上限 RollupLevelMax——判断权归用户、预算权归代码）。
+func RunDrill(ctx context.Context, m *RepoMap, planner PlannerModel, model OutlineModel, patterns cognitive.Patterns, targetLanguage string, teachingDepth string, rollupLevel int, progressFn ...ProgressCallback) (*DrillResult, error) {
 	start := time.Now()
 	var cb ProgressCallback
 	if len(progressFn) > 0 && progressFn[0] != nil {
@@ -146,7 +191,7 @@ func RunDrill(ctx context.Context, m *RepoMap, planner PlannerModel, model Outli
 	// 子系统清单入口算一次向下传（SSOT 契约 C1 复用；微秒级确定性计算，
 	// 供 AST 边优先协同挂载与覆盖率门禁共用）
 	subsystems := DiscoverSubsystems(SubsystemSourcesFromRepoMap(m), patterns)
-	res, err := runDrillLevel(ctx, m, planner, model, patterns, targetLanguage, teachingDepth, subsystems, cb)
+	res, err := runDrillLevel(ctx, m, planner, model, patterns, targetLanguage, teachingDepth, subsystems, cb, rollupLevel)
 	if err != nil {
 		return nil, err
 	}
@@ -164,13 +209,15 @@ func runDrillLevel(
 	teachingDepth string,
 	subsystems []SubsystemSpec,
 	cb ProgressCallback,
+	rollupLevel int,
 ) (*DrillResult, error) {
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
 	root := skipRootWrapper(m.Tree)
 
-	planResp, replanned, planDiag, err := obtainPlan(ctx, planner, root, targetLanguage)
+	quota, rollupDepth := RollupBudgetForLevel(rollupLevel)
+	planResp, replanned, planDiag, err := obtainPlan(ctx, planner, root, targetLanguage, quota, rollupDepth)
 	if err != nil {
 		// 诊断随错误上抛（失败样本的退化率分子），不静默丢弃
 		return nil, &PlanErrorWithDiagnostics{Err: fmt.Errorf("plan: %w", err), Diagnostics: planDiag}
@@ -585,7 +632,15 @@ func isRetryablePlanError(err error) bool {
 // 退化规划:反馈重规划一次;仍退化 → fail-closed 上抛(对齐 body.go
 // 2026-09-20 产品定夺:兜底=质量降级,拒绝——绝不以模板骨架伪装成品,
 // 调用方回落客户端 A 规则管线的物理事实大纲)。
-func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, targetLanguage string) (resp *planResponse, replanned bool, diag PipelineDiagnostics, err error) {
+func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, targetLanguage string, rollupQuota, rollupDepth int) (resp *planResponse, replanned bool, diag PipelineDiagnostics, err error) {
+	// 防御钳制：配额/深度经 RollupBudgetForLevel 产生时恒合法，直调方误传
+	// 0/负值时收敛默认档——绝不允许 quota=0 把补料通道静默关死
+	if rollupQuota < 1 {
+		rollupQuota = rollupQuotaL0
+	}
+	if rollupDepth < 1 {
+		rollupDepth = rollupDepthL0
+	}
 	skeleton := RenderSkeleton(root)
 	var raw string
 	for attempt := 0; attempt < 2; attempt++ {
@@ -615,16 +670,20 @@ func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, t
 	// 丢弃"把模型的合理意图整锅扔掉,只为了让校验闸少写一行截断
 	//（Phase 2 观测：截断前原始请求数与是否触顶进诊断——Phase 3.1
 	// 扩容触发判据的原始事实，先量化后动线上行为）
+	// 探查配额档位（rollupQuota/rollupDepth）来自用户「更深入」点击（批次：
+	// 用户反馈式 rollup 控制），默认档与历史行为逐字节一致
 	diag.NeedRollupRequested = len(resp.NeedRoll)
-	diag.NeedRollupCapped = len(resp.NeedRoll) > 3
-	if len(resp.NeedRoll) > 3 {
-		resp.NeedRoll = resp.NeedRoll[:3]
+	diag.NeedRollupCapped = len(resp.NeedRoll) > rollupQuota
+	diag.NeedRollupQuota = rollupQuota
+	diag.NeedRollupDepth = rollupDepth
+	if len(resp.NeedRoll) > rollupQuota {
+		resp.NeedRoll = resp.NeedRoll[:rollupQuota]
 	}
 	if len(resp.NeedRoll) > 0 {
 		rollups := map[string]string{}
 		for _, p := range resp.NeedRoll {
 			if sub := findSubtree(root, p); sub != nil {
-				rollups[p] = RenderSubtreeSkeleton(sub, 1)
+				rollups[p] = RenderSubtreeSkeleton(sub, rollupDepth)
 			}
 		}
 		if p2, ok := tryReplanningWithRollups(ctx, planner, skeleton, rollups, targetLanguage, root); ok {

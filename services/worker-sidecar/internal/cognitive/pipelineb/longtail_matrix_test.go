@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -169,7 +170,7 @@ func TestLongtailNeedRollupBoundedCap(t *testing.T) {
 			`{"name":"第 3 章","summary":"s","targetPaths":["c_compat/shim.c"],"phase":"实战"}]}`,
 	}
 	root := skipRootWrapper(m.Tree)
-	resp, replanned, diag, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+	resp, replanned, diag, err := obtainPlan(context.Background(), planner, root, "zh-CN", 3, 1)
 	require.NoError(t, err)
 	assert.True(t, replanned, "带 rollup 的补料重规划应发生（封顶一次）")
 	assert.Equal(t, 2, planner.calls, "补料重规划封顶：首发 + 一次修订，绝不迭代")
@@ -179,6 +180,87 @@ func TestLongtailNeedRollupBoundedCap(t *testing.T) {
 	assert.Equal(t, 5, diag.NeedRollupRequested)
 	assert.True(t, diag.NeedRollupCapped)
 	assert.False(t, diag.PlanDegenerateTriggered)
+}
+
+// TestLongtailNeedRollupBoundedCap needRollup 超额请求确定性截断为前 3：
+// 模型概率性多要（长尾仓自然倾向上卷更多分区）不放大补料预算。
+// （显式默认档：obtainPlan(..., quota=3, depth=1) 与历史行为逐字节一致。）
+
+// TestRollupBudgetForLevel_TableDriven 档位表契约：默认档与历史一致、
+// 越界收敛 [0,3]、天花板 8×2。
+func TestRollupBudgetForLevel_TableDriven(t *testing.T) {
+	tests := []struct {
+		level     int
+		wantQuota int
+		wantDepth int
+	}{
+		{-2, 3, 1}, // 负值收敛默认
+		{0, 3, 1},  // 默认档 = 历史行为
+		{1, 4, 1},
+		{2, 5, 2},
+		{3, 8, 2}, // 天花板
+		{9, 8, 2}, // 越上界收敛
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("level=%d", tt.level), func(t *testing.T) {
+			quota, depth := RollupBudgetForLevel(tt.level)
+			assert.Equal(t, tt.wantQuota, quota)
+			assert.Equal(t, tt.wantDepth, depth)
+		})
+	}
+}
+
+// TestObtainPlanRollupQuotaLevels 探查配额档位端到端：默认档截断 3 条
+// （历史行为不变）；level=2（quota=5/depth=2）5 条全保留且补料骨架
+// 下钻两层——用户「更深入」点击确实放大探查预算。
+func TestObtainPlanRollupQuotaLevels(t *testing.T) {
+	m := loadLongtailFixture(t, "mixed-ffi")
+	root := skipRootWrapper(m.Tree)
+	// 5 条 needRollup：rust/ext、python/wrapper、c_compat（真实分区）+ tools、docs（幽灵）
+	first := `{"curriculumMode":"matrix","chapters":[` +
+		`{"name":"第 1 章","summary":"s","targetPaths":["rust/ext/src/lib.rs"],"phase":"入门"},` +
+		`{"name":"第 2 章","summary":"s","targetPaths":["python/wrapper/core.py"],"phase":"实战"},` +
+		`{"name":"第 3 章","summary":"s","targetPaths":["c_compat/shim.c"],"phase":"实战"}],` +
+		`"needRollup":["rust/ext","python/wrapper","c_compat","tools","docs"]}`
+	second := `{"curriculumMode":"matrix","chapters":[` +
+		`{"name":"第 1 章","summary":"s","targetPaths":["rust/ext/src/lib.rs"],"phase":"入门"},` +
+		`{"name":"第 2 章","summary":"s","targetPaths":["python/wrapper/core.py"],"phase":"实战"},` +
+		`{"name":"第 3 章","summary":"s","targetPaths":["c_compat/shim.c"],"phase":"实战"}]}`
+
+	t.Run("默认档 quota=3：截断 + 触顶诊断（历史行为不变）", func(t *testing.T) {
+		planner := &scriptedPlanner{first: first, second: second}
+		_, _, diag, err := obtainPlan(context.Background(), planner, root, "zh-CN", 3, 1)
+		require.NoError(t, err)
+		assert.True(t, diag.NeedRollupCapped)
+		assert.Equal(t, 3, diag.NeedRollupQuota)
+		assert.Equal(t, 1, diag.NeedRollupDepth)
+		assert.Equal(t, 3, planner.lastRollupCount, "截断后仅前 3 条进补料")
+	})
+
+	t.Run("level=2 quota=5：5 条全保留 + depth=2 双层骨架", func(t *testing.T) {
+		planner := &scriptedPlanner{first: first, second: second}
+		_, _, diag, err := obtainPlan(context.Background(), planner, root, "zh-CN", 5, 2)
+		require.NoError(t, err)
+		assert.False(t, diag.NeedRollupCapped, "配额 5 时 5 条请求不再触顶")
+		assert.False(t, diag.NeedRollupRequested != 5)
+		assert.Equal(t, 5, diag.NeedRollupQuota)
+		assert.Equal(t, 2, diag.NeedRollupDepth)
+		// 真实分区 3 条进补料（tools/docs 为幽灵路径被 findSubtree 剔除）
+		assert.Equal(t, 3, planner.lastRollupCount)
+		// depth=2 语义直接验证（fixture 单链折叠后 rust/ext 无二层子目录，
+		// 行数比较用程序化三层树——depth 每加一层多展示一层目录行）
+		// a/b 下 c 有两个子目录 d/e：depth=1 只见 c，depth=2 再展开 d/e
+		deep := make([]FileMap, 0, 5)
+		for _, p := range []string{"a/b/c/d/x.go", "a/b/c/e/y.go", "a/b/keep.go", "a/top.go"} {
+			deep = append(deep, FileMap{Path: p, Lang: "go", LOC: 50})
+		}
+		deepTree := BuildRepoTree(deep, "deep-repo")
+		one := RenderSubtreeSkeleton(findSubtree(skipRootWrapper(deepTree), "a/b"), 1)
+		two := RenderSubtreeSkeleton(findSubtree(skipRootWrapper(deepTree), "a/b"), 2)
+		assert.Less(t, strings.Count(one, "\n"), strings.Count(two, "\n"), "depth=2 应比 depth=1 多展示一层目录行")
+		assert.Contains(t, one, "c", "depth=1 可见 a/b 的直接子目录 c")
+		assert.Contains(t, two, "d", "depth=2 应展开 c 下的 d 目录层")
+	})
 }
 
 // TestLongtailDegenerateDiagnostics 退化 → 反馈重规划救回的全程诊断：
@@ -195,7 +277,7 @@ func TestLongtailDegenerateDiagnostics(t *testing.T) {
 				`{"name":"第 2 章","summary":"s","targetPaths":["daemon"],"phase":"实战"},` +
 				`{"name":"第 3 章","summary":"s","targetPaths":["plugins/alpha.sh"],"phase":"实战"}]}`,
 		}
-		_, _, diag, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+		_, _, diag, err := obtainPlan(context.Background(), planner, root, "zh-CN", 3, 1)
 		require.NoError(t, err)
 		assert.True(t, diag.PlanDegenerateTriggered, "退化判定命中应记录")
 		assert.True(t, diag.PlanDegenerateRecovered, "反馈重规划救回应记录")
@@ -204,7 +286,7 @@ func TestLongtailDegenerateDiagnostics(t *testing.T) {
 	t.Run("持续退化 fail-closed", func(t *testing.T) {
 		degenerate := `{"curriculumMode":"matrix","chapters":[{"name":"独章","summary":"s","targetPaths":["."],"phase":"入门"}]}`
 		planner := &fakePlanner{first: degenerate, second: degenerate}
-		_, _, diag, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+		_, _, diag, err := obtainPlan(context.Background(), planner, root, "zh-CN", 3, 1)
 		require.Error(t, err, "仍退化必须 fail-closed 上抛")
 		assert.True(t, diag.PlanDegenerateTriggered)
 		assert.False(t, diag.PlanDegenerateRecovered)
@@ -216,10 +298,17 @@ type scriptedPlanner struct {
 	first  string
 	second string
 	calls  int
+	// lastRollups / lastRollupDepth 记录补料调用的实参（quota/depth 参数化断言用）
+	lastRollups     map[string]string
+	lastRollupCount int
 }
 
-func (s *scriptedPlanner) Plan(_ context.Context, _ string, _ map[string]string, _ string, _ string) (string, error) {
+func (s *scriptedPlanner) Plan(_ context.Context, _ string, rollups map[string]string, _ string, _ string) (string, error) {
 	s.calls++
+	if rollups != nil {
+		s.lastRollups = rollups
+		s.lastRollupCount = len(rollups)
+	}
 	if s.calls == 1 {
 		return s.first, nil
 	}
@@ -235,7 +324,7 @@ func TestLongtailGhostTargetDropped(t *testing.T) {
 		`{"name":"真实章","summary":"s","targetPaths":["src/alloc.c"],"phase":"实战"},` +
 		`{"name":"真实章 2","summary":"s","targetPaths":["src/math.c"],"phase":"实战"},` +
 		`{"name":"真实章 3","summary":"s","targetPaths":["src/io.c"],"phase":"实战"}]}`}
-	res, err := RunDrill(context.Background(), m, planner, perReqFakeStub{}, loadPatterns(t), "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, perReqFakeStub{}, loadPatterns(t), "zh-CN", "", 0)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"幽灵章"}, res.DroppedPlan, "全无效目标的规划章应登记丢弃")
 	assert.NotEmpty(t, res.Chapters)
@@ -314,7 +403,7 @@ func TestLongtailGiantRepoScale(t *testing.T) {
 
 	planner := giantFakePlanner{}
 	start := time.Now()
-	res, err := RunDrill(context.Background(), m, planner, perReqFakeStub{}, loadPatterns(t), "zh-CN", "")
+	res, err := RunDrill(context.Background(), m, planner, perReqFakeStub{}, loadPatterns(t), "zh-CN", "", 0)
 	elapsed := time.Since(start)
 	require.NoError(t, err)
 	assert.Less(t, elapsed, 10*time.Second, "2 万文件确定性装配必须秒级完成（规模护栏）")

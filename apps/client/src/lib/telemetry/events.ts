@@ -25,6 +25,7 @@ export const TELEMETRY_EVENTS = {
   IMPORT_INGEST_COMPLETED: 'IMPORT_INGEST_COMPLETED', // 转录生成全部完成
   IMPORT_ABANDONED: 'IMPORT_ABANDONED',         // 用户在等待中途中止/关闭/跳出
   OUTLINE_TREE_GENERATED: 'OUTLINE_TREE_GENERATED', // P4 灰度:统一树大纲生成成功(depth/章/课/幻觉/耗时)
+  OUTLINE_DEEPENING_CLICKED: 'OUTLINE_DEEPENING_CLICKED', // 探查档位点击(深入/变浅)：Phase 3 用户揭示需求证据(level/direction/capped)
 
   // 3. 激活与留存事件 (Activation & Retention)
   FIRST_CHAPTER_READ: 'FIRST_CHAPTER_READ',     // 首次打开章节并有效阅读（达成 TTV）

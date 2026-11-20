@@ -41,6 +41,8 @@ const logSamplingRoute = (stats: SidecarTreeOutlineResponse['stats'], repo: stri
       `planDegenerateTriggered=${d.planDegenerateTriggered ?? false}`,
       `planDegenerateRecovered=${d.planDegenerateRecovered ?? false}`,
       `uncoveredSubsystemCount=${d.uncoveredSubsystemCount ?? 0}`,
+      `needRollupQuota=${d.needRollupQuota ?? 0}`,
+      `needRollupDepth=${d.needRollupDepth ?? 0}`,
     );
   }
   console.log(`[TreeOutline] ${parts.join(' ')}`);
@@ -85,6 +87,8 @@ export const POST = defineRoute({
       .optional(),
     /** 调用方总预算（毫秒）：客户端 fetch 超时闸的显式声明 */
     budgetMs: z.number().int().positive().max(600_000).optional(),
+    /** 探查配额档位 0-3（用户「更深入」点击；0=默认 3 路径×1 层，3=8×2 天花板） */
+    rollupLevel: z.number().int().min(0).max(3).optional(),
     /** 显式重试标识：清空前序失败并强制重新点火准备管线 */
     retry: z.boolean().optional(),
   }),
@@ -174,6 +178,7 @@ export const POST = defineRoute({
               customPrompt: body.customPrompt,
               pacing: body.pacing,
               teachingDepth: body.teachingDepth,
+              rollupLevel: body.rollupLevel,
               learnerArchetype: body.learnerArchetype,
               budgetMs: remainingBudgetMs,
               retry: body.retry,
@@ -299,6 +304,7 @@ export const POST = defineRoute({
         customPrompt: body.customPrompt,
         pacing: body.pacing,
         teachingDepth: body.teachingDepth,
+        rollupLevel: body.rollupLevel,
         learnerArchetype: body.learnerArchetype,
         budgetMs: remainingBudgetMs,
       });
