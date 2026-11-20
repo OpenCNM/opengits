@@ -319,7 +319,9 @@ export function ChatMessageList({
       {error && (
         <div className="self-start bg-theme-surface text-theme-foreground rounded-2xl rounded-tl-xs py-3 px-4 border border-theme-border/60 text-xs sm:text-[13px] font-sans shadow-2xs space-y-2 max-w-[92%]">
           <div className="text-red-500 font-medium">
-            {error.message?.includes('MISSING_API_KEY') || error.message?.includes(m.toast_missing_api_key())
+            {error.message?.includes('KEY_DECRYPT_FAILED')
+              ? m.toast_key_decrypt_failed()
+              : error.message?.includes('MISSING_API_KEY') || error.message?.includes(m.toast_missing_api_key())
               ? m.toast_missing_api_key()
               : error.message || m.common_retry_later()}
           </div>

@@ -111,7 +111,7 @@ func runBatch(manifestPath, lang, userID string) {
 	results := make([]map[string]any, 0, len(manifest.Repos))
 	for i := range manifest.Repos {
 		r := manifest.Repos[i]
-		ckptKey := batchCkptKey(r)
+		ckptKey := batchCkptKey(r, lang)
 		if prev, ok := done[ckptKey]; ok {
 			fmt.Fprintf(os.Stderr, "[batch] %d/%d %s: checkpoint 命中，跳过（status=%v）\n", i+1, len(manifest.Repos), r.Name, prev["pipelineBStatus"])
 			results = append(results, prev)
@@ -139,6 +139,10 @@ func runBatch(manifestPath, lang, userID string) {
 		ctx, cancel := context.WithTimeout(totalCtx, perRepo)
 		summary := runRepoReport(ctx, r, lang, userID, patterns, defs)
 		cancel()
+		summary["lang"] = lang
+		if r.Mode == "real" {
+			summary["userId"] = userID // 配额溯源：批跑结果可回答"这批数据是谁的配额跑的"
+		}
 
 		results = append(results, summary)
 		done[ckptKey] = summary
@@ -303,10 +307,10 @@ func loadBatchCheckpoint(path string) map[string]map[string]any {
 	return m
 }
 
-// batchCkptKey checkpoint 复合键：name|mode|depth2——同仓换模式重跑不再
-// 误命中旧缓存（mode/depth2 变更 = 不同的实验，结果不可复用）。
-func batchCkptKey(r batchRepo) string {
-	return fmt.Sprintf("%s|%s|%v", r.Name, r.Mode, r.Depth2)
+// batchCkptKey checkpoint 复合键：name|mode|depth2|lang——mode/depth2/lang
+// 任一变更 = 不同的实验（换语言重跑绝不静默复用错语结果）。
+func batchCkptKey(r batchRepo, lang string) string {
+	return fmt.Sprintf("%s|%s|%v|%s", r.Name, r.Mode, r.Depth2, lang)
 }
 
 // saveBatchCheckpoint 原子落盘（tmp + rename：中断不产生半写文件）；
@@ -327,12 +331,27 @@ func saveBatchCheckpoint(path string, done map[string]map[string]any) {
 		fmt.Fprintf(os.Stderr, "[batch] checkpoint 序列化失败（续跑将从空开始）: %v\n", err)
 		return
 	}
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, raw, 0o644); err != nil {
+	// 唯一临时名：固定 .tmp 路径在同 manifest 并发双进程下互相截断
+	//（rename ENOENT / 半写互相覆盖），CreateTemp 消除该竞态面
+	tmp, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[batch] checkpoint 临时文件创建失败（续跑将从空开始）: %v\n", err)
+		return
+	}
+	tmpName := tmp.Name()
+	if _, err := tmp.Write(raw); err != nil {
+		tmp.Close()
+		_ = os.Remove(tmpName)
 		fmt.Fprintf(os.Stderr, "[batch] checkpoint 写入失败（续跑将从空开始）: %v\n", err)
 		return
 	}
-	if err := os.Rename(tmp, path); err != nil {
+	if err := tmp.Close(); err != nil {
+		_ = os.Remove(tmpName)
+		fmt.Fprintf(os.Stderr, "[batch] checkpoint 关闭失败（续跑将从空开始）: %v\n", err)
+		return
+	}
+	if err := os.Rename(tmpName, path); err != nil {
+		_ = os.Remove(tmpName)
 		fmt.Fprintf(os.Stderr, "[batch] checkpoint rename 失败（续跑将从空开始）: %v\n", err)
 	}
 }

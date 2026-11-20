@@ -159,7 +159,8 @@ export default function MicroQuiz({
   }
 
   if (error) {
-    const isMissingApiKey = errorCode === 'MISSING_API_KEY';
+    // 密钥类配置故障（含密文损坏）同走配置引导——绝不退化为无意义重试死循环
+    const isMissingApiKey = errorCode === 'MISSING_API_KEY' || errorCode === 'KEY_DECRYPT_FAILED';
     return (
       <div className="warm-theme-primary my-8 p-8 rounded-2xl border border-theme-accent/30 bg-theme-accent/10 flex flex-col items-center justify-center text-center gap-4 animate-in fade-in duration-300 select-none">
         <XCircle size={32} className="text-theme-accent" />

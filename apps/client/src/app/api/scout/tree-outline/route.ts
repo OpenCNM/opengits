@@ -20,11 +20,13 @@ export const maxDuration = 900;
 
 /** 采样路由观测（契约 C4）：服务端结构化日志一行，不参与透传/渲染。
  *  Phase 2 扩展：补齐 astCoverageRatio 与规划诊断（needRollup 触顶/退化恢复/
- *  覆盖缺失）——单行 key=value 摘要，成败两条路径各一行，零 per-event 写放大。 */
-const logSamplingRoute = (stats: SidecarTreeOutlineResponse['stats'], repo: string): void => {
+ *  覆盖缺失）——单行 key=value 摘要，成败两条路径各一行，零 per-event 写放大。
+ *  sha 必带：Phase 3 统计去重键 = (repo, sha)，同仓重试/换版本可区分。 */
+const logSamplingRoute = (stats: SidecarTreeOutlineResponse['stats'], repo: string, sha?: string): void => {
   if (!stats?.samplingStrategy && !stats?.diagnostics) return;
   const parts = [
     `repo=${repo}`,
+    sha ? `sha=${sha}` : '',
     stats.samplingStrategy ? `samplingStrategy=${stats.samplingStrategy}` : '',
     `sampledFileCount=${stats.sampledFileCount ?? 0}`,
     stats.astCoverageRatio !== undefined ? `astCoverageRatio=${stats.astCoverageRatio}` : '',
@@ -45,8 +47,14 @@ const logSamplingRoute = (stats: SidecarTreeOutlineResponse['stats'], repo: stri
 };
 
 /** 失败路径单行摘要（守恒公理：错误也进观测账面，不只成功可见） */
-const logOutlineFailure = (repo: string, code: string, message: string): void => {
-  console.log(`[TreeOutline] outcome=error repo=${repo} code=${code} message="${message.slice(0, 200)}"`);
+const logOutlineFailure = (repo: string, code: string, message: string, sha?: string): void => {
+  const parts = [
+    `repo=${repo}`,
+    sha ? `sha=${sha}` : '',
+    `code=${code}`,
+    `message="${message.slice(0, 200)}"`,
+  ];
+  console.log(`[TreeOutline] outcome=error ${parts.join(' ')}`);
 };
 
 const SSE_HEADERS: HeadersInit = {
@@ -133,8 +141,9 @@ export const POST = defineRoute({
       }
 
       (async () => {
+        // 声明在 try 之外：catch 分支的失败摘要日志（logOutlineFailure）也要带上 sha
+        let resolvedSha = body.sha;
         try {
-          let resolvedSha = body.sha;
           try {
             resolvedSha = await resolveTargetSha(body.owner, body.repo, body.sha);
           } catch (resolveErr) {
@@ -179,7 +188,7 @@ export const POST = defineRoute({
           );
 
           // 采样路由观测（契约 C4）：流式与非流式分支共用同一日志出口
-          logSamplingRoute(res.stats, `${body.owner}/${body.repo}`);
+          logSamplingRoute(res.stats, `${body.owner}/${body.repo}`, resolvedSha);
 
           if (res.preparing) {
             await sendEvent('complete', {
@@ -226,7 +235,7 @@ export const POST = defineRoute({
               ? anyErr.code
               : /llm-gateway (KEY_DECRYPT_FAILED|MISSING_API_KEY):/.exec(msg)?.[1];
           if (keyErrorCode) {
-            logOutlineFailure(`${body.owner}/${body.repo}`, keyErrorCode, msg);
+            logOutlineFailure(`${body.owner}/${body.repo}`, keyErrorCode, msg, resolvedSha);
             await sendEvent('error', {
               message: msg,
               code: keyErrorCode,
@@ -239,7 +248,7 @@ export const POST = defineRoute({
             anyErr?.statusCode === 429 ||
             /rate limit|ratelimit|throttling|toomanyrequests|速率限制|请求频率|并发超限|429/i.test(msg);
           const finalCode = isRateLimit ? 'RATE_LIMITED' : 'TREE_OUTLINE_ERROR';
-          logOutlineFailure(`${body.owner}/${body.repo}`, finalCode, msg);
+          logOutlineFailure(`${body.owner}/${body.repo}`, finalCode, msg, resolvedSha);
           await sendEvent('error', {
             message: msg,
             code: finalCode,
@@ -302,7 +311,7 @@ export const POST = defineRoute({
           ? anyErr.code
           : /llm-gateway (KEY_DECRYPT_FAILED|MISSING_API_KEY):/.exec(msg)?.[1];
       if (keyErrorCode === 'KEY_DECRYPT_FAILED' || keyErrorCode === 'MISSING_API_KEY') {
-        logOutlineFailure(`${body.owner}/${body.repo}`, keyErrorCode, msg);
+        logOutlineFailure(`${body.owner}/${body.repo}`, keyErrorCode, msg, resolvedSha);
         throw ApiError.fromCode(keyErrorCode, { detail: msg });
       }
       const isRateLimit =
@@ -310,15 +319,15 @@ export const POST = defineRoute({
         anyErr?.statusCode === 429 ||
         /rate limit|ratelimit|throttling|toomanyrequests|速率限制|请求频率|并发超限|429/i.test(msg);
       if (isRateLimit) {
-        logOutlineFailure(`${body.owner}/${body.repo}`, 'RATE_LIMITED', msg);
+        logOutlineFailure(`${body.owner}/${body.repo}`, 'RATE_LIMITED', msg, resolvedSha);
         throw ApiError.fromCode('RATE_LIMITED', { detail: msg });
       }
-      logOutlineFailure(`${body.owner}/${body.repo}`, 'TREE_OUTLINE_ERROR', msg);
+      logOutlineFailure(`${body.owner}/${body.repo}`, 'TREE_OUTLINE_ERROR', msg, resolvedSha);
       throw err;
     }
 
     // 采样路由观测（契约 C4）：非流式分支此前缺日志，与流式分支共用出口
-    logSamplingRoute(res.stats, `${body.owner}/${body.repo}`);
+    logSamplingRoute(res.stats, `${body.owner}/${body.repo}`, resolvedSha);
 
     // 冷启动准备透传（202 契约）：巨仓后台下载建图期间无大纲产物，
     // 客户端按 retryAfterMs 轮询——本路由不做富化直接让位

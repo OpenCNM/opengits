@@ -3,6 +3,7 @@ package pipelineb
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/opengits/worker-sidecar/internal/platform/client"
 )
 
 // ─────────────────────────────────────────────────────────────
@@ -260,6 +263,33 @@ func (perReqFakeStub) Complete(_ context.Context, req ModelRequest) (string, err
 		},
 	})
 	return string(b), nil
+}
+
+// countingFailModel 记录调用次数并恒返指定错误（深度 1 零重试断言用）。
+type countingFailModel struct {
+	err   error
+	calls int
+}
+
+func (m *countingFailModel) Complete(_ context.Context, _ ModelRequest) (string, error) {
+	m.calls++
+	return "", m.err
+}
+
+// TestRunDepth1PermanentConfigErrorZeroRetry 深度 1 遇永久性配置错误
+// （KEY_DECRYPT_FAILED 等）必须零成本退出：绝不触发 Layer 2 靶向修复
+// 二次调用（round-2 交叉验收：永久错误伪装成"格式瑕疵"空耗预算）。
+func TestRunDepth1PermanentConfigErrorZeroRetry(t *testing.T) {
+	m := loadLongtailFixture(t, "mixed-ffi")
+	model := &countingFailModel{
+		err: &client.LlmGatewayError{Code: client.ErrCodeKeyDecryptFailed, Status: 409, Message: "云端已保存的 AI 密钥无法解密"},
+	}
+	_, err := Run(context.Background(), m, model, loadPatterns(t), "zh-CN")
+	require.Error(t, err)
+	assert.Equal(t, 1, model.calls, "永久配置错误必须零成本退出，严禁 Layer 2 修复二次调用")
+	var gw *client.LlmGatewayError
+	require.True(t, errors.As(err, &gw), "错误码必须可被 errors.As 提取（sendPipelineError 透传依赖）")
+	assert.Equal(t, client.ErrCodeKeyDecryptFailed, gw.Code)
 }
 
 // TestLongtailGiantRepoScale 巨仓规模（2 万文件程序化合成）：确定性装配

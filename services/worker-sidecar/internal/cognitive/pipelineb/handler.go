@@ -714,7 +714,11 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-		sendError(http.StatusInternalServerError, prefix+err.Error())
+		// 非网关错误（磁盘路径/内部目录/ctx 等）：对外仅给通用文案——
+		// err.Error() 可能携带宿主机绝对路径等内部细节，不入 UI；
+		// 全量原文留在服务端日志（诊断维度已在上文 diag plan_failed 行）
+		log.Printf("[pipelineb] pipeline_error repo=%s/%s sha=%s err=%v", req.Owner, req.Repo, req.SHA, err)
+		sendError(http.StatusInternalServerError, prefix+"internal outline pipeline error")
 	}
 
 	sendSuccess := func(status int, payload map[string]any) {
@@ -934,7 +938,12 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 			"chapters":      res.Chapters,
 			"droppedPaths":  res.DroppedPaths,
 			"excludedFiles": excludedFiles,
-			"stats":         samplingStatsFields(map[string]any{"files": len(m.Files), "promptTokens": res.EstPromptTok}, sampling),
+			"stats": samplingStatsFields(map[string]any{
+				"files":        len(m.Files),
+				"allFiles":     m.Tree.FileCount,
+				"durationMs":   res.Duration.Milliseconds(),
+				"promptTokens": res.EstPromptTok,
+			}, sampling),
 		})
 		return
 	}

@@ -121,7 +121,7 @@ describe('LLM 网关候选解析 Fail-Closed（A 类收口）', () => {
     expect(generateCallsSpy).toHaveBeenCalledTimes(0);
   });
 
-  it('generate 集成：resolver 基础设施异常（DB 不可达）→ GENERATION_FAILED（502 说真话）', async () => {
+  it('generate 集成：resolver 基础设施异常（DB 不可达）→ GENERATION_FAILED（502）且对外脱敏', async () => {
     resolveUserModelCascadeMock.mockRejectedValue(new Error('PrismaClientInitializationError: db unreachable'));
     const result = await runLlmGatewayGenerate(
       { purpose: 'mcp_concept_edges', variables: { conceptList: '- a', contextText: 'ctx' }, userId: 'u1' }
@@ -129,7 +129,10 @@ describe('LLM 网关候选解析 Fail-Closed（A 类收口）', () => {
     expect(result).toMatchObject({ ok: false, code: 'GENERATION_FAILED' });
     if (!result.ok) {
       expect(result.message).toContain('model cascade resolution failed');
-      expect(result.message).toContain('db unreachable');
+      // 对外脱敏契约（round-2 安全审查）：异常原文（DB host/schema 等内部细节）
+      // 绝不进入面向客户端的 message——原文只进服务端 console.error
+      expect(result.message).not.toContain('db unreachable');
+      expect(result.message).not.toContain('Prisma');
     }
   });
 

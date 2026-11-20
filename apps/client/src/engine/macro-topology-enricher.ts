@@ -51,6 +51,10 @@ export async function enrichMacroTopologyWithLlm(
         summary: llmOutput.summary || topo.summary,
       };
     }
+    // 密钥类故障静默降级是既定口径（着色属非关键增强），但需留排查痕迹
+    if (!res.ok && (res.code === 'MISSING_API_KEY' || res.code === 'KEY_DECRYPT_FAILED')) {
+      console.warn(`[MacroTopologyEnricher] key-unavailable (${res.code}), keeping raw mermaid skeleton`);
+    }
   } catch (err) {
     console.warn('[MacroTopologyEnricher] LLM enrichment error, falling back to physical skeleton:', err);
   }

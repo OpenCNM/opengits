@@ -508,12 +508,14 @@ export async function runLlmGatewayGenerate(
         if (err instanceof UserKeyUnavailableError) {
           return { ok: false, code: err.code, message: err.message };
         }
-        // 基础设施异常（DB 不可达等）≠ 缺 Key：502 说真话，不吞成默认候选
-        const reason = err instanceof Error ? err.message : String(err);
+        // 基础设施异常（DB 不可达等）≠ 缺 Key：502 说真话，不吞成默认候选。
+        // 异常原文可能含 DB host/schema 等内部细节——只进服务端日志，
+        // 对外 message 固定文案（客户端按 code 分支即可）
+        console.error('[llm-gateway] model cascade resolution failed:', err);
         return {
           ok: false,
           code: 'GENERATION_FAILED',
-          message: `model cascade resolution failed: ${reason}`.slice(0, 500),
+          message: 'model cascade resolution failed (internal resolver error)',
         };
       }
     }
