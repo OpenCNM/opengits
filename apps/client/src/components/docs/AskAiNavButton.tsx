@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useModalStore } from '@/lib/stores/modal-store';
+import { requireAiCapability } from '@/lib/permissions/permission-gateway';
 import * as m from '@/paraglide/messages';
 
 export interface AskAiNavButtonProps {
@@ -45,7 +46,7 @@ export function AskAiNavButton({ className }: AskAiNavButtonProps) {
         >
           <motion.button
             type="button"
-            onClick={() => openChatDrawer()}
+            onClick={() => requireAiCapability(() => openChatDrawer(), m.gate_reason_ai_chat())}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
             aria-label={`${buttonLabel} (${shortcutLabel})`}

@@ -31,15 +31,33 @@ import (
 )
 
 func main() {
-	repo := flag.String("repo", "", "本地仓库目录（必填）")
+	repo := flag.String("repo", "", "本地仓库目录（单仓模式必填）")
 	name := flag.String("name", "repo", "仓库名")
 	mode := flag.String("mode", "fake", "fake | real")
 	lang := flag.String("lang", "zh-CN", "目标语言")
+	userID := flag.String("user-id", "", "BYOK 归属用户（real 模式必填；网关 keyOrigin=user fail-closed 契约，亦可经 PBTOOL_USER_ID 环境变量注入）")
 	skeleton := flag.Bool("skeleton", false, "只打印顶级骨架图(不下模型)")
 	depth2 := flag.Bool("depth2", false, "深度 2 下钻(规划→并行子树→汇编)")
+	batch := flag.String("batch", "", "批量跑批清单 <manifest.json>（Phase 1.1 离线长尾压测）")
+	genFixture := flag.String("gen-fixture", "", "合成 fixture 收敛漏斗 <draft.json>（Phase 1.2：校验通过的拓扑输出到 stdout）")
 	flag.Parse()
+
+	// -user-id 缺省回读环境变量（CI 批跑注入面）
+	if *userID == "" {
+		*userID = os.Getenv("PBTOOL_USER_ID")
+	}
+
+	// 早退分支置于 -repo 必填校验之前：batch/fixture 模式各自独立成径
+	if *genFixture != "" {
+		genFixtureFile(*genFixture)
+		return
+	}
+	if *batch != "" {
+		runBatch(*batch, *lang, *userID)
+		return
+	}
 	if *repo == "" {
-		fmt.Fprintln(os.Stderr, "usage: pbtool -repo <dir> [-name] [-mode fake|real]")
+		fmt.Fprintln(os.Stderr, "usage: pbtool -repo <dir> [-name] [-mode fake|real] | -batch <manifest.json> | -gen-fixture <draft.json>")
 		os.Exit(2)
 	}
 
@@ -65,7 +83,9 @@ func main() {
 
 	// 深度 2:规划者(real=网关 outline_plan_v1;fake=确定性桩)+ 子树模型
 	if *depth2 {
-		runDepth2(ctx0(), m, *mode, *lang, patterns)
+		ctx, cancel := context.WithTimeout(context.Background(), 300*time.Second)
+		defer cancel()
+		runDepth2(ctx, m, *mode, *lang, *userID, patterns)
 		return
 	}
 
@@ -74,7 +94,8 @@ func main() {
 	case "fake":
 		modelRunner = fakeFromMap(m)
 	case "real":
-		modelRunner = &pipelineb.GatewayModel{Client: newGatewayClient()}
+		uid := requireUserID(*userID)
+		modelRunner = &pipelineb.GatewayModel{Client: newGatewayClient(), UserID: &uid}
 	default:
 		fmt.Fprintln(os.Stderr, "mode 必须是 fake|real")
 		os.Exit(2)
@@ -128,6 +149,17 @@ func newGatewayClient() *client.LlmGatewayClient {
 	return client.NewLlmGatewayClient(url, token)
 }
 
+// requireUserID real 模式 BYOK 归属用户快败闸门：网关 19 个 purpose 均为
+// keyOrigin='user'，userId 缺失会在首帧被 fail-closed 拒绝（2026-11 A 类收口）——
+// 与其让整批仓跑成 MISSING_API_KEY 再写满 checkpoint，不如起跑前显式拦截。
+func requireUserID(userID string) string {
+	if userID == "" {
+		fmt.Fprintln(os.Stderr, "real 模式需要 -user-id <userId>（或 PBTOOL_USER_ID 环境变量）——网关 BYOK fail-closed 契约")
+		os.Exit(2)
+	}
+	return userID
+}
+
 // modelLabel 报告用模型标注：网关路由的模型由 web 侧决定，此处只记通道。
 func modelLabel(mode string) string {
 	if mode == "real" {
@@ -177,19 +209,11 @@ func fakeFromMap(m *pipelineb.RepoMap) pipelineb.OutlineModel {
 
 // ── 工具 ────────────────────────────────────────────────────
 
-
-
 func fatalIf(err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, strings.TrimSpace(err.Error()))
 		os.Exit(1)
 	}
-}
-
-func ctx0() (c context.Context) {
-	c, cancel := context.WithTimeout(context.Background(), 300*time.Second)
-	_ = cancel
-	return c
 }
 
 // fakePlannerStub 确定性规划:前 2 个最大子树 + README。
@@ -227,7 +251,7 @@ func (fakePlannerStub) Plan(_ context.Context, skeleton string, _ map[string]str
 	return string(b), nil
 }
 
-func runDepth2(ctx context.Context, m *pipelineb.RepoMap, mode, lang string, patterns cognitive.Patterns) {
+func runDepth2(ctx context.Context, m *pipelineb.RepoMap, mode, lang, userID string, patterns cognitive.Patterns) {
 	var planner pipelineb.PlannerModel
 	var subModel pipelineb.OutlineModel
 	switch mode {
@@ -236,8 +260,9 @@ func runDepth2(ctx context.Context, m *pipelineb.RepoMap, mode, lang string, pat
 		subModel = perReqFake{}
 	case "real":
 		gw := newGatewayClient()
-		planner = &pipelineb.GatewayPlanner{Client: gw}
-		subModel = &pipelineb.GatewayModel{Client: gw}
+		uid := requireUserID(userID)
+		planner = &pipelineb.GatewayPlanner{Client: gw, UserID: &uid}
+		subModel = &pipelineb.GatewayModel{Client: gw, UserID: &uid}
 	default:
 		fmt.Fprintln(os.Stderr, "mode 必须是 fake|real")
 		os.Exit(2)
@@ -255,6 +280,7 @@ func runDepth2(ctx context.Context, m *pipelineb.RepoMap, mode, lang string, pat
 		report["replanned"] = res.Replanned
 		report["droppedPaths"] = res.DroppedPaths
 		report["durationMs"] = res.Duration.Milliseconds()
+		report["diagnostics"] = res.Diagnostics
 		covered := map[string]bool{}
 		for _, c := range res.Chapters {
 			for _, f := range c.Files {

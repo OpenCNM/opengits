@@ -103,6 +103,15 @@ export interface SidecarTreeOutlineResponse {
     samplingStrategy?: 'full-ast' | 'stratified' | 'stratified-partial' | 'partial-ast' | 'fallback-8';
     sampledFileCount?: number;
     astCoverageRatio?: number;
+    /** Phase 2 规划诊断（Go PipelineDiagnostics 透传；Phase 3 扩容触发判据的数据源，
+     *  仅结构化日志消费——先量化后动线上行为） */
+    diagnostics?: {
+      needRollupRequested?: number;
+      needRollupCapped?: boolean;
+      planDegenerateTriggered?: boolean;
+      planDegenerateRecovered?: boolean;
+      uncoveredSubsystemCount?: number;
+    };
   };
   /** 冷启动准备中（HTTP 202）：巨仓归档下载+建图在后台进行，本响应无大纲产物，
    *  调用方按 retryAfterMs 轮询直至 preparing 消失 */
@@ -191,8 +200,17 @@ async function parseSSEStream<T>(
       }
     } else if (currentEvent === 'error') {
       try {
-        const parsed = JSON.parse(currentData);
-        throw new Error(parsed.message || 'Sidecar tree-outline error');
+        const parsed = JSON.parse(currentData) as { message?: string; code?: string; status?: number };
+        const err = new Error(parsed.message || 'Sidecar tree-outline error') as Error & {
+          code?: string;
+          status?: number;
+        };
+        // 结构化错误码/状态透传（2026-11 A 类收口）：MISSING_API_KEY /
+        // KEY_DECRYPT_FAILED 等配置类故障按 code 上抛，调用方可直接引导
+        // 用户重配 Key，而非把根因折叠成匿名 500
+        if (parsed.code) err.code = parsed.code;
+        if (typeof parsed.status === 'number') err.status = parsed.status;
+        throw err;
       } catch (e) {
         if (e instanceof Error && e.message !== 'Sidecar tree-outline error') {
           throw e;

@@ -1,10 +1,7 @@
 package pipelineb
 
 import (
-	"bytes"
 	"context"
-	"io"
-	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -308,35 +305,9 @@ func TestRunCoverageGateDepth2ObservabilityOnly(t *testing.T) {
 	assert.False(t, chaptersCoverPrefix(t, res.Chapters, "packages/beta"), "深度 2 仅告警，不得改动大纲")
 }
 
-// captureStdout 捕获进程标准输出（深度 2 观测告警断言用；[CoverageGate]
-// 走 fmt.Printf 直写 stdout）。返回 stop 闭包：恢复现场并返回累积输出。
-func captureStdout(t *testing.T) func() string {
-	t.Helper()
-	old := os.Stdout
-	r, w, err := os.Pipe()
-	require.NoError(t, err)
-	os.Stdout = w
-	buf := &bytes.Buffer{}
-	done := make(chan struct{})
-	go func() {
-		_, _ = io.Copy(buf, r)
-		close(done)
-	}()
-	stopped := false
-	stop := func() string {
-		if stopped {
-			return buf.String()
-		}
-		stopped = true
-		os.Stdout = old
-		_ = w.Close()
-		<-done
-		_ = r.Close()
-		return buf.String()
-	}
-	t.Cleanup(func() { stop() }) // 兜底：断言中途失败也恢复现场
-	return stop
-}
+// captureStdout 已随 2026-11 日志出口统一删除：[CoverageGate]/[DrillPlan] 等
+// 观测事件全部改走 stdlib log（[pipelineb] 前缀），断言改用
+// handler_test.go 的 captureStdlibLog（同包复用，零重复基础设施）。
 
 // TestRunDrillDepth2CoverageConflictRules_TableDriven 深度 2 观测调用的
 // 冲突裁决（终审 FIX-6）：customPrompt 非空（model 或 planner 携带）时
@@ -391,15 +362,15 @@ func TestRunDrillDepth2CoverageConflictRules_TableDriven(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stopCapture := captureStdout(t)
+			logBuf := captureStdlibLog(t)
 			res, err := RunDrill(context.Background(), buildRepo(), tt.planner, tt.model, patterns, "zh-CN", TeachingDepthDeep)
 			require.NoError(t, err)
 			require.Len(t, res.Chapters, 2)
-			out := stopCapture()
+			out := logBuf.String()
 			if tt.wantWarning {
-				assert.Contains(t, out, "[CoverageGate] depth2 warning", "对照组（无聚焦条件）必须触发缺失告警")
+				assert.Contains(t, out, "[pipelineb] CoverageGate depth2 warning", "对照组（无聚焦条件）必须触发缺失告警")
 			} else {
-				assert.NotContains(t, out, "[CoverageGate] depth2 warning", "用户聚焦意图主权：customPrompt 非空严禁误报遗漏告警")
+				assert.NotContains(t, out, "[pipelineb] CoverageGate depth2 warning", "用户聚焦意图主权：customPrompt 非空严禁误报遗漏告警")
 			}
 		})
 	}

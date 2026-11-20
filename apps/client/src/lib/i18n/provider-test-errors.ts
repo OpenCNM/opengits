@@ -20,6 +20,8 @@ export function resolveProviderTestErrorMessage(code?: string, rawFallback?: str
       return m.provider_test_err_model_not_found();
     case 'MISSING_API_KEY':
       return m.provider_test_missing_key_desc();
+    case 'KEY_DECRYPT_FAILED':
+      return m.toast_key_decrypt_failed();
     default:
       return rawFallback || m.provider_test_err_fallback();
   }

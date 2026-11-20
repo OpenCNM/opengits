@@ -20,6 +20,30 @@ export class MissingApiKeyError extends Error {
   }
 }
 
+async function buildMissingApiKeyMessage(
+  fnName: string,
+  opts: { userId?: string | null; providerKey: string; modelId?: string }
+): Promise<string> {
+  if (opts.userId) {
+    try {
+      const mod = await import('@/lib/ai/user-model-resolver');
+      if (typeof mod.inspectUserModelKeyStatus === 'function') {
+        const info = await mod.inspectUserModelKeyStatus(opts.userId);
+        if (info.status === 'decrypt_failed') {
+          return `${fnName}: 云端已保存的 AI 密钥无法解密（可能因环境密钥变更失效），请在偏好设置中重新填写并保存 API Key (provider=${info.provider || opts.providerKey}, model=${info.modelId || opts.modelId || defaultEngineModel})`;
+        }
+        if (info.status === 'missing') {
+          return `${fnName}: 当前账号未在云端配置可用的 AI 密钥，请先在偏好设置中配置 API Key`;
+        }
+      }
+    } catch (err) {
+      // 容错降级: 状态探测异常回退通用缺 Key 报错文案
+      console.warn(`[ai] inspectUserModelKeyStatus failed in ${fnName}:`, err);
+    }
+  }
+  return `${fnName}: 未检测到可用的用户 AI 密钥配置 (provider=${opts.providerKey}, model=${opts.modelId || defaultEngineModel})`;
+}
+
 export const modelName = DEFAULT_AI_MODEL;
 
 // Factory function to get the correct model based on provider
@@ -320,7 +344,7 @@ export async function generateCompletionText(opts: GenerateCompletionTextOptions
 
   if (!model) {
     throw new MissingApiKeyError(
-      `generateCompletionText: 未检测到可用的用户 AI 密钥配置 (provider=${providerKey}, model=${modelId || defaultEngineModel})`
+      await buildMissingApiKeyMessage('generateCompletionText', { userId: opts.userId, providerKey, modelId })
     );
   }
 
@@ -369,7 +393,7 @@ export async function streamCompletionText(
 
   if (!model) {
     throw new MissingApiKeyError(
-      `streamCompletionText: 未检测到可用的用户 AI 密钥配置 (provider=${providerKey}, model=${modelId || defaultEngineModel})`
+      await buildMissingApiKeyMessage('streamCompletionText', { userId: opts.userId, providerKey, modelId })
     );
   }
 
@@ -422,7 +446,7 @@ export async function generateStructured<T>(opts: GenerateStructuredOptions<T>):
 
   if (!model) {
     throw new MissingApiKeyError(
-      `generateStructured: 未检测到可用的用户 AI 密钥配置 (provider=${providerKey}, model=${modelId || defaultEngineModel})`
+      await buildMissingApiKeyMessage('generateStructured', { userId: opts.userId, providerKey, modelId })
     );
   }
 

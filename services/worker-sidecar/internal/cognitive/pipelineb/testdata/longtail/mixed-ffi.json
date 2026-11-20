@@ -1,0 +1,77 @@
+{
+ "files": [
+  {
+   "path": "README.md",
+   "loc": 60,
+   "lang": "",
+   "isDoc": true,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "c_compat/shim.c",
+   "loc": 90,
+   "lang": "c",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "c_compat/shim.h",
+   "loc": 40,
+   "lang": "c",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "python/wrapper/__init__.py",
+   "loc": 20,
+   "lang": "python",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "python/wrapper/core.py",
+   "loc": 180,
+   "lang": "python",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "rust/ext/Cargo.toml",
+   "loc": 25,
+   "lang": "",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": true
+  },
+  {
+   "path": "rust/ext/src/bridge.rs",
+   "loc": 190,
+   "lang": "rust",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "rust/ext/src/lib.rs",
+   "loc": 260,
+   "lang": "rust",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "tests/test_bridge.py",
+   "loc": 150,
+   "lang": "python",
+   "isDoc": false,
+   "isTest": true,
+   "isConfig": false
+  }
+ ],
+ "name": "mixed-ffi"
+}

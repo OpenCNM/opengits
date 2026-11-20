@@ -52,7 +52,7 @@ func ClassifyLlmError(err error) LlmErrClass {
 		return ClassFatal
 	}
 	switch {
-	case gw.IsMissingApiKey():
+	case gw.IsMissingApiKey(), gw.IsKeyDecryptFailed():
 		return ClassMissingKey
 	case gw.IsBudgetExceeded():
 		return ClassBudget

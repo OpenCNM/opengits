@@ -474,7 +474,7 @@ func TestDrillMicroRepoDegeneracyAdaption(t *testing.T) {
 			{"name":"第 2 章：实现","summary":"s","targetPaths":["src/index.ts"],"phase":"实战"}
 		]}`,
 	}
-	resp, replanned, err := obtainPlan(context.Background(), p, root, "zh-CN")
+	resp, replanned, _, err := obtainPlan(context.Background(), p, root, "zh-CN")
 	if err != nil {
 		t.Fatalf("反馈重规划应救回微型仓规划: %v", err)
 	}
@@ -484,7 +484,7 @@ func TestDrillMicroRepoDegeneracyAdaption(t *testing.T) {
 
 	// 反馈重规划仍退化 → fail-closed 上抛(不再有五段式模板兜底)
 	p2 := &fakePlanner{first: `{"chapters":[{"name":"孤章","summary":"s","targetPaths":["micro"],"phase":"入门"}]}`}
-	if _, _, err := obtainPlan(context.Background(), p2, root, "zh-CN"); err == nil {
+	if _, _, _, err := obtainPlan(context.Background(), p2, root, "zh-CN"); err == nil {
 		t.Fatal("持续退化规划应 fail-closed 报错,而非模板兜底")
 	}
 }

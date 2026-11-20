@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"sort"
@@ -66,6 +67,37 @@ type DrillResult struct {
 	DroppedPaths   []string      // 幻觉装甲砍除
 	Duration       time.Duration
 	CurriculumMode string
+	// Diagnostics 规划阶段确定性诊断（Phase 2 观测：随响应 stats 透传，
+	// Node 侧单行结构化摘要消费——先量化后扩容，Phase 3 触发判据的数据源）。
+	Diagnostics PipelineDiagnostics `json:"diagnostics,omitempty"`
+}
+
+// PlanErrorWithDiagnostics 携带规划诊断的错误包装（持续退化 fail-closed 上抛时
+// 诊断随错误走——Phase 3 触发判据需要"救回失败"样本的分子，绝不丢弃；
+// Unwrap 保真底层错误，sendPipelineError 的 errors.As 仍可提取网关码）。
+type PlanErrorWithDiagnostics struct {
+	Err         error
+	Diagnostics PipelineDiagnostics
+}
+
+func (e *PlanErrorWithDiagnostics) Error() string { return e.Err.Error() }
+
+func (e *PlanErrorWithDiagnostics) Unwrap() error { return e.Err }
+
+// PipelineDiagnostics 规划与覆盖率门禁的确定性观测指标（零 LLM 判定）。
+type PipelineDiagnostics struct {
+	// NeedRollupRequested 模型原始上卷请求数（确定性截断为 3 之前——
+	// 衡量巨仓上现有 3 路径封顶是否成为瓶颈的原始事实）。
+	NeedRollupRequested int `json:"needRollupRequested,omitempty"`
+	// NeedRollupCapped 原始请求超过封顶被截断（Phase 3.1 扩容触发判据）。
+	NeedRollupCapped bool `json:"needRollupCapped,omitempty"`
+	// PlanDegenerateTriggered 退化判定命中（触发反馈重规划）。
+	PlanDegenerateTriggered bool `json:"planDegenerateTriggered,omitempty"`
+	// PlanDegenerateRecovered 反馈重规划救回（Triggered=true 且 Recovered=false = fail-closed 上抛）。
+	PlanDegenerateRecovered bool `json:"planDegenerateRecovered,omitempty"`
+	// UncoveredSubsystemCount 深度 2 后置覆盖率门禁缺失核心子系统数
+	//（仅观测；customPrompt/overview 豁免时为 0——语义见 coverage.go）。
+	UncoveredSubsystemCount int `json:"uncoveredSubsystemCount,omitempty"`
 }
 
 // drillChapterFileCap 汇编单章文件上限(认知预算硬上限,防巨型章膨胀)。
@@ -138,9 +170,10 @@ func runDrillLevel(
 	}
 	root := skipRootWrapper(m.Tree)
 
-	planResp, replanned, err := obtainPlan(ctx, planner, root, targetLanguage)
+	planResp, replanned, planDiag, err := obtainPlan(ctx, planner, root, targetLanguage)
 	if err != nil {
-		return nil, fmt.Errorf("plan: %w", err)
+		// 诊断随错误上抛（失败样本的退化率分子），不静默丢弃
+		return nil, &PlanErrorWithDiagnostics{Err: fmt.Errorf("plan: %w", err), Diagnostics: planDiag}
 	}
 
 	effectiveCap := DrillSubtreeFileCap()
@@ -158,9 +191,10 @@ func runDrillLevel(
 				Replanned:      replanned,
 				DroppedPaths:   res.DroppedPaths,
 				CurriculumMode: "single",
+				Diagnostics:    planDiag,
 			}, nil
 		} else {
-			fmt.Printf("[Guardrail] repo size (%d files) exceeds single mode capacity, overriding to matrix mode\n", m.Tree.FileCount)
+			log.Printf("[pipelineb] Guardrail repo size (%d files) exceeds single mode capacity, overriding to matrix mode\n", m.Tree.FileCount)
 			planResp.CurriculumMode = "matrix"
 		}
 	}
@@ -396,7 +430,8 @@ func runDrillLevel(
 		_, observabilityCustomPrompt = ca.TeachingContext()
 	}
 	if fb := evaluateSubsystemCoverage(subsystems, chapters, "", teachingDepth, observabilityCustomPrompt); fb != nil {
-		fmt.Printf("[CoverageGate] depth2 warning: uncovered core subsystems %v (summary: %s) — observability only, no replan\n",
+		planDiag.UncoveredSubsystemCount = len(fb.MissingSubsystems)
+		log.Printf("[pipelineb] CoverageGate depth2 warning: uncovered core subsystems %v (summary: %s) — observability only, no replan\n",
 			fb.MissingSubsystems, subsystemCoverageSummary(subsystems, chapters, ""))
 	}
 
@@ -416,6 +451,7 @@ func runDrillLevel(
 		Replanned:      replanned,
 		DroppedPaths:   droppedPaths,
 		CurriculumMode: planResp.CurriculumMode,
+		Diagnostics:    planDiag,
 	}, nil
 }
 
@@ -510,6 +546,17 @@ func planFeedbackText(plan []PlanChapter, root *RepoTreeNode) string {
 	return sb.String()
 }
 
+// isPermanentGatewayConfigError 永久性配置/授权错误判定：缺 Key/解密失败/
+// 预算/未知 purpose——零成本退出，任何重试/修复/续写均无意义
+// （drill 反馈重规划与 pipelineb Layer 2 修复共用此语义）。
+func isPermanentGatewayConfigError(err error) bool {
+	var gw *client.LlmGatewayError
+	if !errors.As(err, &gw) {
+		return false
+	}
+	return gw.IsMissingApiKey() || gw.IsKeyDecryptFailed() || gw.IsBudgetExceeded() || gw.IsUnknownPurpose()
+}
+
 // isRetryablePlanError 判定规划调用物理失败是否属于可退避重试的瞬态错误
 func isRetryablePlanError(err error) bool {
 	if err == nil {
@@ -518,7 +565,8 @@ func isRetryablePlanError(err error) bool {
 	var gw *client.LlmGatewayError
 	if errors.As(err, &gw) {
 		// 认证、预算、未注册 purpose 等属于致命配置/授权错误，绝不重试直接失败
-		if gw.IsMissingApiKey() || gw.IsBudgetExceeded() || gw.IsUnknownPurpose() {
+		// （KEY_DECRYPT_FAILED 同为永久性配置错误：重存 Key 才能恢复，重试无意义）
+		if gw.IsMissingApiKey() || gw.IsKeyDecryptFailed() || gw.IsBudgetExceeded() || gw.IsUnknownPurpose() {
 			return false
 		}
 		// 生成失败 (502/GENERATION_FAILED)、瞬态 (503/504) 或限流 (429) 均可有界退避重试
@@ -537,7 +585,7 @@ func isRetryablePlanError(err error) bool {
 // 退化规划:反馈重规划一次;仍退化 → fail-closed 上抛(对齐 body.go
 // 2026-09-20 产品定夺:兜底=质量降级,拒绝——绝不以模板骨架伪装成品,
 // 调用方回落客户端 A 规则管线的物理事实大纲)。
-func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, targetLanguage string) (resp *planResponse, replanned bool, err error) {
+func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, targetLanguage string) (resp *planResponse, replanned bool, diag PipelineDiagnostics, err error) {
 	skeleton := RenderSkeleton(root)
 	var raw string
 	for attempt := 0; attempt < 2; attempt++ {
@@ -546,25 +594,29 @@ func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, t
 			break
 		}
 		if ctx.Err() != nil {
-			return nil, false, ctx.Err()
+			return nil, false, diag, ctx.Err()
 		}
 		if !isRetryablePlanError(err) || attempt >= 1 {
-			return nil, false, err
+			return nil, false, diag, err
 		}
 		select {
 		case <-ctx.Done():
-			return nil, false, ctx.Err()
+			return nil, false, diag, ctx.Err()
 		case <-time.After(time.Duration(1<<attempt) * time.Second):
 		}
 	}
 	resp, err = parsePlan(raw)
 	if err != nil {
-		return nil, false, err
+		return nil, false, diag, err
 	}
 	normalizePlanPaths(resp.Chapters, root)
 	// A5:模型可请求补充子树上卷(≤3),补料重规划一次。概率性超额
 	//(巨仓自然想上卷更多分区)确定性收敛为按序前 3——旧语义"超 3 全部
 	// 丢弃"把模型的合理意图整锅扔掉,只为了让校验闸少写一行截断
+	//（Phase 2 观测：截断前原始请求数与是否触顶进诊断——Phase 3.1
+	// 扩容触发判据的原始事实，先量化后动线上行为）
+	diag.NeedRollupRequested = len(resp.NeedRoll)
+	diag.NeedRollupCapped = len(resp.NeedRoll) > 3
 	if len(resp.NeedRoll) > 3 {
 		resp.NeedRoll = resp.NeedRoll[:3]
 	}
@@ -581,8 +633,21 @@ func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, t
 		// 修订失败回落首发规划
 	}
 	if planDegenerate(resp.Chapters, root) {
-		fmt.Printf("[DrillPlan] degenerate plan (root=%s, chapters=%d) -> feedback replan\n", root.Name, len(resp.Chapters))
+		diag.PlanDegenerateTriggered = true
+		log.Printf("[pipelineb] DrillPlan degenerate plan (root=%s, chapters=%d) -> feedback replan\n", root.Name, len(resp.Chapters))
 		raw2, err2 := planner.Plan(ctx, skeleton, nil, planFeedbackText(resp.Chapters, root), targetLanguage)
+		if err2 != nil {
+			// 反馈重规划物理失败（限流/瞬断/密钥失效）≠ 规划退化：
+			// 保真上抛底层错误（sendPipelineError 的 errors.As 依此透传网关码），
+			// 绝不误报为 degenerated 掩盖真实根因
+			if ctx.Err() != nil {
+				return nil, false, diag, ctx.Err()
+			}
+			var gw2 *client.LlmGatewayError
+			if errors.As(err2, &gw2) {
+				return nil, false, diag, fmt.Errorf("feedback replan failed: %w", err2)
+			}
+		}
 		if err2 == nil {
 			if resp2, err3 := parsePlan(raw2); err3 == nil {
 				normalizePlanPaths(resp2.Chapters, root)
@@ -590,18 +655,19 @@ func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, t
 					if resp2.CurriculumMode == "" {
 						resp2.CurriculumMode = "matrix"
 					}
-					fmt.Printf("[DrillPlan] feedback replan recovered (root=%s, chapters=%d)\n", root.Name, len(resp2.Chapters))
-					return resp2, true, nil
+					diag.PlanDegenerateRecovered = true
+					log.Printf("[pipelineb] DrillPlan feedback replan recovered (root=%s, chapters=%d)\n", root.Name, len(resp2.Chapters))
+					return resp2, true, diag, nil
 				}
 			}
 		}
-		fmt.Printf("[DrillPlan] plan still degenerated after feedback retry -> fail-closed (root=%s)\n", root.Name)
-		return nil, false, fmt.Errorf("outline plan degenerated: 有效分区覆盖不足或过半指向根 (root=%s)", root.Name)
+		log.Printf("[pipelineb] DrillPlan plan still degenerated after feedback retry -> fail-closed (root=%s)\n", root.Name)
+		return nil, false, diag, fmt.Errorf("outline plan degenerated: 有效分区覆盖不足或过半指向根 (root=%s)", root.Name)
 	}
 	if resp.CurriculumMode == "" {
 		resp.CurriculumMode = "matrix"
 	}
-	return resp, replanned, nil
+	return resp, replanned, diag, nil
 }
 
 func tryReplanningWithRollups(ctx context.Context, planner PlannerModel, skeleton string, rollups map[string]string, targetLanguage string, root *RepoTreeNode) (*planResponse, bool) {

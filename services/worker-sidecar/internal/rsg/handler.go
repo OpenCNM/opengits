@@ -542,7 +542,8 @@ func (h *Handler) LoadOrBuildSemanticGraph(ctx context.Context, owner, repo, sha
 
 // EnsureBoundedSemanticGraph 在导入收尾（归档热盘期）确保生成并持久化有界语义图谱：
 // 1. 若本地磁盘或 DB 已存在同 (owner, repo, sha) 图谱（例如 ladderRSGProjection 已生成），直接返回；
-// 2. 若有效文件 <= 1000，构建全量图谱；若 > 1000（巨仓），按 curatedPaths + 顶层目录浅层轮转抽样 <= 600 文件有界建图；
+// 2. 若有效文件 <= 1000，构建全量图谱；若 > 1000（巨仓），按 curatedPaths + 顶层目录浅层
+//    轮转抽样 <= giantRepoScopedMaxFiles(120) 文件有界建图（抽样帽 2026-11 起 600→120）；
 // 3. 落盘并写入 GraphArtifactRepo。
 func EnsureBoundedSemanticGraph(
 	ctx context.Context,

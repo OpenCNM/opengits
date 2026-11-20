@@ -20,7 +20,13 @@ import { lookupLlmPurpose, registeredLlmPurposes } from '@/lib/llm-gateway/regis
 // dotenv.config(override) 从本地 .env 静默注入（本机凭据未必可用，门形同虚设）。
 const HAS_TEST_DB = Boolean(process.env.WORKER_TEST_DATABASE_URL);
 
-/** fake 漏斗：离线跑网关服务层（与 ai.ts 的 model 注入同先例，零 API 成本） */
+/** 桩候选（2026-11 A 类收口配套）：网关候选解析已 fail-closed（空候选不再
+ *  默认注入平台模型），内联 deps 与 makeDeps 一律显式携带候选直达注入桩。 */
+const STUB_CASCADE = [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }];
+
+/** fake 漏斗：离线跑网关服务层（与 ai.ts 的 model 注入同先例，零 API 成本）。
+ *  cascadeCandidates 缺省注入：桩用例显式提供候选直达注入桩——生产代码
+ *  零测试感知分支，与 deps.cascadeCandidates 注入缝先例（级联 reset 用例）同源。 */
 function makeDeps(overrides: { object?: unknown; text?: string; error?: Error } = {}) {
   const generateCalls: unknown[] = [];
   const completeCalls: unknown[] = [];
@@ -30,6 +36,7 @@ function makeDeps(overrides: { object?: unknown; text?: string; error?: Error } 
     generateCalls,
     completeCalls,
     deps: {
+      cascadeCandidates: STUB_CASCADE,
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         if (overrides.error) throw overrides.error;
@@ -351,6 +358,7 @@ describe('LLM 网关（M1 purpose 注册表 + M2 text 形态）', () => {
       yield { type: 'text-delta', text: 'chunk 2; ' };
     }
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: fakeStream(),
         finishReason: 'stop',
@@ -394,7 +402,7 @@ describe('LLM 网关（M1 purpose 注册表 + M2 text 形态）', () => {
     // 2. MISSING_API_KEY
     const s2 = runLlmGatewayStream(
       { purpose: 'doc_transcribe_enhance_localize', variables: {} },
-      { completeFn: async () => { throw new MissingApiKeyError('no key'); } }
+      { cascadeCandidates: STUB_CASCADE, completeFn: async () => { throw new MissingApiKeyError('no key'); } }
     );
     const ev2 = await readNdjsonEvents(s2);
     expect(ev2[0]).toMatchObject({ type: 'error', ok: false, code: 'MISSING_API_KEY' });
@@ -402,7 +410,7 @@ describe('LLM 网关（M1 purpose 注册表 + M2 text 形态）', () => {
     // 3. BUDGET_EXCEEDED
     const s3 = runLlmGatewayStream(
       { purpose: 'doc_transcribe_enhance_localize', variables: {} },
-      { completeFn: async () => { throw new BudgetExceededError('user'); } }
+      { cascadeCandidates: STUB_CASCADE, completeFn: async () => { throw new BudgetExceededError('user'); } }
     );
     const ev3 = await readNdjsonEvents(s3);
     expect(ev3[0]).toMatchObject({ type: 'error', ok: false, code: 'BUDGET_EXCEEDED' });
@@ -410,7 +418,7 @@ describe('LLM 网关（M1 purpose 注册表 + M2 text 形态）', () => {
     // 4. GENERATION_FAILED
     const s4 = runLlmGatewayStream(
       { purpose: 'doc_transcribe_enhance_localize', variables: {} },
-      { completeFn: async () => { throw new Error('downstream crash'); } }
+      { cascadeCandidates: STUB_CASCADE, completeFn: async () => { throw new Error('downstream crash'); } }
     );
     const ev4 = await readNdjsonEvents(s4);
     expect(ev4[0]).toMatchObject({ type: 'error', ok: false, code: 'GENERATION_FAILED' });
@@ -483,6 +491,7 @@ describe('LLM 网关（M1 purpose 注册表 + M2 text 形态）', () => {
     const chunks: Array<{ delta: string; kind?: string }> = [];
     const { ReadableStream } = globalThis as unknown as { ReadableStream: any };
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: thinkingStream(),
         finishReason: 'stop',
@@ -523,6 +532,7 @@ describe('LLM 网关（M1 purpose 注册表 + M2 text 形态）', () => {
       }
     }
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: infiniteStream(),
         finishReason: 'stop',
@@ -558,6 +568,7 @@ describe('LLM 网关（M1 purpose 注册表 + M2 text 形态）', () => {
     }
     const ac = new AbortController();
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: slowStream(),
         finishReason: 'stop',
@@ -784,6 +795,7 @@ describe('LLM 网关流式账本、首帧自爆与调用追踪', () => {
     }
 
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: emptyPayloadStream(),
         finishReason: 'stop',
@@ -821,6 +833,7 @@ describe('LLM 网关流式账本、首帧自爆与调用追踪', () => {
     }
 
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: unknownTypeStream(),
         finishReason: 'stop',
@@ -853,6 +866,7 @@ describe('LLM 网关流式账本、首帧自爆与调用追踪', () => {
     }
 
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: droppedReasoningStream(),
         finishReason: 'stop',
@@ -886,6 +900,7 @@ describe('LLM 网关流式账本、首帧自爆与调用追踪', () => {
     }
 
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: simpleStream(),
         finishReason: 'stop',
@@ -921,6 +936,7 @@ describe('LLM 网关流式账本、首帧自爆与调用追踪', () => {
     }
 
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: traceStream(),
         finishReason: 'stop',
@@ -1000,6 +1016,7 @@ describe('LLM 网关流式账本、首帧自爆与调用追踪', () => {
     }
 
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: sdkStream(),
         finishReason: 'stop',
@@ -1043,6 +1060,7 @@ describe('LLM 网关流式账本、首帧自爆与调用追踪', () => {
     }
 
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: emptyReasoningLifecycleStream(),
         finishReason: 'stop',
@@ -1084,6 +1102,7 @@ describe('LLM 网关用户级并发协调器与前台保留槽 (Phase 2 & Phase 
     const pBatch2 = new Promise<void>((r) => { resolveBatch2 = r; });
 
     const depsBatch1 = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       ...makeDeps({ text: 'batch 1' }).deps,
       coordinator,
       completeFn: async () => {
@@ -1095,6 +1114,7 @@ describe('LLM 网关用户级并发协调器与前台保留槽 (Phase 2 & Phase 
     };
 
     const depsBatch2 = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       ...makeDeps({ text: 'batch 2' }).deps,
       coordinator,
       completeFn: async () => {
@@ -1127,6 +1147,7 @@ describe('LLM 网关用户级并发协调器与前台保留槽 (Phase 2 & Phase 
     // 此时第 3 个 batch 任务到达，必须被阻塞进入排队
     let batch3Started = false;
     const depsBatch3 = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       ...makeDeps({ text: 'batch 3' }).deps,
       coordinator,
       completeFn: async () => {
@@ -1146,6 +1167,7 @@ describe('LLM 网关用户级并发协调器与前台保留槽 (Phase 2 & Phase 
     // 此时前台大纲任务到达（outline_map_v1 -> priority: 'interactive'）
     // 验证其能立即获取保留槽执行，无需等待转录结束！
     const depsOutline = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       ...makeDeps({ object: { chapters: [] } }).deps,
       coordinator,
       generateFn: async () => {
@@ -1188,6 +1210,7 @@ describe('LLM 网关用户级并发协调器与前台保留槽 (Phase 2 & Phase 
   it('🧪 [TC-GATEWAY-CHINESE-429-STREAM] 流式调用捕获中文速率限制，发出 RATE_LIMITED 错误事件', async () => {
     const chineseError = new Error('429 Too Many Requests: 请求频率超限');
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => {
         throw chineseError;
       },
@@ -1278,6 +1301,7 @@ describe('purpose 级 deadline（registry.timeoutMs 网关单点强制）', () =
     try {
       const seenSignals: Array<AbortSignal | undefined> = [];
       const deps = {
+        cascadeCandidates: STUB_CASCADE,
         generateFn: (async (opts: { abortSignal?: AbortSignal }) => {
           seenSignals.push(opts.abortSignal);
           // 模拟 provider 流挂死：连接活着但零增量，仅 abort 能终止
@@ -1317,6 +1341,7 @@ describe('purpose 级 deadline（registry.timeoutMs 网关单点强制）', () =
 describe('structured purpose 流式直出（outline 交互路径：活性透传 + 终局 zod 闸门）', () => {
   it('🧪 [TC-GATEWAY-STREAM-STRUCTURED] chunk 增量透传 + done 携带 validated object 与 text 双承载', async () => {
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: (async function* () {
           yield { type: 'text-delta', textDelta: '{"chapters":[' };
@@ -1351,6 +1376,7 @@ describe('structured purpose 流式直出（outline 交互路径：活性透传 
 
   it('🧪 [TC-GATEWAY-STREAM-STRUCTURED-INVALID] 流式产物无合法 JSON：error 事件 fail-fast，绝不发 done', async () => {
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: (async function* () {
           yield { type: 'text-delta', textDelta: '思考结束，直接输出了散文，没有 JSON 对象' };
@@ -1376,6 +1402,7 @@ describe('structured purpose 流式直出（outline 交互路径：活性透传 
 
   it('🧪 [TC-GATEWAY-STREAM-OUTLINE-PLAN-MODULE-HEALING] outline_plan_v1 流式输出中同模块后续章节省略 moduleTitle 时自动自愈前向继承并通过闸门校验', async () => {
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: (async function* () {
           yield {
@@ -1446,6 +1473,7 @@ describe('structured purpose 流式直出（outline 交互路径：活性透传 
 
   it('🧪 [TC-GATEWAY-STREAM-TRUNCATED-JSON-SELF-HEALING] 流式输出遭遇 Token 截断（未闭合 JSON）时，0ms 快速自愈并通过闸门', async () => {
     const deps = {
+      cascadeCandidates: STUB_CASCADE,
       streamFn: async () => ({
         fullStream: (async function* () {
           // 模拟因 token 上限未闭合的 JSON（缺少 ] 和 }）

@@ -3,6 +3,7 @@ package pipelineb
 import (
 	"context"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 	"time"
@@ -226,7 +227,7 @@ func applyCoverageGate(ctx context.Context, m *RepoMap, arch *ArchitecturalModel
 	if fb == nil {
 		return chapters
 	}
-	fmt.Printf("[CoverageGate] depth1 missing core subsystems %v (%s) -> one outline_map_v1 revision\n",
+	log.Printf("[pipelineb] CoverageGate depth1 missing core subsystems %v (%s) -> one outline_map_v1 revision\n",
 		fb.MissingSubsystems, subsystemCoverageSummary(subsystems, chapters, ""))
 
 	revised, stillMissing := reviseOutlineForCoverage(ctx, m, arch, model, patterns, nodes, candidates, targetLanguage, subsystems, fb, teachingDepth)
@@ -234,7 +235,7 @@ func applyCoverageGate(ctx context.Context, m *RepoMap, arch *ArchitecturalModel
 		chapters = revised
 	}
 	if len(stillMissing) > 0 {
-		fmt.Printf("[CoverageGate] still missing after bounded revision, allow with warning: %v\n", stillMissing)
+		log.Printf("[pipelineb] CoverageGate still missing after bounded revision, allow with warning: %v\n", stillMissing)
 	}
 	return chapters
 }
@@ -263,7 +264,7 @@ func reviseOutlineForCoverage(
 		}
 	}
 	if budget < coverageRevisionFloor {
-		fmt.Printf("[CoverageGate] insufficient budget (%s) for revision, allow with warning: %v\n", budget, fb.MissingSubsystems)
+		log.Printf("[pipelineb] CoverageGate insufficient budget (%s) for revision, allow with warning: %v\n", budget, fb.MissingSubsystems)
 		return nil, fb.MissingSubsystems
 	}
 
@@ -278,7 +279,7 @@ func reviseOutlineForCoverage(
 	// 截止抢救与主调用同契约：流被切断时残文仍可确定性回收
 	if raw == "" {
 		if err != nil {
-			fmt.Printf("[CoverageGate] revision call failed (%v), keep original outline\n", err)
+			log.Printf("[pipelineb] CoverageGate revision call failed (%v), keep original outline\n", err)
 		}
 		return nil, fb.MissingSubsystems
 	}
@@ -288,14 +289,14 @@ func reviseOutlineForCoverage(
 		draft = SalvageOutlineChapters(raw)
 	}
 	if len(draft) == 0 {
-		fmt.Printf("[CoverageGate] revision produced zero parsable chapters, keep original outline\n")
+		log.Printf("[pipelineb] CoverageGate revision produced zero parsable chapters, keep original outline\n")
 		return nil, fb.MissingSubsystems
 	}
 
 	// 修订结果过同一路径幻觉装甲收尾（SSOT：cognitive.SanitizeAndIntersectOutline）
 	san := cognitive.SanitizeAndIntersectOutline(draft, nodes, "", targetLanguage, candidates, patterns)
 	if len(san.Sanitized) == 0 {
-		fmt.Printf("[CoverageGate] revision rejected by hallucination armor, keep original outline\n")
+		log.Printf("[pipelineb] CoverageGate revision rejected by hallucination armor, keep original outline\n")
 		return nil, fb.MissingSubsystems
 	}
 	decorateChapterDimensions(san.Sanitized, arch)
@@ -304,15 +305,15 @@ func reviseOutlineForCoverage(
 	// （teachingDepth 与首发冲突裁决同源；customPrompt 已在门禁入口裁决过非空）
 	fb2 := evaluateSubsystemCoverageFromFiles(subsystems, san.Sanitized, m.Files, "", teachingDepth, "")
 	if fb2 == nil {
-		fmt.Printf("[CoverageGate] revision resolved all missing core subsystems -> adopt\n")
+		log.Printf("[pipelineb] CoverageGate revision resolved all missing core subsystems -> adopt\n")
 		return san.Sanitized, nil
 	}
 	if len(fb2.MissingSubsystems) < len(fb.MissingSubsystems) {
-		fmt.Printf("[CoverageGate] revision reduced missing %d -> %d, adopt; still missing allowed with warning: %v\n",
+		log.Printf("[pipelineb] CoverageGate revision reduced missing %d -> %d, adopt; still missing allowed with warning: %v\n",
 			len(fb.MissingSubsystems), len(fb2.MissingSubsystems), fb2.MissingSubsystems)
 		return san.Sanitized, fb2.MissingSubsystems
 	}
-	fmt.Printf("[CoverageGate] revision not better (missing %d >= %d), keep original; allow with warning: %v\n",
+	log.Printf("[pipelineb] CoverageGate revision not better (missing %d >= %d), keep original; allow with warning: %v\n",
 		len(fb2.MissingSubsystems), len(fb.MissingSubsystems), fb.MissingSubsystems)
 	return nil, fb.MissingSubsystems
 }

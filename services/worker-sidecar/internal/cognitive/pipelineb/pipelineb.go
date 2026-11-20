@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -478,7 +479,7 @@ func Run(ctx context.Context, m *RepoMap, model OutlineModel, patterns cognitive
 		// 离线基线无 LLM 可修订：覆盖率门禁仅记录指标与告警，绝不伪造修订
 		if subsystems := DiscoverSubsystems(SubsystemSourcesFromRepoMap(m), patterns); len(subsystems) > 0 {
 			if fb := evaluateSubsystemCoverageFromFiles(subsystems, san.Sanitized, m.Files, "", "", ""); fb != nil {
-				fmt.Printf("[CoverageGate] deterministic baseline missing core subsystems %v (%s) — observability only\n",
+				log.Printf("[pipelineb] CoverageGate deterministic baseline missing core subsystems %v (%s) — observability only\n",
 					fb.MissingSubsystems, subsystemCoverageSummary(subsystems, san.Sanitized, ""))
 			}
 		}
@@ -512,7 +513,7 @@ func Run(ctx context.Context, m *RepoMap, model OutlineModel, patterns cognitive
 	// 流被预算切断（ErrStreamPartial 残文上抛）或尾部截断时，已完整落章的 JSON 对象确定性回收
 	if len(draft) == 0 && raw != "" {
 		if salvaged := SalvageOutlineChapters(raw); len(salvaged) > 0 {
-			fmt.Printf("[OutlineRun] Layer 1 salvage: %d chapters recovered from raw (len=%d)\n", len(salvaged), len(raw))
+			log.Printf("[pipelineb] OutlineRun Layer 1 salvage: %d chapters recovered from raw (len=%d)\n", len(salvaged), len(raw))
 			draft = salvaged
 			err = nil
 		}
@@ -552,7 +553,7 @@ func Run(ctx context.Context, m *RepoMap, model OutlineModel, patterns cognitive
 					contDraft = SalvageOutlineChapters(contRaw)
 				}
 				if len(contDraft) > 0 {
-					fmt.Printf("[OutlineRun] Layer 2 continuation: %d additional chapters appended\n", len(contDraft))
+					log.Printf("[pipelineb] OutlineRun Layer 2 continuation: %d additional chapters appended\n", len(contDraft))
 					draft = append(draft, contDraft...)
 					err = nil
 				}
@@ -561,8 +562,11 @@ func Run(ctx context.Context, m *RepoMap, model OutlineModel, patterns cognitive
 	}
 
 	// Layer 2: 单次微创靶向修复 (Targeted Repair)
-	// 若 draft 仍然为空但 context 未取消，尝试针对格式瑕疵发起快速单次修复
-	if len(draft) == 0 && ctx.Err() == nil {
+	// 若 draft 仍然为空但 context 未取消，尝试针对格式瑕疵发起快速单次修复。
+	// 永久性配置/授权错误（缺 Key/解密失败/预算/未知 purpose）跳过——
+	// 零成本退出契约（与 drill isRetryablePlanError 同一语义），重试只会
+	// 空耗预算并把密钥类故障伪装成"格式瑕疵"（2026-11 A 类收口）。
+	if len(draft) == 0 && ctx.Err() == nil && !isPermanentGatewayConfigError(err) {
 		repBudget := 15 * time.Second
 		if d, ok := ctx.Deadline(); ok {
 			rem := time.Until(d) - outlineArmorReserve
@@ -587,7 +591,7 @@ func Run(ctx context.Context, m *RepoMap, model OutlineModel, patterns cognitive
 					repDraft = SalvageOutlineChapters(repRaw)
 				}
 				if len(repDraft) > 0 {
-					fmt.Printf("[OutlineRun] Layer 2 repair: %d chapters recovered\n", len(repDraft))
+					log.Printf("[pipelineb] OutlineRun Layer 2 repair: %d chapters recovered\n", len(repDraft))
 					draft = repDraft
 					err = nil
 				}

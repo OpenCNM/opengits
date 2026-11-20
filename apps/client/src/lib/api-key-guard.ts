@@ -10,7 +10,20 @@ import { useModelProviderStore } from '@/lib/stores/model-provider-store';
 export function hasConfiguredApiKey(): boolean {
   if (typeof window === 'undefined') return false;
 
-  // 1. 检查经典单一 Key
+  const hasProviderKey = (p: { hasApiKey?: boolean; apiKey?: string | null } | null | undefined) =>
+    Boolean(p?.hasApiKey || (p?.apiKey && String(p.apiKey).trim().length > 0));
+
+  // 0. Cloud SSOT：已登录且已从云端完成加载时，严格以 Store 内云端状态为准，不读陈旧 localStorage 残留
+  try {
+    const storeState = useModelProviderStore.getState();
+    if (storeState.isInitialized && storeState.loadedUserId) {
+      return storeState.userProviders.some(hasProviderKey);
+    }
+  } catch {
+    // 容错降级: 内存 store 读取异常视为未配置，继续检查本地兜底或引导重配
+  }
+
+  // 1. 检查经典单一 Key（仅未同步云端/访客/单测局部模式）
   const singleKey = localStorage.getItem(STORAGE_KEYS.VAR_API_KEY);
   if (singleKey && singleKey.trim().length > 0) {
     return true;
@@ -20,9 +33,9 @@ export function hasConfiguredApiKey(): boolean {
   try {
     const storeProviders = useModelProviderStore.getState().userProviders;
     if (storeProviders && storeProviders.length > 0) {
-      const active = storeProviders.find((p) => p.isActive && p.apiKey && p.apiKey.trim().length > 0);
+      const active = storeProviders.find((p) => p.isActive && hasProviderKey(p));
       if (active) return true;
-      const anyValid = storeProviders.some((p) => p.apiKey && p.apiKey.trim().length > 0);
+      const anyValid = storeProviders.some(hasProviderKey);
       if (anyValid) return true;
     }
   } catch {
@@ -36,9 +49,9 @@ export function hasConfiguredApiKey(): boolean {
       const list = JSON.parse(rawProviders);
       if (Array.isArray(list)) {
         // 优先检查激活项，若无激活项则检查是否存在任一有有效 Key 的配置
-        const active = list.find((p: any) => p.isActive && p.apiKey && String(p.apiKey).trim().length > 0);
+        const active = list.find((p: any) => p?.isActive && hasProviderKey(p));
         if (active) return true;
-        const anyValid = list.some((p: any) => p.apiKey && String(p.apiKey).trim().length > 0);
+        const anyValid = list.some(hasProviderKey);
         if (anyValid) return true;
       }
     } catch {

@@ -92,6 +92,7 @@ func (c *LlmGatewayClient) SetActivityTimeout(d time.Duration) {
 const (
 	ErrCodeUnknownPurpose   = "UNKNOWN_PURPOSE"
 	ErrCodeMissingApiKey    = "MISSING_API_KEY"
+	ErrCodeKeyDecryptFailed = "KEY_DECRYPT_FAILED"
 	ErrCodeBudgetExceeded   = "BUDGET_EXCEEDED"
 	ErrCodeGenerationFailed = "GENERATION_FAILED"
 	ErrCodeRateLimited      = "RATE_LIMITED"
@@ -142,13 +143,17 @@ func (e *LlmGatewayError) IsBudgetExceeded() bool { return e.Code == ErrCodeBudg
 // IsMissingApiKey BYOK 未配置：调用方走零成本退出路径（与 Node 侧 [] 语义对齐）（409）。
 func (e *LlmGatewayError) IsMissingApiKey() bool { return e.Code == ErrCodeMissingApiKey }
 
+// IsKeyDecryptFailed 密文存在但解密失败（环境密钥变更等）：与 MISSING_API_KEY
+// 同为 409 永久性配置错误（重存 Key 才能恢复），但根因不同——报真话不混淆。
+func (e *LlmGatewayError) IsKeyDecryptFailed() bool { return e.Code == ErrCodeKeyDecryptFailed }
+
 // IsGenerationFailed 生成失败：LLM 提供商下游异常或模式校验失败（502）。
 func (e *LlmGatewayError) IsGenerationFailed() bool { return e.Code == ErrCodeGenerationFailed }
 
 // IsRateLimited 限流判定：429 状态、RATE_LIMITED 码或文案含 429/rate limit/ratelimit/
 // throttling/toomanyrequests/速率限制/请求频率/并发超限（BUDGET_EXCEEDED 同为 429 但语义专属，先排除）。
 func (e *LlmGatewayError) IsRateLimited() bool {
-	if e.IsBudgetExceeded() || e.IsMissingApiKey() {
+	if e.IsBudgetExceeded() || e.IsMissingApiKey() || e.IsKeyDecryptFailed() {
 		return false
 	}
 	if e.Code == ErrCodeRateLimited || e.Status == 429 {
@@ -164,7 +169,7 @@ func (e *LlmGatewayError) IsRateLimited() bool {
 // IsTransient 瞬态错误判定：503/504 状态或文案含 bad gateway/gateway timeout/
 // gateway time-out/service unavailable/connection reset/econnreset/etimedout/socket hang up。
 func (e *LlmGatewayError) IsTransient() bool {
-	if e.IsBudgetExceeded() || e.IsMissingApiKey() || e.IsUnknownPurpose() {
+	if e.IsBudgetExceeded() || e.IsMissingApiKey() || e.IsKeyDecryptFailed() || e.IsUnknownPurpose() {
 		return false
 	}
 	if e.Status == 503 || e.Status == 504 {
@@ -177,11 +182,13 @@ func (e *LlmGatewayError) IsTransient() bool {
 		strings.Contains(m, "econnreset") || strings.Contains(m, "etimedout") || strings.Contains(m, "socket hang up")
 }
 
-func mapLlmErrorCodeToStatus(code string) int {
+// MapLlmErrorCodeToStatus 网关错误码 → HTTP 状态契约映射（导出：跨包
+// 错误出口透传真实状态用，如 pipelineb SSE error 事件的 code/status 字段）。
+func MapLlmErrorCodeToStatus(code string) int {
 	switch code {
 	case ErrCodeBudgetExceeded, ErrCodeRateLimited:
 		return 429
-	case ErrCodeMissingApiKey:
+	case ErrCodeMissingApiKey, ErrCodeKeyDecryptFailed:
 		return 409
 	case ErrCodeUnknownPurpose:
 		return 400
@@ -325,7 +332,7 @@ func (c *LlmGatewayClient) Complete(ctx context.Context, purpose string, variabl
 			return LlmTextResult{}, fmt.Errorf("llm-gateway: malformed response (HTTP %d): %w", resp.StatusCode, err)
 		}
 		if !envelope.OK {
-			status := mapLlmErrorCodeToStatus(envelope.Code)
+			status := MapLlmErrorCodeToStatus(envelope.Code)
 			return LlmTextResult{}, &LlmGatewayError{Code: envelope.Code, Message: envelope.Message, Status: status}
 		}
 		if cb := getStreamProgress(ctx); cb != nil {
@@ -442,7 +449,7 @@ func (c *LlmGatewayClient) Complete(ctx context.Context, purpose string, variabl
 				CallID:       callID,
 			}
 		case "error":
-			status := mapLlmErrorCodeToStatus(event.Code)
+			status := MapLlmErrorCodeToStatus(event.Code)
 			streamErr = &LlmGatewayError{
 				Code:    event.Code,
 				Message: event.Message,

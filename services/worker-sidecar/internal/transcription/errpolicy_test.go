@@ -18,6 +18,9 @@ func TestClassifyLlmError(t *testing.T) {
 	}{
 		{name: "nil 不是错误", err: nil, want: ""},
 		{name: "缺 key → 零成本退出类", err: &client.LlmGatewayError{Code: "MISSING_API_KEY", Status: 409}, want: ClassMissingKey},
+		// 2026-11 A 类收口：解密失败与缺 Key 同走零成本退出路径（重存 Key 才能恢复），
+		// 但上游保留 KEY_DECRYPT_FAILED 独立码供报真话
+		{name: "密钥解密失败 → 零成本退出类", err: &client.LlmGatewayError{Code: client.ErrCodeKeyDecryptFailed, Status: 409}, want: ClassMissingKey},
 		{name: "预算超限 → 延后类", err: &client.LlmGatewayError{Code: "BUDGET_EXCEEDED", Status: 429}, want: ClassBudget},
 		{name: "429 状态限流", err: &client.LlmGatewayError{Code: "X", Status: 429}, want: ClassRateLimit},
 		{name: "文案 rate limit", err: &client.LlmGatewayError{Code: "X", Message: "Too many requests: rate limit exceeded"}, want: ClassRateLimit},

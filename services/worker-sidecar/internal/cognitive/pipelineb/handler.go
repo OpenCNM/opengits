@@ -679,6 +679,44 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// sendPipelineError 大纲管线错误出口：网关结构化错误（MISSING_API_KEY/
+	// KEY_DECRYPT_FAILED 等）透传 code 与真实 HTTP 状态——调用方按 code 分支
+	// 引导用户重配 Key，而非把 A 类配置故障折叠成匿名 500（2026-11 收口）。
+	// PlanErrorWithDiagnostics 的诊断随 SSE error 事件透出并落单行结构化日志
+	//（Phase 3 触发判据需要"救回失败"样本的分子——失败也必须进观测账面）。
+	sendPipelineError := func(prefix string, err error) {
+		var planErr *PlanErrorWithDiagnostics
+		var diag *PipelineDiagnostics
+		if errors.As(err, &planErr) {
+			d := planErr.Diagnostics
+			diag = &d
+			log.Printf("[pipelineb] diag plan_failed repo=%s/%s sha=%s needRollupRequested=%d needRollupCapped=%v planDegenerateTriggered=%v planDegenerateRecovered=%v",
+				req.Owner, req.Repo, req.SHA, d.NeedRollupRequested, d.NeedRollupCapped, d.PlanDegenerateTriggered, d.PlanDegenerateRecovered)
+		}
+		var gw *client.LlmGatewayError
+		if errors.As(err, &gw) {
+			status := gw.Status
+			if status == 0 {
+				status = client.MapLlmErrorCodeToStatus(gw.Code)
+			}
+			if isStream && sw != nil {
+				payload := map[string]any{
+					"message": prefix + gw.Message,
+					"status":  status,
+					"code":    gw.Code,
+				}
+				if diag != nil {
+					payload["diagnostics"] = *diag
+				}
+				_ = sw.SendEvent("", "error", payload)
+			} else {
+				httpx.Error(w, status, prefix+err.Error())
+			}
+			return
+		}
+		sendError(http.StatusInternalServerError, prefix+err.Error())
+	}
+
 	sendSuccess := func(status int, payload map[string]any) {
 		if isStream && sw != nil {
 			_ = sw.SendEvent("", "complete", payload)
@@ -793,6 +831,11 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			// Tree-First 失败（截断 >100k、网络瞬断或未提供 Token）：Fail-closed 回退到原有 202 异步后台归档
+			// Phase 2 观测：截断回退单行结构化事件（>100k 巨仓占比——Phase 3 决策数据源）
+			if treeErr != nil && strings.Contains(treeErr.Error(), "truncated") {
+				log.Printf("[pipelineb] diag tree_first_truncated repo=%s/%s sha=%s fallback=202_coldstart_archive",
+					req.Owner, req.Repo, req.SHA)
+			}
 			if h.statDir != nil {
 				h.launchPrep(req)
 				sendSuccess(http.StatusAccepted, map[string]any{
@@ -874,7 +917,7 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 		}
 		res, err := Run(ctx, m, h.modelForReq(req.UserID, req.CustomPrompt, req.TeachingDepth, req.LearnerArchetype, req.Pacing), patterns, lang)
 		if err != nil {
-			sendError(http.StatusInternalServerError, "outline failed: "+err.Error())
+			sendPipelineError("outline failed: ", err)
 			return
 		}
 		// 深度 1 快路径同样走 WP4.2 AST 边优先挂载：策略 A 提取的 CallEdges
@@ -898,7 +941,7 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 
 	res, err := RunDrill(ctx, m, h.plannerForReq(req.UserID, req.CustomPrompt, req.Pacing, req.TeachingDepth, req.LearnerArchetype), h.modelForReq(req.UserID, req.CustomPrompt, req.TeachingDepth, req.LearnerArchetype, req.Pacing), patterns, lang, req.TeachingDepth, cb)
 	if err != nil {
-		sendError(http.StatusInternalServerError, "tree outline failed: "+err.Error())
+		sendPipelineError("tree outline failed: ", err)
 		return
 	}
 
@@ -915,7 +958,8 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 			"excludedFiles": excludedFiles,
 			"stats": samplingStatsFields(map[string]any{
 				"files": len(m.Files), "allFiles": m.Tree.FileCount,
-				"durationMs": res.Duration.Milliseconds(),
+				"durationMs":  res.Duration.Milliseconds(),
+				"diagnostics": res.Diagnostics,
 			}, sampling),
 		})
 		return
@@ -935,7 +979,8 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 		"excludedFiles": excludedFiles,
 		"stats": samplingStatsFields(map[string]any{
 			"files": len(m.Files), "allFiles": m.Tree.FileCount,
-			"durationMs": res.Duration.Milliseconds(),
+			"durationMs":  res.Duration.Milliseconds(),
+			"diagnostics": res.Diagnostics,
 		}, sampling),
 	})
 }

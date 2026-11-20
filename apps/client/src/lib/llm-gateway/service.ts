@@ -28,6 +28,7 @@ import {
   type ModelCandidate,
   DEFAULT_TRANSCRIPTION_CASCADE,
   resolveUserModelCascade,
+  inspectUserModelKeyStatus,
   toInjectableStructuredModel,
 } from '@/lib/ai/user-model-resolver';
 
@@ -55,6 +56,9 @@ type LlmGenerateRequest = z.infer<typeof llmGenerateRequestSchema>;
 export const LLM_GATEWAY_ERROR_CODES = {
   UNKNOWN_PURPOSE: 400,
   MISSING_API_KEY: 409,
+  /** 密文存在但解密失败（环境密钥变更等）——与 MISSING_API_KEY 同为 409 永久性
+   * 配置错误，但根因不同：重存 Key 才能恢复，绝不静默蹭平台级联伪装成功 */
+  KEY_DECRYPT_FAILED: 409,
   RATE_LIMITED: 429,
   BUDGET_EXCEEDED: 429,
   GENERATION_FAILED: 502,
@@ -62,13 +66,33 @@ export const LLM_GATEWAY_ERROR_CODES = {
 
 type LlmGatewayErrorCode = keyof typeof LLM_GATEWAY_ERROR_CODES;
 
+/** 用户 BYOK 密钥不可用（missing / decrypt_failed）的 Fail-closed 信号：
+ *  携带网关契约错误码向上抛出，调用方按 code 分支（2026-11 收口：密钥类
+ *  状态故障绝不静默回落平台级联——伪弹性会把 A 类基础设施故障伪装成成功）。 */
+export class UserKeyUnavailableError extends Error {
+  readonly code: 'MISSING_API_KEY' | 'KEY_DECRYPT_FAILED';
+  constructor(code: 'MISSING_API_KEY' | 'KEY_DECRYPT_FAILED', message: string) {
+    super(message);
+    this.name = 'UserKeyUnavailableError';
+    this.code = code;
+  }
+}
+
 /**
- * 根据调用意图和用户身份解析可用候选模型降级链表
+ * 根据调用意图和用户身份解析可用候选模型降级链表。
+ *
+ * Fail-Closed 契约（2026-11 A 类故障收口）：
+ * - userId 在场但用户级联为空 → 按密钥物理状态抛 UserKeyUnavailableError
+ *   （decrypt_failed → KEY_DECRYPT_FAILED；missing → MISSING_API_KEY），
+ *   绝不穿透到平台默认级联，绝不返回无密钥占位候选；
+ * - userId 缺席 → 仅 keyOrigin='platform' 的 purpose 走平台级联；
+ *   BYOK purpose 显式 fail-closed（树大纲等调用方契约本就要求 userId 必传）。
  */
 export async function resolveCascadeCandidates(
   purpose: string,
   userId?: string | null
 ): Promise<ModelCandidate[]> {
+  const purposeDef = lookupLlmPurpose(purpose);
   if (userId) {
     const userModels = await resolveUserModelCascade(userId);
     if (userModels.length > 0) {
@@ -81,20 +105,37 @@ export async function resolveCascadeCandidates(
         label: `${m.provider}/${m.modelId}`,
       }));
     }
-  }
-  const purposeDef = lookupLlmPurpose(purpose);
-  if (purposeDef?.preferFastFallback) {
-    const fastHead: ModelCandidate = {
-      provider: DEFAULT_AI_PROVIDER,
-      modelId: DEFAULT_AI_MODEL,
-      label: `${DEFAULT_AI_PROVIDER}/${DEFAULT_AI_MODEL} (fast)`,
-    };
-    const rest = DEFAULT_TRANSCRIPTION_CASCADE.filter(
-      (c) => !(c.provider === fastHead.provider && c.modelId === fastHead.modelId)
+    // 用户级联为空：精确报出密钥物理状态根因（先探测再报错，说真话）
+    const keyStatus = await inspectUserModelKeyStatus(userId);
+    if (keyStatus.status === 'decrypt_failed') {
+      throw new UserKeyUnavailableError(
+        'KEY_DECRYPT_FAILED',
+        `云端已保存的 AI 密钥无法解密（可能因环境密钥变更失效），请重新填写并保存 API Key (provider=${keyStatus.provider || 'unknown'}, model=${keyStatus.modelId || DEFAULT_AI_MODEL})`
+      );
+    }
+    throw new UserKeyUnavailableError(
+      'MISSING_API_KEY',
+      '当前账号未在云端配置可用的 AI 密钥，请先在偏好设置中配置 API Key'
     );
-    return [fastHead, ...rest];
   }
-  return DEFAULT_TRANSCRIPTION_CASCADE;
+  if (purposeDef?.keyOrigin === 'platform') {
+    if (purposeDef.preferFastFallback) {
+      const fastHead: ModelCandidate = {
+        provider: DEFAULT_AI_PROVIDER,
+        modelId: DEFAULT_AI_MODEL,
+        label: `${DEFAULT_AI_PROVIDER}/${DEFAULT_AI_MODEL} (fast)`,
+      };
+      const rest = DEFAULT_TRANSCRIPTION_CASCADE.filter(
+        (c) => !(c.provider === fastHead.provider && c.modelId === fastHead.modelId)
+      );
+      return [fastHead, ...rest];
+    }
+    return DEFAULT_TRANSCRIPTION_CASCADE;
+  }
+  throw new UserKeyUnavailableError(
+    'MISSING_API_KEY',
+    `purpose ${purpose} 为 BYOK 调用点（keyOrigin=user），必须携带 userId（当前缺失）——按契约 fail-closed，不回落平台级联`
+  );
 }
 
 interface LlmGatewaySuccess {
@@ -322,8 +363,11 @@ async function executeMetaCompilation(
     }
 
     // Fatal errors (auth, budget, rate-limit) must fail-closed rather than disguising as normal fallback
+    // KEY_DECRYPT_FAILED 同列（2026-11 A 类收口）：密文损坏是永久配置错，
+    // 伪降级会让主流程再烧一次 DB 探测才失败——违反 Frame-1 Fail-Fast
     if (
       phase1Result.code === 'MISSING_API_KEY' ||
+      phase1Result.code === 'KEY_DECRYPT_FAILED' ||
       phase1Result.code === 'BUDGET_EXCEEDED' ||
       phase1Result.code === 'RATE_LIMITED'
     ) {
@@ -340,6 +384,12 @@ async function executeMetaCompilation(
   } catch (metaErr) {
     if (deps.signal?.aborted) {
       return { variables: payload.variables, isCancelled: true };
+    }
+    if (metaErr instanceof UserKeyUnavailableError) {
+      return {
+        variables: payload.variables,
+        fatalError: { ok: false, code: metaErr.code, message: metaErr.message },
+      };
     }
     if (metaErr instanceof MissingApiKeyError) {
       return {
@@ -453,12 +503,26 @@ export async function runLlmGatewayGenerate(
     if (!candidates) {
       try {
         candidates = await resolveCascadeCandidates(payload.purpose, payload.userId);
-      } catch {
-        candidates = [];
+      } catch (err) {
+        // 密钥类状态故障：Fail-closed 透传真实根因码（绝不默认候选伪装可继续）
+        if (err instanceof UserKeyUnavailableError) {
+          return { ok: false, code: err.code, message: err.message };
+        }
+        // 基础设施异常（DB 不可达等）≠ 缺 Key：502 说真话，不吞成默认候选
+        const reason = err instanceof Error ? err.message : String(err);
+        return {
+          ok: false,
+          code: 'GENERATION_FAILED',
+          message: `model cascade resolution failed: ${reason}`.slice(0, 500),
+        };
       }
     }
-    if (!candidates || candidates.length === 0) {
-      candidates = [{ provider: DEFAULT_AI_PROVIDER, modelId: DEFAULT_AI_MODEL }];
+    if (candidates.length === 0) {
+      return {
+        ok: false,
+        code: 'MISSING_API_KEY',
+        message: 'no model candidates resolved for this request',
+      };
     }
 
     let lastError: unknown = null;
@@ -912,14 +976,15 @@ export function runLlmGatewayStream(
         const breaker = deps.circuitBreaker ?? defaultCircuitBreaker;
         let candidates = deps.cascadeCandidates;
         if (!candidates) {
-          try {
-            candidates = await resolveCascadeCandidates(payload.purpose, payload.userId);
-          } catch {
-            candidates = [];
-          }
+          // 密钥类/基础设施类异常统一上抛，由外层 catch 按 code 分类
+          // （Fail-closed：绝不吞成默认候选——与 generate 路径同一收口）
+          candidates = await resolveCascadeCandidates(payload.purpose, payload.userId);
         }
-        if (!candidates || candidates.length === 0) {
-          candidates = [{ provider: DEFAULT_AI_PROVIDER, modelId: DEFAULT_AI_MODEL }];
+        if (candidates.length === 0) {
+          throw new UserKeyUnavailableError(
+            'MISSING_API_KEY',
+            'no model candidates resolved for this request'
+          );
         }
 
         let streamSucceeded = false;
@@ -1111,7 +1176,9 @@ export function runLlmGatewayStream(
           outcome = 'cancelled';
         } else {
           outcome = 'error';
-          if (err instanceof MissingApiKeyError) {
+          if (err instanceof UserKeyUnavailableError) {
+            sendEvent({ type: 'error', ok: false, code: err.code, message: err.message });
+          } else if (err instanceof MissingApiKeyError) {
             sendEvent({ type: 'error', ok: false, code: 'MISSING_API_KEY', message: err.message });
           } else if (err instanceof BudgetExceededError) {
             sendEvent({

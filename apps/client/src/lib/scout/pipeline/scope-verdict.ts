@@ -197,13 +197,23 @@ export async function arbitrateScopeVerdict(input: ArbitrateScopeInput): Promise
   // 用户可能中途配置模型，与 ingest-mode-arbiter 先例一致）
   const userModel = await resolveActiveUserModel(userId).catch(() => null);
   const injectable = toInjectableStructuredModel(userModel);
-  if (!injectable || !userModel) return null;
+  if (!injectable || !userModel) {
+    // Phase 2 观测：无可用慢路径（BYOK 缺失）——先于缓存，防抖窗口不吞事件
+    console.log(`[scope-verdict] outcome=no_model repo=${owner}/${repo}`);
+    return null;
+  }
+
+  // Phase 2 观测：埋点先于缓存查询（失败防抖 TTL 会吞掉缓存后的失败，后置低估失败率）
+  console.log(`[scope-verdict] call repo=${owner}/${repo} sha=${sha ?? 'no-sha'} forceRefresh=${Boolean(input.forceRefresh)}`);
 
   const promptHash = input.customPrompt?.trim() ? `@prompt:${input.customPrompt.trim().slice(0, 32)}` : '';
   const cacheKey = `${owner}/${repo}@${sha ?? 'no-sha'}@model:${userModel.modelId}${promptHash}`;
   if (!input.forceRefresh) {
     const hit = scopeVerdictCache.get(cacheKey);
     if (hit && Date.now() - hit.ts < (hit.verdict ? SCOPE_VERDICT_CACHE_TTL_MS : SCOPE_VERDICT_FAILURE_TTL_MS)) {
+      console.log(
+        `[scope-verdict] outcome=${hit.verdict ? 'cache_hit' : 'cache_failure_ttl'} repo=${owner}/${repo}`
+      );
       return hit.verdict ? { ...hit.verdict } : null;
     }
   }
@@ -262,9 +272,13 @@ export async function arbitrateScopeVerdict(input: ArbitrateScopeInput): Promise
 
     const verdict = groundScopeVerdict(raw, dirTree, markdownFiles, { repo });
     cacheVerdict(cacheKey, verdict);
+    console.log(
+      `[scope-verdict] outcome=${verdict ? 'verdict' : 'ungrounded_rejected'} repo=${owner}/${repo} targetRoot="${verdict?.targetRoot ?? ''}"`
+    );
     return verdict ? { ...verdict } : null;
   } catch (err) {
     console.warn('[scope-verdict] 目标目录裁决失败，fail-closed 回落人工选择:', err);
+    console.log(`[scope-verdict] outcome=fallback_error repo=${owner}/${repo}`);
     cacheVerdict(cacheKey, null);
     return null;
   }

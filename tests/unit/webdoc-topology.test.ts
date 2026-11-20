@@ -181,13 +181,15 @@ describe('WebDoc Topology Decision Schema & Normalizer', () => {
       expect(prompt).toContain('/ui/docs/components/button');
     });
 
-    it('uses fast platform cascade for webdoc_topology_scout when no BYOK userId is provided', async () => {
-      const { resolveCascadeCandidates } = await import('@/lib/llm-gateway/service');
-      const { DEFAULT_AI_PROVIDER, DEFAULT_AI_MODEL } = await import('@/lib/constants');
-      const candidates = await resolveCascadeCandidates('webdoc_topology_scout', null);
-      expect(candidates.length).toBeGreaterThan(0);
-      expect(candidates[0].provider).toBe(DEFAULT_AI_PROVIDER);
-      expect(candidates[0].modelId).toBe(DEFAULT_AI_MODEL);
+    it('fail-closes for BYOK webdoc_topology_scout when no userId is provided (2026-11 A 类收口)', async () => {
+      const { resolveCascadeCandidates, UserKeyUnavailableError } = await import('@/lib/llm-gateway/service');
+      await expect(resolveCascadeCandidates('webdoc_topology_scout', null)).rejects.toBeInstanceOf(
+        UserKeyUnavailableError
+      );
+      // keyOrigin='user' 的 purpose 无 userId 绝不回落平台级联（伪弹性收口）
+      await expect(resolveCascadeCandidates('webdoc_topology_scout', null)).rejects.toThrow(
+        /keyOrigin=user/
+      );
     });
   });
 

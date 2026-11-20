@@ -486,7 +486,7 @@ func TestObtainPlanDegenerateFailClosed_TableDriven(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, replanned, err := obtainPlan(context.Background(), tt.planner, m.Tree, "zh-CN")
+			resp, replanned, _, err := obtainPlan(context.Background(), tt.planner, m.Tree, "zh-CN")
 			if tt.wantErr {
 				require.Error(t, err, "持续退化应 fail-closed 报错")
 				assert.Contains(t, err.Error(), "degenerated")
@@ -835,7 +835,7 @@ func TestObtainPlanTransientRetryRecovery(t *testing.T) {
 			failErr:   &client.LlmGatewayError{Code: client.ErrCodeGenerationFailed, Status: 502, Message: "streamed output contains no complete JSON object (len=358)"},
 			success:   goodPlan,
 		}
-		resp, replanned, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+		resp, replanned, _, err := obtainPlan(context.Background(), planner, root, "zh-CN")
 		require.NoError(t, err)
 		assert.False(t, replanned)
 		require.NotNil(t, resp)
@@ -849,9 +849,22 @@ func TestObtainPlanTransientRetryRecovery(t *testing.T) {
 			failErr:   &client.LlmGatewayError{Code: client.ErrCodeMissingApiKey, Status: 409, Message: "missing api key"},
 			success:   goodPlan,
 		}
-		_, _, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+		_, _, _, err := obtainPlan(context.Background(), planner, root, "zh-CN")
 		require.Error(t, err)
 		assert.Equal(t, 1, planner.calls, "致命配置错误应立即 fail-fast，严禁空耗重试")
+	})
+
+	t.Run("KEY_DECRYPT_FAILED permanent error fails immediately without retry", func(t *testing.T) {
+		// 2026-11 A 类收口：密文解密失败与缺 Key 同为永久性配置错误——
+		// 重存 Key 才能恢复，重试只会空耗预算
+		planner := &retryableFakePlanner{
+			failCount: 2,
+			failErr:   &client.LlmGatewayError{Code: client.ErrCodeKeyDecryptFailed, Status: 409, Message: "云端已保存的 AI 密钥无法解密"},
+			success:   goodPlan,
+		}
+		_, _, _, err := obtainPlan(context.Background(), planner, root, "zh-CN")
+		require.Error(t, err)
+		assert.Equal(t, 1, planner.calls, "解密失败应立即 fail-fast 并保留可区分错误码")
 	})
 }
 

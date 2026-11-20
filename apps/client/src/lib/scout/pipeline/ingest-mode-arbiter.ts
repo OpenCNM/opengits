@@ -144,12 +144,18 @@ export async function arbitrateIngestMode(
     return { profile, arbitrated: false };
   }
 
+  // Phase 2 观测：埋点先于缓存查询——失败防抖 TTL(5min) 会吞掉缓存命中后的
+  // 失败重试，后置埋点将系统性低估灰区失败率（Phase 3 扩枚举决策数据失真）
+  console.log(`[ingest-arbiter] grayZoneHit=true repo=${owner}/${repo} sha=${sha ?? 'no-sha'}`);
+
   const cacheKey = `${owner}/${repo}@${sha ?? 'no-sha'}`;
   const hit = arbitrationCache.get(cacheKey);
   if (hit && Date.now() - hit.ts < (hit.verdict ? ARBITRATION_CACHE_TTL_MS : ARBITRATION_FAILURE_TTL_MS)) {
     if (!hit.verdict) {
+      console.log('[ingest-arbiter] outcome=cache_failure_ttl repo=' + owner + '/' + repo);
       return { profile, arbitrated: false, fallback: true };
     }
+    console.log(`[ingest-arbiter] outcome=cache_hit verdict=${hit.verdict.teachingFocus} repo=${owner}/${repo}`);
     return {
       profile: deriveArbitratedProfile(profile, hit.verdict),
       arbitrated: hit.verdict.teachingFocus === 'code',
@@ -163,6 +169,7 @@ export async function arbitrateIngestMode(
     const userModel = await resolveActiveUserModel(userId).catch(() => null);
     const injectable = toInjectableStructuredModel(userModel);
     if (!injectable) {
+      console.log(`[ingest-arbiter] outcome=fallback_no_model repo=${owner}/${repo}`);
       return { profile, arbitrated: false, fallback: true };
     }
 
@@ -195,6 +202,7 @@ export async function arbitrateIngestMode(
     if (!verdict) throw new Error('arbitration produced no verdict');
 
     cacheVerdict(arbitrationCache, cacheKey, verdict);
+    console.log(`[ingest-arbiter] outcome=verdict verdict=${verdict.teachingFocus} repo=${owner}/${repo}`);
     return {
       profile: deriveArbitratedProfile(profile, verdict),
       arbitrated: verdict.teachingFocus === 'code',
@@ -202,6 +210,7 @@ export async function arbitrateIngestMode(
     };
   } catch (err) {
     console.warn('[ingest-mode-arbiter] 灰区仲裁失败，fail-closed 回落规则裁定:', err);
+    console.log(`[ingest-arbiter] outcome=fallback_error repo=${owner}/${repo}`);
     cacheVerdict(arbitrationCache, cacheKey, null);
     return { profile, arbitrated: false, fallback: true };
   }

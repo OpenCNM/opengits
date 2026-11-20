@@ -15,6 +15,9 @@ export const API_ERROR_CODES = {
   SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   MISSING_API_KEY: 'MISSING_API_KEY',
+  /** 密文存在但解密失败（环境密钥变更）——与 MISSING_API_KEY 区分根因：
+   *  重存 Key 才能恢复（2026-11 A 类收口：报真话不混淆） */
+  KEY_DECRYPT_FAILED: 'KEY_DECRYPT_FAILED',
   NO_MODEL: 'NO_MODEL',
 } as const;
 
@@ -31,6 +34,7 @@ export const ERROR_CODE_STATUS_MAP: Record<ApiErrorCode, number> = {
   SERVICE_UNAVAILABLE: 503,
   INTERNAL_ERROR: 500,
   MISSING_API_KEY: 400,
+  KEY_DECRYPT_FAILED: 409,
   NO_MODEL: 409,
 };
 
@@ -58,6 +62,8 @@ export function getLocalizedErrorMessage(code: ApiErrorCode): string {
       return m.api_err_internal();
     case 'MISSING_API_KEY':
       return m.toast_missing_api_key();
+    case 'KEY_DECRYPT_FAILED':
+      return m.toast_key_decrypt_failed();
     case 'NO_MODEL':
       return m.toast_missing_model_config();
     default:

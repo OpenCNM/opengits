@@ -134,6 +134,8 @@ describe('AutoReview Daemon & Runner', () => {
         repo: 'agentgpt',
         reviewPipeline: { total: 85, dimensions: [] },
         reviewLlm: null,
+        // ef5d2b4 起巡检以 updatedAt 构造留审跳过签名——桩必须携带
+        updatedAt: new Date('2026-11-19T00:00:00Z'),
       },
     ]);
     mockReviewTutorialByPlatform.mockResolvedValueOnce({

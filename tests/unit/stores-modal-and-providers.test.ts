@@ -21,7 +21,12 @@ describe('useModalStore 与 useModelProviderStore 业务集成联动', () => {
     });
     useModalStore.getState().closeApiKeyModal();
     useModalStore.getState().closePreferencesModal();
-    useModelProviderStore.setState({ userProviders: [], dynamicProviders: [] });
+    useModelProviderStore.setState({
+      userProviders: [],
+      dynamicProviders: [],
+      isInitialized: false,
+      loadedUserId: null,
+    });
   });
 
   it('openApiKeyModal 能够注入 contextText 与 onCompleted 回调', () => {
@@ -82,5 +87,38 @@ describe('useModalStore 与 useModelProviderStore 业务集成联动', () => {
     expect(localStorage.getItem(STORAGE_KEYS.AGENT_PROVIDER)).toBe('google');
     expect(localStorage.getItem(STORAGE_KEYS.AGENT_MODEL)).toBe('gemini-3.7-flash');
     expect(localStorage.getItem(STORAGE_KEYS.VAR_API_KEY)).toBe('sk-gemini-key');
+  });
+
+  it('Cloud SSOT：已登录用户云端无配置时，即使 localStorage 有陈旧残留，hasConfiguredApiKey 仍返回 false', () => {
+    localStorage.setItem(STORAGE_KEYS.VAR_API_KEY, 'sk-stale-local-key');
+    useModelProviderStore.setState({
+      isInitialized: true,
+      loadedUserId: 'usr-cloud-empty',
+      userProviders: [],
+    });
+
+    expect(hasConfiguredApiKey()).toBe(false);
+  });
+
+  it('Cloud SSOT：云端返回 hasApiKey: true（无本地明文）时，hasConfiguredApiKey 返回 true', () => {
+    useModelProviderStore.setState({
+      isInitialized: true,
+      loadedUserId: 'usr-cloud-valid',
+      userProviders: [
+        {
+          providerKey: 'zhipu',
+          name: '智谱 GLM',
+          baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+          apiFormat: 'openai',
+          hasApiKey: true,
+          models: ['glm-5.3-flash'],
+          selectedModel: 'glm-5.3-flash',
+          isActive: true,
+          healthStatus: 'healthy',
+        },
+      ],
+    });
+
+    expect(hasConfiguredApiKey()).toBe(true);
   });
 });

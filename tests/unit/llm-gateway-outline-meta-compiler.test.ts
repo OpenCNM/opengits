@@ -296,6 +296,7 @@ describe('大纲导师级重编排元编译器网关管线 (Outline Curriculum M
     const generateCalls: unknown[] = [];
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         const callOpts = opts as { schema?: unknown };
@@ -375,6 +376,7 @@ describe('大纲导师级重编排元编译器网关管线 (Outline Curriculum M
     origPurpose.metaCompiler!.timeoutMs = 50; // 50ms 快速超时
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         if (generateCalls.length === 1) {
@@ -430,6 +432,7 @@ describe('大纲导师级重编排元编译器网关管线 (Outline Curriculum M
     const generateCalls: unknown[] = [];
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         if (generateCalls.length === 1) {
@@ -495,6 +498,7 @@ describe('大纲导师级重编排元编译器网关管线 (Outline Curriculum M
     };
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         if (generateCalls.length === 1) {
@@ -547,6 +551,7 @@ describe('大纲导师级重编排元编译器网关管线 (Outline Curriculum M
     for (const archetype of archetypes) {
       const generateCalls: unknown[] = [];
       const deps: LlmGatewayDeps = {
+        cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
         generateFn: (async (opts: unknown) => {
           generateCalls.push(opts);
           if (generateCalls.length === 1) {
@@ -598,6 +603,7 @@ describe('大纲导师级重编排元编译器网关管线 (Outline Curriculum M
   it('🧪 [TC-OUTLINE-META-SHOULD-COMPILE] shouldCompile 条件跳过验证', async () => {
     const generateCalls: unknown[] = [];
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         return {
@@ -645,6 +651,7 @@ describe('大纲导师级重编排元编译器网关管线 (Outline Curriculum M
     const generateCalls: unknown[] = [];
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         if (generateCalls.length === 1) {
@@ -720,6 +727,7 @@ describe('大纲导师级重编排元编译器网关管线 (Outline Curriculum M
     origPurpose.metaCompiler!.timeoutMs = 50;
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         if (generateCalls.length === 1) {

@@ -8,6 +8,7 @@ import { ENGINE_CONFIG } from '@/lib/config';
 import { SUPPORTED_LANGUAGES, resolveGenerativeLanguage } from '@/lib/constants';
 import { getLocale } from '@/paraglide/runtime.js';
 import { useImportWizardStore, wizardFlow, wizardSetters } from '@/lib/stores/import-wizard-store';
+import { useModalStore } from '@/lib/stores/modal-store';
 import { useImportWizard } from './ImportWizardContext';
 import { useImportJourneyTracker } from '@/hooks/useImportJourneyTracker';
 import { mergeTreeCoursesToSingleOutline } from '@/engine/tree-batch-utils';
@@ -91,6 +92,7 @@ export function ImportWorkbench() {
   const [rateLimitRetrying, setRateLimitRetrying] = useState(false);
   const [prepHint, setPrepHint] = useState<string | null>(null);
   const [outlineGenError, setOutlineGenError] = useState<string | null>(null);
+  const [outlineGenErrorCode, setOutlineGenErrorCode] = useState<string | null>(null);
   const [technicalDetail, setTechnicalDetail] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState(false);
 
@@ -117,13 +119,26 @@ export function ImportWorkbench() {
     }
   }, [step, currentTargetKey]);
 
-  const parseOutlineError = useCallback((rawError: unknown, offline?: boolean): { message: string; detail?: string } => {
+  const parseOutlineError = useCallback((rawError: unknown, offline?: boolean): { message: string; detail?: string; code?: string } => {
     if (offline) {
       return {
         message: m.import_outline_network_offline_desc(),
       };
     }
     const msg = String((rawError as any)?.message || rawError || '');
+    // 密钥类配置故障（2026-11 A 类收口最后一跳）：结构化 code 优先，
+    // message 网关码前缀兜底（旧 sidecar 无 code 字段）——引导重配而非裸堆栈
+    const keyCode =
+      (rawError as any)?.code === 'KEY_DECRYPT_FAILED' || (rawError as any)?.code === 'MISSING_API_KEY'
+        ? (rawError as any).code
+        : /llm-gateway (KEY_DECRYPT_FAILED|MISSING_API_KEY):/.exec(msg)?.[1];
+    if (keyCode === 'KEY_DECRYPT_FAILED' || keyCode === 'MISSING_API_KEY') {
+      return {
+        message: keyCode === 'KEY_DECRYPT_FAILED' ? m.toast_key_decrypt_failed() : m.toast_missing_api_key(),
+        detail: keyCode,
+        code: keyCode,
+      };
+    }
     if (/Failed to fetch|NetworkError|net::ERR_|ENOTFOUND|ECONNREFUSED|aborted/i.test(msg)) {
       return {
         message: m.import_outline_error_desc(),
@@ -394,6 +409,12 @@ export function ImportWorkbench() {
                 (streamErr as any).isRateLimit = true;
                 (streamErr as any).status = 429;
               }
+              // 结构化错误码透传（2026-11 A 类收口最后一跳）：KEY_DECRYPT_FAILED /
+              // MISSING_API_KEY 需到达错误卡片引导重配 Key，不得丢弃 code
+              if (errObj.code) {
+                (streamErr as any).code = errObj.code;
+                (streamErr as any).status = errObj.status;
+              }
               throw streamErr;
             } catch (e) {
               if (e instanceof Error && e.message !== 'Stream error') throw e;
@@ -572,6 +593,7 @@ export function ImportWorkbench() {
       console.warn('Tree outline generation failed:', err);
       const parsed = parseOutlineError(err);
       setOutlineGenError(parsed.message);
+      setOutlineGenErrorCode(parsed.code ?? null);
       setTechnicalDetail(parsed.detail || null);
       wizardSetters.setOutlineGenError(parsed.message);
     } finally {
@@ -817,16 +839,35 @@ export function ImportWorkbench() {
                 <ArrowLeft size={13} />
                 <span>{m.import_outline_restart()}</span>
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  triggeredKeyRef.current = '';
-                  void generateTreeOutline({ retry: true });
-                }}
-                className="px-4 py-1.5 bg-theme-primary text-theme-primary-fg text-xs font-medium rounded-lg hover:opacity-90 transition-all cursor-pointer font-serif shadow-2xs"
-              >
-                {m.import_outline_retry()}
-              </button>
+              {outlineGenErrorCode === 'KEY_DECRYPT_FAILED' || outlineGenErrorCode === 'MISSING_API_KEY' ? (
+                // 密钥类故障的主按钮：直达 Key 重配弹窗，保存成功后自动重试大纲
+                <button
+                  type="button"
+                  onClick={() => {
+                    useModalStore.getState().openApiKeyModal({
+                      contextText: outlineGenErrorCode === 'KEY_DECRYPT_FAILED' ? m.toast_key_decrypt_failed_desc() : m.toast_missing_api_key(),
+                      onCompleted: () => {
+                        triggeredKeyRef.current = '';
+                        void generateTreeOutline({ retry: true });
+                      },
+                    });
+                  }}
+                  className="px-4 py-1.5 bg-theme-primary text-theme-primary-fg text-xs font-medium rounded-lg hover:opacity-90 transition-all cursor-pointer font-serif shadow-2xs"
+                >
+                  {m.toast_config_model_hint()}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggeredKeyRef.current = '';
+                    void generateTreeOutline({ retry: true });
+                  }}
+                  className="px-4 py-1.5 bg-theme-primary text-theme-primary-fg text-xs font-medium rounded-lg hover:opacity-90 transition-all cursor-pointer font-serif shadow-2xs"
+                >
+                  {m.import_outline_retry()}
+                </button>
+              )}
             </div>
           </div>
         ) : customOutline.length === 0 ? (

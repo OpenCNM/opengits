@@ -7,6 +7,7 @@ import { executeScoutPipeline } from '@/lib/import-wizard/wizard-scout-service';
 import { triggerGithubReauth } from '@/lib/import-wizard/wizard-reauth';
 import { isReauthInCooldown, clearReauthAttempt } from '@/lib/stores/pending-import-reauth';
 import { wizardFlow, wizardSetters, useImportWizardStore } from '@/lib/stores/import-wizard-store';
+import { hasConfiguredApiKey, requireApiKey } from '@/lib/api-key-guard';
 import * as m from '@/paraglide/messages';
 
 export function useWizardScout(locale: string = 'zh-CN') {
@@ -48,6 +49,13 @@ export function useWizardScout(locale: string = 'zh-CN') {
   } = wizardSetters;
 
   const handleScout = async (overrideUrl?: string, options?: { forceScout?: boolean }) => {
+    if (!hasConfiguredApiKey()) {
+      requireApiKey(() => {
+        void handleScout(overrideUrl, options);
+      }, m.apikey_continue_parse());
+      return;
+    }
+
     setScoutError(null);
     const targetUrl = (overrideUrl || url).trim();
     if (overrideUrl) {
@@ -210,6 +218,13 @@ export function useWizardScout(locale: string = 'zh-CN') {
   };
 
   const proceedToStep2 = async (_customPrefix?: string) => {
+    if (!hasConfiguredApiKey()) {
+      requireApiKey(() => {
+        void proceedToStep2(_customPrefix);
+      }, m.apikey_continue_parse());
+      return;
+    }
+
     // 进入步骤 2（大纲规划/编排）：原子初始化大纲生成上下文，清理历史弹窗残留变量
     wizardFlow.enterOrchestration();
   };

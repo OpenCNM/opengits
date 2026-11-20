@@ -18,11 +18,35 @@ import { resolveGithubToken } from '@/lib/github/token-resolver';
 
 export const maxDuration = 900;
 
-/** 采样路由观测（契约 C4）：服务端结构化日志一行，不参与透传/渲染 */
+/** 采样路由观测（契约 C4）：服务端结构化日志一行，不参与透传/渲染。
+ *  Phase 2 扩展：补齐 astCoverageRatio 与规划诊断（needRollup 触顶/退化恢复/
+ *  覆盖缺失）——单行 key=value 摘要，成败两条路径各一行，零 per-event 写放大。 */
 const logSamplingRoute = (stats: SidecarTreeOutlineResponse['stats'], repo: string): void => {
-  if (stats?.samplingStrategy) {
-    console.log(`[TreeOutline] samplingStrategy=${stats.samplingStrategy} sampledFileCount=${stats.sampledFileCount ?? 0} repo=${repo}`);
+  if (!stats?.samplingStrategy && !stats?.diagnostics) return;
+  const parts = [
+    `repo=${repo}`,
+    stats.samplingStrategy ? `samplingStrategy=${stats.samplingStrategy}` : '',
+    `sampledFileCount=${stats.sampledFileCount ?? 0}`,
+    stats.astCoverageRatio !== undefined ? `astCoverageRatio=${stats.astCoverageRatio}` : '',
+    stats.allFiles !== undefined ? `allFiles=${stats.allFiles}` : '',
+    stats.durationMs !== undefined ? `durationMs=${stats.durationMs}` : '',
+  ].filter(Boolean);
+  const d = stats.diagnostics;
+  if (d) {
+    parts.push(
+      `needRollupRequested=${d.needRollupRequested ?? 0}`,
+      `needRollupCapped=${d.needRollupCapped ?? false}`,
+      `planDegenerateTriggered=${d.planDegenerateTriggered ?? false}`,
+      `planDegenerateRecovered=${d.planDegenerateRecovered ?? false}`,
+      `uncoveredSubsystemCount=${d.uncoveredSubsystemCount ?? 0}`,
+    );
   }
+  console.log(`[TreeOutline] ${parts.join(' ')}`);
+};
+
+/** 失败路径单行摘要（守恒公理：错误也进观测账面，不只成功可见） */
+const logOutlineFailure = (repo: string, code: string, message: string): void => {
+  console.log(`[TreeOutline] outcome=error repo=${repo} code=${code} message="${message.slice(0, 200)}"`);
 };
 
 const SSE_HEADERS: HeadersInit = {
@@ -192,15 +216,33 @@ export const POST = defineRoute({
             resolvedSha,
           });
         } catch (err: unknown) {
-          const anyErr = err as { status?: number; statusCode?: number; message?: string };
+          const anyErr = err as { status?: number; statusCode?: number; message?: string; code?: string };
           const msg = String(anyErr?.message || err);
+          // 密钥类配置故障（A 类）：透传真实 code 与 409，前端据此引导重配 Key
+          // ——绝不折叠成匿名 TREE_OUTLINE_ERROR（伪弹性会掩盖真实根因）。
+          // message 前缀匹配为旧 sidecar 二进制（无结构化 code 字段）的兜底。
+          const keyErrorCode =
+            anyErr?.code === 'KEY_DECRYPT_FAILED' || anyErr?.code === 'MISSING_API_KEY'
+              ? anyErr.code
+              : /llm-gateway (KEY_DECRYPT_FAILED|MISSING_API_KEY):/.exec(msg)?.[1];
+          if (keyErrorCode) {
+            logOutlineFailure(`${body.owner}/${body.repo}`, keyErrorCode, msg);
+            await sendEvent('error', {
+              message: msg,
+              code: keyErrorCode,
+              status: 409,
+            });
+            return;
+          }
           const isRateLimit =
             anyErr?.status === 429 ||
             anyErr?.statusCode === 429 ||
             /rate limit|ratelimit|throttling|toomanyrequests|速率限制|请求频率|并发超限|429/i.test(msg);
+          const finalCode = isRateLimit ? 'RATE_LIMITED' : 'TREE_OUTLINE_ERROR';
+          logOutlineFailure(`${body.owner}/${body.repo}`, finalCode, msg);
           await sendEvent('error', {
             message: msg,
-            code: isRateLimit ? 'RATE_LIMITED' : 'TREE_OUTLINE_ERROR',
+            code: finalCode,
             status: isRateLimit ? 429 : 500,
           });
         } finally {
@@ -252,15 +294,26 @@ export const POST = defineRoute({
         budgetMs: remainingBudgetMs,
       });
     } catch (err: unknown) {
-      const anyErr = err as { status?: number; statusCode?: number; message?: string };
+      const anyErr = err as { status?: number; statusCode?: number; message?: string; code?: string };
       const msg = String(anyErr?.message || err);
+      // 密钥类配置故障透传真实根因码（与流式分支同一收口：绝不折叠成匿名 500）
+      const keyErrorCode =
+        anyErr?.code === 'KEY_DECRYPT_FAILED' || anyErr?.code === 'MISSING_API_KEY'
+          ? anyErr.code
+          : /llm-gateway (KEY_DECRYPT_FAILED|MISSING_API_KEY):/.exec(msg)?.[1];
+      if (keyErrorCode === 'KEY_DECRYPT_FAILED' || keyErrorCode === 'MISSING_API_KEY') {
+        logOutlineFailure(`${body.owner}/${body.repo}`, keyErrorCode, msg);
+        throw ApiError.fromCode(keyErrorCode, { detail: msg });
+      }
       const isRateLimit =
         anyErr?.status === 429 ||
         anyErr?.statusCode === 429 ||
         /rate limit|ratelimit|throttling|toomanyrequests|速率限制|请求频率|并发超限|429/i.test(msg);
       if (isRateLimit) {
+        logOutlineFailure(`${body.owner}/${body.repo}`, 'RATE_LIMITED', msg);
         throw ApiError.fromCode('RATE_LIMITED', { detail: msg });
       }
+      logOutlineFailure(`${body.owner}/${body.repo}`, 'TREE_OUTLINE_ERROR', msg);
       throw err;
     }
 

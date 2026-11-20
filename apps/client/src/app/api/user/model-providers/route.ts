@@ -2,8 +2,9 @@ import { z } from 'zod';
 import { defineRoute, ok } from '@/lib/api/server/define-route';
 import { ApiError } from '@/lib/api/server/api-error';
 import { UpsertUserModelProviderSchema } from '@/types/user-model-provider';
-import { encryptApiKey } from '@/lib/crypto/api-key-cipher';
+import { encryptApiKey, tryDecryptApiKey } from '@/lib/crypto/api-key-cipher';
 import { invalidateUserModelCache } from '@/lib/ai/user-model-resolver';
+import { prisma } from '@/lib/db';
 import { callSidecar, SidecarError } from '@/lib/sidecar-client';
 
 export const dynamic = 'force-dynamic';
@@ -92,7 +93,30 @@ export const GET = defineRoute({
       'user/model-providers /v1/user/model-providers/list'
     );
 
-    return ok({ providers: res.providers ?? [] });
+    const providers = res.providers ?? [];
+    if (providers.length > 0) {
+      try {
+        const dbRows = await prisma.userModelProvider.findMany({
+          where: { userId },
+          select: { providerKey: true, apiKey: true },
+        });
+        const keyByProvider = new Map(dbRows.map((r) => [r.providerKey, r.apiKey]));
+        for (const p of providers) {
+          const encrypted = keyByProvider.get(p.providerKey);
+          if (encrypted && encrypted.trim().length > 0 && tryDecryptApiKey(encrypted) === null) {
+            p.hasApiKey = false;
+            p.maskedApiKey = '';
+            p.healthStatus = 'unhealthy';
+            p.lastError = 'API Key 无法解密（环境密钥变更），请重新填写并保存';
+          }
+        }
+      } catch (err) {
+        // 降级：若 Node 侧未连接数据库（如纯单测 mock 场景），保留 sidecar 返回列表
+        console.warn('[model-providers] decryptability check skipped:', err);
+      }
+    }
+
+    return ok({ providers });
   },
 });
 

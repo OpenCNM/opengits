@@ -11,6 +11,7 @@ interface ModelProviderStoreState {
   dynamicProviders: GlobalModelProviderDTO[];
   isLoading: boolean;
   isInitialized: boolean;
+  loadedUserId: string | null;
 
   // Actions
   loadProviders: (userId?: string) => Promise<void>;
@@ -49,6 +50,7 @@ export const useModelProviderStore = create<ModelProviderStoreState>((set, get) 
   dynamicProviders: [],
   isLoading: false,
   isInitialized: false,
+  loadedUserId: null,
 
   loadProviders: async (userId?: string) => {
     let locals: UserModelProviderDTO[] = [];
@@ -61,8 +63,8 @@ export const useModelProviderStore = create<ModelProviderStoreState>((set, get) 
       }
     }
 
-    // Optimistic initial sync from localStorage
-    if (locals.length > 0) {
+    // Optimistic initial sync from localStorage (only when unauthenticated or first mount before user load)
+    if (locals.length > 0 && !userId) {
       set({ userProviders: locals });
     }
 
@@ -83,6 +85,7 @@ export const useModelProviderStore = create<ModelProviderStoreState>((set, get) 
     }
 
     let clouds: UserModelProviderDTO[] = [];
+    let cloudFetchSucceeded = false;
     if (userId) {
       try {
         // 被动云同步：匿名/会话过期属预期场景（PreferencesModal 全局挂载），
@@ -91,6 +94,7 @@ export const useModelProviderStore = create<ModelProviderStoreState>((set, get) 
           onUnauthorized: 'throw',
         });
         clouds = data.providers || [];
+        cloudFetchSucceeded = true;
       } catch (e) {
         if (e instanceof ApiClientError && (e.status === 401 || e.status === 403)) {
           clouds = [];
@@ -100,7 +104,23 @@ export const useModelProviderStore = create<ModelProviderStoreState>((set, get) 
       }
     }
 
-    const merged = mergeCloudProviders(clouds, locals);
+    let merged: UserModelProviderDTO[];
+    if (userId && cloudFetchSucceeded) {
+      // Cloud SSOT：已登录且云端拉取成功时，以云端列表为唯一权威，严禁混入未上云的 localOnly 残留；
+      // 仅当云端确认 hasApiKey === true 时继承本地明文副本，否则清除本地失效明文防误判。
+      const localByKey = new Map(locals.map((p) => [p.providerKey, p]));
+      merged = clouds.map((c) => {
+        if (!c.hasApiKey) {
+          const { apiKey: _dropped, ...withoutKey } = c;
+          return withoutKey;
+        }
+        if (c.apiKey) return c;
+        const l = localByKey.get(c.providerKey);
+        return l?.apiKey ? { ...c, apiKey: l.apiKey } : c;
+      });
+    } else {
+      merged = mergeCloudProviders(clouds, locals);
+    }
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.USER_MODEL_PROVIDERS, JSON.stringify(merged));
@@ -112,6 +132,7 @@ export const useModelProviderStore = create<ModelProviderStoreState>((set, get) 
       dynamicProviders: dyns,
       isLoading: false,
       isInitialized: true,
+      loadedUserId: userId ?? null,
     });
   },
 
@@ -148,7 +169,14 @@ export const useModelProviderStore = create<ModelProviderStoreState>((set, get) 
       try {
         await api.post('/api/user/model-providers', providerDTO);
       } catch (e) {
+        // Cloud SSOT：云端落库失败必须回滚本地乐观状态并上抛，禁止"本地假成功"
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEYS.USER_MODEL_PROVIDERS, JSON.stringify(current));
+          syncActiveToRuntime(current);
+        }
+        set({ userProviders: current });
         console.error('Failed to sync upserted provider to cloud:', e);
+        throw e;
       }
     }
   },

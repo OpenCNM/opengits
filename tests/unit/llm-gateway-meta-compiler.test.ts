@@ -129,6 +129,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     const completeCalls: unknown[] = [];
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         return {
@@ -206,6 +207,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     };
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => ({
         object: twoStepBrief,
         usage: { promptTokens: 80, completionTokens: 40, totalTokens: 120 },
@@ -249,6 +251,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     const completeCalls: unknown[] = [];
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => ({
         object: {
           ...validTeachingBrief,
@@ -304,6 +307,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     origPurpose.metaCompiler!.timeoutMs = 50; // 50ms 快速超时
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => {
         // 模拟 Stage 1 挂起 200ms
         await new Promise((r) => setTimeout(r, 200));
@@ -356,6 +360,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     const completeCalls: unknown[] = [];
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => {
         return {
           // 畸变返回：缺少核心字段
@@ -408,6 +413,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
   it('🧪 [TC-META-COMPILER-DOWNSTREAM-ERROR] Fail-Safe 容灾回退：Stage 1 遇到通用执行异常，无缝降级', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => {
         throw new Error('500 Internal Gateway Transient Network Error');
       }) as never,
@@ -445,6 +451,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
   it('🧪 [TC-META-COMPILER-FAIL-FAST] 关键鉴权/预算/速率限制异常 Fail-Closed 快速失败，不误当降级', async () => {
     // 1. MissingApiKeyError
     const depsNoKey: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => {
         throw new MissingApiKeyError('No valid OpenAI API key configured');
       }) as never,
@@ -457,6 +464,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
 
     // 2. BudgetExceededError
     const depsBudget: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => {
         throw new BudgetExceededError('user-fail-fast');
       }) as never,
@@ -469,6 +477,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
 
     // 3. RateLimit
     const depsRate: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => {
         const err = new Error('429 Too Many Requests: 账户并发超限');
         (err as { status?: number }).status = 429;
@@ -489,6 +498,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     }
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async () => ({
         object: validTeachingBrief,
         usage: { promptTokens: 80, completionTokens: 40, totalTokens: 120 },
@@ -530,6 +540,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     const coordinator = new ConcurrencyCoordinator({ maxConcurrency: 1, interactiveHeadroom: 0 });
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       coordinator,
       generateFn: (async () => ({
         object: validTeachingBrief,
@@ -588,6 +599,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     const completeCalls: unknown[] = [];
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       signal: parentController.signal,
       generateFn: (async (opts: unknown) => {
         // 模拟 Phase 1 执行过程中，客户端连接断开/主动取消
@@ -619,6 +631,7 @@ describe('LLM 网关两阶段元提示词编译器底座 (Meta-Compiler Gateway 
     const completeCalls: unknown[] = [];
 
     const deps: LlmGatewayDeps = {
+      cascadeCandidates: [{ provider: 'test-provider', modelId: 'test-model', apiKey: 'test-key' }],
       generateFn: (async (opts: unknown) => {
         generateCalls.push(opts);
         return { object: validTeachingBrief };

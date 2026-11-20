@@ -150,6 +150,62 @@ export async function resolveUserModelCascade(
 }
 
 /**
+ * 探测用户云端密钥物理状态（区分"未配置"与"密文存在但解密失败"）
+ */
+export async function inspectUserModelKeyStatus(
+  userId?: string | null
+): Promise<{ status: 'ok' | 'missing' | 'decrypt_failed'; provider?: string; modelId?: string }> {
+  if (!userId) return { status: 'missing' };
+
+  const selectFields = {
+    providerKey: true,
+    apiKey: true,
+    selectedModel: true,
+  } as const;
+
+  let rows: Array<{ providerKey: string; apiKey: string; selectedModel: string }> = [];
+  if (typeof prisma.userModelProvider.findMany === 'function') {
+    rows = await prisma.userModelProvider.findMany({
+      where: { userId },
+      orderBy: [{ isActive: 'desc' }, { updatedAt: 'desc' }],
+      select: selectFields,
+    });
+  } else {
+    const first = await prisma.userModelProvider.findFirst({
+      where: { userId },
+      orderBy: [{ isActive: 'desc' }, { updatedAt: 'desc' }],
+      select: selectFields,
+    });
+    if (first) rows = [first];
+  }
+
+  let firstDecryptFailed: { provider: string; modelId: string } | null = null;
+  for (const row of rows) {
+    if (!row.apiKey || !row.apiKey.trim()) continue;
+    const decrypted = tryDecryptApiKey(row.apiKey);
+    if (decrypted) {
+      return { status: 'ok', provider: row.providerKey, modelId: row.selectedModel };
+    }
+    if (!firstDecryptFailed) {
+      firstDecryptFailed = { provider: row.providerKey, modelId: row.selectedModel };
+    }
+  }
+
+  if (firstDecryptFailed) {
+    console.warn(
+      `[user-model-resolver] stored API key failed to decrypt for userId=${userId} provider=${firstDecryptFailed.provider} model=${firstDecryptFailed.modelId}`
+    );
+    return {
+      status: 'decrypt_failed',
+      provider: firstDecryptFailed.provider,
+      modelId: firstDecryptFailed.modelId,
+    };
+  }
+
+  return { status: 'missing' };
+}
+
+/**
  * Scout 链路 BYOK 总开关（安全阀）：设为 '1' 时 scout 禁用 BYOK。
  */
 export function isScoutByokEnabled(): boolean {
