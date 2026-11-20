@@ -15,7 +15,8 @@ import { mergeTreeCoursesToSingleOutline } from '@/engine/tree-batch-utils';
 import { trackEvent } from '@/lib/telemetry/beacon';
 import { buildImportedTutorialHref } from '@/lib/import-wizard/navigation';
 import { WorkbenchOutlineEditor } from './workbench/WorkbenchOutlineEditor';
-import { type LearnerArchetype } from './workbench/WorkbenchReorganizePanel';
+import { WorkbenchReorganizeBar } from './workbench/WorkbenchReorganizeBar';
+import { type LearnerArchetype, type ReorganizeOptions } from './workbench/WorkbenchReorganizePanel';
 import { WorkbenchStep3Executing } from './workbench/WorkbenchStep3Executing';
 import { WorkbenchTranscriptionSettings } from './workbench/WorkbenchTranscriptionSettings';
 import { WizardModelBadge } from './common/WizardModelSelector';
@@ -650,6 +651,21 @@ export function ImportWorkbench() {
     void generateTreeOutline({ rollupLevel: next });
   }, [rollupLevel, generateTreeOutline]);
 
+  const [previousOutline, setPreviousOutline] = useState<typeof customOutline | null>(null);
+
+  const handleReorganizeOutline = useCallback((options: ReorganizeOptions) => {
+    if (customOutline.length > 0) {
+      setPreviousOutline(customOutline);
+    }
+    void generateTreeOutline(options);
+  }, [customOutline, generateTreeOutline]);
+
+  const handleUndoReorganize = useCallback(() => {
+    if (!previousOutline || previousOutline.length === 0) return;
+    wizardSetters.setCustomOutline(previousOutline);
+    setPreviousOutline(null);
+  }, [previousOutline]);
+
 
   useEffect(() => {
     if (
@@ -972,7 +988,10 @@ export function ImportWorkbench() {
                 </span>
               </div>
             )}
-            <WorkbenchOutlineEditor onReorganize={generateTreeOutline} />
+            <WorkbenchOutlineEditor
+              canUndoReorganize={Boolean(previousOutline && previousOutline.length > 0)}
+              onUndoReorganize={handleUndoReorganize}
+            />
           </div>
         )
       ) : (
@@ -1032,12 +1051,19 @@ export function ImportWorkbench() {
 
       {/* 3. BOTTOM STICKY ACTION BAR */}
       {!isExecuting && customOutline.length > 0 && (
-        <div className="px-4 py-2.5 bg-theme-surface/40 border border-theme-border/60 rounded-xl flex items-center justify-between gap-3 w-full shrink-0">
+        <div className="px-4 py-2.5 bg-theme-surface/40 border border-theme-border/60 rounded-xl flex flex-wrap items-center justify-between gap-3 w-full shrink-0">
           {/* Left: Writing / Transcription Style Settings */}
           <WorkbenchTranscriptionSettings />
 
-          {/* Right: Primary Ingest CTA */}
-          <div className="ml-auto flex items-center gap-3">
+          {/* Center-Right: 1 Primary + 4 Secondary Reorganize Controls */}
+          <div className="ml-auto flex flex-wrap items-center gap-3">
+            <WorkbenchReorganizeBar
+              onReorganize={handleReorganizeOutline}
+              disabled={isGeneratingOutline}
+            />
+
+            <div className="h-5 w-px bg-theme-border/60 hidden sm:block shrink-0" />
+
             <button
               type="button"
               onClick={handleStartIngestSubmit}

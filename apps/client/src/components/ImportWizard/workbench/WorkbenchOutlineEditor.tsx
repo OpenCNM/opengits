@@ -1,50 +1,39 @@
 'use client';
 
-import { useState } from 'react';
 import { useImportWizardStore } from '@/lib/stores/import-wizard-store';
 
 import { EditorHeaderBar } from './editor/EditorHeaderBar';
 import { WorkbenchMetadataBar } from './editor/WorkbenchMetadataBar';
 import { OutlineCategoryBlock, type WorkbenchOutlineCategory } from './editor/OutlineCategoryBlock';
 import { ExcludedFilesPanel } from './editor/ExcludedFilesPanel';
-import { WorkbenchReorganizePanel, type LearnerArchetype } from './WorkbenchReorganizePanel';
 
 interface WorkbenchOutlineEditorProps {
-  onReorganize?: (options: {
-    customPrompt: string;
-    pacing: 'compact' | 'normal' | 'detailed';
-    learnerArchetype?: LearnerArchetype;
-  }) => void;
+  canUndoReorganize?: boolean;
+  onUndoReorganize?: () => void;
 }
 
 /**
- * 大纲编排预览器（只读视图 + AI 重新编排入口）：
- * 去除手动编辑、删除、拖拽排序与鼠标交互，仅保留结构预览与 AI 重新编排。
+ * 大纲编排预览器（只读结构视图 + 撤回入口）：
+ * AI 重新编排控制组已下沉至底部决策栏，释放大纲纵向可视空间。
  */
-export function WorkbenchOutlineEditor({ onReorganize }: WorkbenchOutlineEditorProps) {
+export function WorkbenchOutlineEditor({
+  canUndoReorganize = false,
+  onUndoReorganize,
+}: WorkbenchOutlineEditorProps) {
   const customOutline = useImportWizardStore((s) => s.customOutline);
   const translatingIndices = useImportWizardStore((s) => s.translatingIndices);
-  const [isReorganizeOpen, setIsReorganizeOpen] = useState(false);
 
   return (
     <div className="flex flex-col bg-theme-bg border border-theme-border/80 rounded-xl p-4.5 shadow-xs overflow-hidden flex-1 min-h-0">
       {/* Outline Top Header Bar */}
       <EditorHeaderBar
         chapterCount={customOutline.length}
-        onOpenReorganize={() => setIsReorganizeOpen((prev) => !prev)}
-        isReorganizeOpen={isReorganizeOpen}
+        canUndoReorganize={canUndoReorganize}
+        onUndoReorganize={onUndoReorganize}
       />
 
       {/* Domain & Technical Tags Metadata Bar */}
       <WorkbenchMetadataBar />
-
-      {/* AI 重新编排内嵌面板：不遮挡大纲，用户对照下方章节直接选择调整意向 */}
-      {isReorganizeOpen && (
-        <WorkbenchReorganizePanel
-          onClose={() => setIsReorganizeOpen(false)}
-          onReorganize={onReorganize}
-        />
-      )}
 
       {/* Outline Tree Scrollable Container */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1.5 space-y-2.5">

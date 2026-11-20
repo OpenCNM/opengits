@@ -23,7 +23,13 @@ interface MotiveConfig {
   basePrompt: string;
 }
 
-function getReorganizeMotives(): MotiveConfig[] {
+export interface ReorganizeOptions {
+  customPrompt: string;
+  pacing: 'compact' | 'normal' | 'detailed';
+  learnerArchetype?: LearnerArchetype;
+}
+
+export function getReorganizeMotives(): MotiveConfig[] {
   return [
     {
       id: 'reroll',
