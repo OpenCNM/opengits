@@ -132,7 +132,9 @@ export const useModelProviderStore = create<ModelProviderStoreState>((set, get) 
       dynamicProviders: dyns,
       isLoading: false,
       isInitialized: true,
-      loadedUserId: userId ?? null,
+      // 云同步失败 ≠ 已同步（批次 B：api-key-guard 以 isInitialized && loadedUserId
+      // 判定云端 SSOT 权威态）——失败时保持 null，守卫回落本地检查，不误认云端已对账
+      loadedUserId: cloudFetchSucceeded ? (userId ?? null) : null,
     });
   },
 

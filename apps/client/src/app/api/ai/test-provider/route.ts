@@ -160,6 +160,7 @@ export const POST = defineRoute({
     const sanitizedModel = model.trim();
 
     let sanitizedApiKey = apiKey?.trim() || '';
+    let cloudCipherDecryptFailed = false;
     if (!sanitizedApiKey && providerKey) {
       try {
         const res = await callSidecar<{ ok: boolean; apiKey?: string }>(
@@ -167,12 +168,23 @@ export const POST = defineRoute({
           { userId, providerKey },
           { label: 'ai/test-provider /v1/user/model-providers/get-cipher' }
         );
-        sanitizedApiKey = res.apiKey ? tryDecryptApiKey(res.apiKey) || '' : '';
+        if (res.apiKey) {
+          const decrypted = tryDecryptApiKey(res.apiKey);
+          if (decrypted) {
+            sanitizedApiKey = decrypted;
+          } else {
+            // 密文在但解不开：真根因是环境密钥变更，不是"未配置"（批次 B 收口）
+            cloudCipherDecryptFailed = true;
+          }
+        }
       } catch {
         sanitizedApiKey = '';
       }
     }
     if (!sanitizedApiKey) {
+      if (cloudCipherDecryptFailed) {
+        throw ApiError.fromCode('KEY_DECRYPT_FAILED');
+      }
       throw ApiError.badRequest('apiKey: API Key is required (none found in cloud config)', { code: 'MISSING_API_KEY' });
     }
 

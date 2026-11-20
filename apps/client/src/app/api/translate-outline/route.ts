@@ -7,6 +7,7 @@ import { streamText } from 'ai';
 import { TRANSLATION_LANGUAGES } from '@/lib/constants';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { PromptRegistry } from '@/lib/prompt-registry';
+import { getLocalizedErrorMessage } from '@/lib/api/server/api-error';
 
 // Use a lightweight fast model for translation (qwen3.6-flash is the fastest new generation model)
 const TRANSLATE_MODEL = 'qwen3.6-flash';
@@ -67,16 +68,22 @@ export async function POST(req: NextRequest) {
   });
   const prompt = compiled.compiledPrompt;
 
-  const { resolveActiveUserModel } = await import('@/lib/ai/user-model-resolver');
-  const userModel = await resolveActiveUserModel(session.user.id);
+  const { resolveUserModelWithKeyStatus } = await import('@/lib/ai/user-model-resolver');
+  const keyResolution = await resolveUserModelWithKeyStatus(session.user.id);
 
-  // 翻译是用户内容消费，仅走 BYOK——平台 key 不做兜底（避免无限额度的平台补贴通道）
-  if (!userModel) {
+  // 翻译是用户内容消费，仅走 BYOK——平台 key 不做兜底（避免无限额度的平台补贴通道）。
+  // 密文损坏报 KEY_DECRYPT_FAILED 真根因（getLocalizedErrorMessage 双语文案），
+  // 不再误诊为"未配置"（2026-11 批次 B）
+  if (!keyResolution.ok) {
     return new Response(
-      JSON.stringify({ error: 'MISSING_API_KEY', message: '未配置或未激活 AI 服务商 API Key，请先前往设置配置。' }),
+      JSON.stringify({
+        error: keyResolution.code,
+        message: getLocalizedErrorMessage(keyResolution.code),
+      }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
     );
   }
+  const userModel = keyResolution.model;
 
   // ── Stream the AI response via SSE ──
   const encoder = new TextEncoder();

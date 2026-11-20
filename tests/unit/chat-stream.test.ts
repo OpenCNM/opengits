@@ -37,6 +37,11 @@ vi.mock('@/lib/observability/errors', () => ({
 
 vi.mock('@/lib/ai/user-model-resolver', () => ({
   resolveActiveUserModel: (...args: unknown[]) => resolveActiveUserModelMock(...args),
+  // route 已改走 key-status helper（批次 B）：mock 派生同语义，保留旧断言（BYOK fail-closed 409）
+  resolveUserModelWithKeyStatus: async (...args: unknown[]) => {
+    const model = await resolveActiveUserModelMock(...args);
+    return model ? { ok: true as const, model } : { ok: false as const, code: 'MISSING_API_KEY' as const };
+  },
 }));
 
 vi.mock('@/lib/agent/langfuse', () => ({

@@ -3,7 +3,7 @@ import { AGENT_DEFAULTS } from '@/lib/constants';
 import { ENGINE_CONFIG } from '@/lib/config';
 import { NextResponse } from 'next/server';
 import { TutorAgent } from '@/lib/agent/tutor-agent';
-import { resolveActiveUserModel } from '@/lib/ai/user-model-resolver';
+import { resolveUserModelWithKeyStatus } from '@/lib/ai/user-model-resolver';
 import { normalizeExplainDepth } from '@/lib/ai/response-depth';
 import { WorkingMemoryManager } from '@/lib/memory/working-memory';
 import { defineRoute } from '@/lib/api/server/define-route';
@@ -126,9 +126,14 @@ export const POST = defineRoute({
     }
     const currentPath = body.currentPath || url.searchParams.get('path') || 'Unknown';
 
-    // ── BYOK 门禁：必须配置并激活自备 API Key，无 .env 平台兜底 ──
-    const resolvedUserModel = await resolveActiveUserModel(userId).catch(() => null);
-    assert(resolvedUserModel?.apiKey, 'MISSING_API_KEY');
+    // ── BYOK 门禁：必须配置并激活自备 API Key，无 .env 平台兜底。
+    // resolveUserModelWithKeyStatus：解密失败报 KEY_DECRYPT_FAILED（真根因），
+    // 解析异常（DB 故障）上抛 500 说真话——不再吞成"未配置"（2026-11 批次 B）──
+    const keyResolution = await resolveUserModelWithKeyStatus(userId);
+    if (!keyResolution.ok) {
+      throw ApiError.fromCode(keyResolution.code);
+    }
+    const resolvedUserModel = keyResolution.model;
 
     // Load global user preferences for smart defaults
     const userPrefs = await prisma.user.findUnique({

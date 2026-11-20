@@ -115,13 +115,13 @@ export const POST = defineRoute({
       throw ApiError.badRequest('Content required');
     }
 
-    const { resolveActiveUserModel, toInjectableStructuredModel } = await import('@/lib/ai/user-model-resolver');
-    const userModel = await resolveActiveUserModel(userId);
-    if (!userModel) {
-      throw ApiError.badRequest('未配置或未激活 AI 服务商 API Key，请先在设置中配置您的自备 API Key。', {
-        code: 'MISSING_API_KEY',
-      });
+    const { resolveUserModelWithKeyStatus, toInjectableStructuredModel } = await import('@/lib/ai/user-model-resolver');
+    const keyResolution = await resolveUserModelWithKeyStatus(userId);
+    if (!keyResolution.ok) {
+      // fromCode 本地化（zh/en 双语）：密文损坏报 KEY_DECRYPT_FAILED 真根因，不误诊"未配置"
+      throw ApiError.fromCode(keyResolution.code);
     }
+    const userModel = keyResolution.model;
     const model = toInjectableStructuredModel(userModel);
     if (!model) {
       throw ApiError.badRequest('当前激活的服务商配置无效或不支持 OpenAI 格式，请检查设置。', {

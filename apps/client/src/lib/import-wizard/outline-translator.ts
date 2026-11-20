@@ -61,7 +61,9 @@ export async function executeTranslateOutline({
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Failed to translate outline');
+      // route 对密钥类故障返回本地化 message（批次 B i18n 收口）——
+      // toast 展示根因文案而非裸错误码（err.error 是 'KEY_DECRYPT_FAILED' 等 code）
+      throw new Error(err.message || err.error || 'Failed to translate outline');
     }
 
     if (res.body) {

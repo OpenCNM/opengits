@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { defineRoute, ok } from '@/lib/api/server/define-route';
 import { ApiError } from '@/lib/api/server/api-error';
 import { ENGINE_CONFIG } from '@/lib/config';
-import { resolveActiveUserModel, toInjectableStructuredModel } from '@/lib/ai/user-model-resolver';
+import { resolveUserModelWithKeyStatus, toInjectableStructuredModel } from '@/lib/ai/user-model-resolver';
 import { getModel, generateStructured, trackTokenUsage } from '@/lib/ai';
 import { PromptRegistry } from '@/lib/prompt-registry';
 import { sanitizeMermaid, ensureQuotedMermaidLabels } from '@/lib/mermaid/resilience';
@@ -28,12 +28,11 @@ export const POST = defineRoute({
       throw ApiError.unauthorized();
     }
 
-    const userModel = await resolveActiveUserModel(userId);
-    if (!userModel) {
-      throw ApiError.badRequest('未配置或未激活 AI 服务商 API Key，请先在设置中配置您的自备 API Key。', {
-        code: 'MISSING_API_KEY',
-      });
+    const keyResolution = await resolveUserModelWithKeyStatus(userId);
+    if (!keyResolution.ok) {
+      throw ApiError.fromCode(keyResolution.code);
     }
+    const userModel = keyResolution.model;
 
     const model =
       toInjectableStructuredModel(userModel) ||

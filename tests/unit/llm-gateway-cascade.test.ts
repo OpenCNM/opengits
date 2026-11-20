@@ -59,7 +59,7 @@ describe('LLM 网关候选解析 Fail-Closed（A 类收口）', () => {
     const err = await resolveCascadeCandidates('outline_plan_v1', 'u1').catch((e: unknown) => e);
     expect(err).toBeInstanceOf(UserKeyUnavailableError);
     expect((err as UserKeyUnavailableError).code).toBe('KEY_DECRYPT_FAILED');
-    expect((err as UserKeyUnavailableError).message).toContain('重新填写');
+    expect((err as UserKeyUnavailableError).message).toContain('provider=zhipu'); // locale 无关断言：paraglide 文案随请求语言，锁调试细节不锁语言
     expect(LLM_GATEWAY_ERROR_CODES.KEY_DECRYPT_FAILED).toBe(409);
   });
 
@@ -69,7 +69,7 @@ describe('LLM 网关候选解析 Fail-Closed（A 类收口）', () => {
     const err = await resolveCascadeCandidates('outline_plan_v1', 'u1').catch((e: unknown) => e);
     expect(err).toBeInstanceOf(UserKeyUnavailableError);
     expect((err as UserKeyUnavailableError).code).toBe('MISSING_API_KEY');
-    expect((err as UserKeyUnavailableError).message).toContain('未在云端配置');
+    expect((err as UserKeyUnavailableError).message).toContain('Key'); // locale 无关：MISSING 文案（en/zh）均含 Key
   });
 
   it('userId 缺席 + keyOrigin=user purpose：fail-closed，不回落平台级联', async () => {
@@ -162,6 +162,6 @@ describe('LLM 网关候选解析 Fail-Closed（A 类收口）', () => {
       .find((ev) => ev.type === 'error');
     expect(errorLine).toBeDefined();
     expect(errorLine).toMatchObject({ ok: false, code: 'KEY_DECRYPT_FAILED' });
-    expect(errorLine.message).toContain('重新填写');
+    expect(errorLine.message).toContain('provider=zhipu');
   });
 });

@@ -15,6 +15,7 @@ import {
   DEFAULT_AI_MODEL,
 } from '@/lib/constants';
 import { lookupLlmPurpose } from './registry';
+import * as m from '@/paraglide/messages';
 import { normalizeStreamPart } from './stream-normalizer';
 import { fastExtractJsonObject } from '@/lib/ai/salvage-structured';
 import { ConcurrencyCoordinator, defaultCoordinator } from './concurrency-coordinator';
@@ -105,18 +106,16 @@ export async function resolveCascadeCandidates(
         label: `${m.provider}/${m.modelId}`,
       }));
     }
-    // 用户级联为空：精确报出密钥物理状态根因（先探测再报错，说真话）
+    // 用户级联为空：精确报出密钥物理状态根因（先探测再报错，说真话）。
+    // 文案走 paraglide 按请求 locale（批次 B i18n 收口）；provider/model 调试细节留尾部
     const keyStatus = await inspectUserModelKeyStatus(userId);
     if (keyStatus.status === 'decrypt_failed') {
       throw new UserKeyUnavailableError(
         'KEY_DECRYPT_FAILED',
-        `云端已保存的 AI 密钥无法解密（可能因环境密钥变更失效），请重新填写并保存 API Key (provider=${keyStatus.provider || 'unknown'}, model=${keyStatus.modelId || DEFAULT_AI_MODEL})`
+        `${m.toast_key_decrypt_failed()} (provider=${keyStatus.provider || 'unknown'}, model=${keyStatus.modelId || DEFAULT_AI_MODEL})`
       );
     }
-    throw new UserKeyUnavailableError(
-      'MISSING_API_KEY',
-      '当前账号未在云端配置可用的 AI 密钥，请先在偏好设置中配置 API Key'
-    );
+    throw new UserKeyUnavailableError('MISSING_API_KEY', m.toast_missing_api_key());
   }
   if (purposeDef?.keyOrigin === 'platform') {
     if (purposeDef.preferFastFallback) {

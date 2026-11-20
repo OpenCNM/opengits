@@ -39,7 +39,7 @@ export const DEFAULT_TRANSCRIPTION_CASCADE: ModelCandidate[] = [
  *   调用方显式 model > 用户激活服务商的 selectedModel > repoProfile > 默认模型
  * 注意：仅激活项（缩小解密面）；解密失败或未配置返回 null。
  */
-interface ResolvedUserModel {
+export interface ResolvedUserModel {
   provider: string;
   modelId: string;
   apiKey: string;
@@ -227,4 +227,38 @@ export function toInjectableStructuredModel(
     baseURL: userModel.baseURL,
     apiFormat: userModel.apiFormat,
   });
+}
+
+/**
+ * BYOK 解析结果（区分"未配置"与"密文损坏"两种失败根因——2026-11 A 类收口
+ * 批次 B：直连路由统一走此 helper，绝不把解密失败误诊为 MISSING_API_KEY）。
+ */
+export type UserKeyResolution =
+  | { ok: true; model: ResolvedUserModel }
+  | {
+      ok: false;
+      code: 'MISSING_API_KEY' | 'KEY_DECRYPT_FAILED';
+      provider?: string;
+      modelId?: string;
+    };
+
+/**
+ * 直连路由统一 BYOK 解析入口：模型解析为空时按密钥物理状态精确归因。
+ * 解析异常（DB 不可达等）原样上抛——基础设施故障 ≠ 缺 Key，不说假话。
+ */
+export async function resolveUserModelWithKeyStatus(
+  userId?: string | null
+): Promise<UserKeyResolution> {
+  const model = await resolveActiveUserModel(userId);
+  if (model) return { ok: true, model };
+  const status = await inspectUserModelKeyStatus(userId);
+  if (status.status === 'decrypt_failed') {
+    return {
+      ok: false,
+      code: 'KEY_DECRYPT_FAILED',
+      provider: status.provider,
+      modelId: status.modelId,
+    };
+  }
+  return { ok: false, code: 'MISSING_API_KEY' };
 }

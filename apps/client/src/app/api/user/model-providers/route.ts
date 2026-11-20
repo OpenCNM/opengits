@@ -4,6 +4,7 @@ import { ApiError } from '@/lib/api/server/api-error';
 import { UpsertUserModelProviderSchema } from '@/types/user-model-provider';
 import { encryptApiKey, tryDecryptApiKey } from '@/lib/crypto/api-key-cipher';
 import { invalidateUserModelCache } from '@/lib/ai/user-model-resolver';
+import * as m from '@/paraglide/messages';
 import { prisma } from '@/lib/db';
 import { callSidecar, SidecarError } from '@/lib/sidecar-client';
 
@@ -107,7 +108,8 @@ export const GET = defineRoute({
             p.hasApiKey = false;
             p.maskedApiKey = '';
             p.healthStatus = 'unhealthy';
-            p.lastError = 'API Key 无法解密（环境密钥变更），请重新填写并保存';
+            // paraglide 按请求 locale 出文案（批次 B i18n 收口）：英文用户不再看到中文
+            p.lastError = m.toast_key_decrypt_failed();
           }
         }
       } catch (err) {

@@ -66,6 +66,8 @@ export const SCOPE_VERDICT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 export const SCOPE_VERDICT_FAILURE_TTL_MS = 5 * 60 * 1000;
 const SCOPE_VERDICT_CACHE_MAX_ENTRIES = 100;
 const scopeVerdictCache = new Map<string, { ts: number; verdict: ScopeVerdict | null }>();
+// in-flight 单飞（round-2 并发审查）：并发冷启动同键只触发一次 LLM，防双烧 + 日志双计
+const scopeVerdictInFlight = new Map<string, Promise<ScopeVerdict | null>>();
 
 const normalizeDir = (p: string): string => {
   let dir = (p || '').trim();
@@ -217,6 +219,28 @@ export async function arbitrateScopeVerdict(input: ArbitrateScopeInput): Promise
       return hit.verdict ? { ...hit.verdict } : null;
     }
   }
+
+  // in-flight 单飞（round-2 并发审查）：并发冷启动同键只触发一次 LLM，
+  // 防双烧 + 观测日志双计（forceRefresh 请求绕过缓存也绕过单飞——显式刷新语义）
+  if (!input.forceRefresh) {
+    const pending = scopeVerdictInFlight.get(cacheKey);
+    if (pending) return pending;
+    const run = arbitrateScopeVerdictUncached(input, cacheKey, injectable).finally(() => {
+      if (scopeVerdictInFlight.get(cacheKey) === run) scopeVerdictInFlight.delete(cacheKey);
+    });
+    scopeVerdictInFlight.set(cacheKey, run);
+    return run;
+  }
+  return arbitrateScopeVerdictUncached(input, cacheKey, injectable);
+}
+
+/** 缓存未命中路径（单飞包裹；injectable 由主入口解析后传入避免重复解析） */
+async function arbitrateScopeVerdictUncached(
+  input: ArbitrateScopeInput,
+  cacheKey: string,
+  injectable: NonNullable<ReturnType<typeof toInjectableStructuredModel>>
+): Promise<ScopeVerdict | null> {
+  const { dirTree, markdownFiles, docCodeRatio, owner, repo, sha, userId, targetLanguage } = input;
 
   const languageHint =
     targetLanguage && targetLanguage !== TRANSLATION_LANGUAGES.NONE_CODE

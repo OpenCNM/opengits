@@ -130,6 +130,10 @@ export const ARBITRATION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 export const ARBITRATION_FAILURE_TTL_MS = 5 * 60 * 1000;
 const ARBITRATION_CACHE_MAX_ENTRIES = 100;
 const arbitrationCache = new Map<string, { ts: number; verdict: ArbitrationVerdict | null }>();
+// in-flight 单飞（round-2 并发审查）：并发冷启动同 repo@sha 只触发一次 LLM，
+// 防双烧 + 观测日志双计（TtlCache.getOrLoad 先例的手写 Map 等价实现，保留
+// "无模型 fallback 不缓存"等既有语义零变化）
+const arbitrationInFlight = new Map<string, Promise<ArbitrateIngestModeResult>>();
 
 /**
  * 灰区仲裁主入口：非灰区原样返回（零 LLM）；灰区交 LLM 裁决；
@@ -162,6 +166,22 @@ export async function arbitrateIngestMode(
       rationale: hit.verdict.rationale,
     };
   }
+
+  const pending = arbitrationInFlight.get(cacheKey);
+  if (pending) return pending;
+  const run = arbitrateIngestModeUncached(input, cacheKey).finally(() => {
+    if (arbitrationInFlight.get(cacheKey) === run) arbitrationInFlight.delete(cacheKey);
+  });
+  arbitrationInFlight.set(cacheKey, run);
+  return run;
+}
+
+/** 缓存未命中路径（单飞包裹：并发同键共享同一 Promise，不再双烧 LLM） */
+async function arbitrateIngestModeUncached(
+  input: ArbitrateIngestModeInput,
+  cacheKey: string
+): Promise<ArbitrateIngestModeResult> {
+  const { profile, dirTree, markdownFiles, owner, repo, sha, userId } = input;
 
   try {
     // Scout BYOK（中继模式）：用户激活服务商缺失 → 无慢路径可用，回落规则裁定

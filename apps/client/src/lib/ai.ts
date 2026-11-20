@@ -9,6 +9,7 @@ import { generateObject, generateText, streamText } from 'ai';
 import { z } from 'zod';
 
 import { DEFAULT_AI_PROVIDER, DEFAULT_AI_MODEL, AI_PROVIDER_PRESETS } from '@/lib/constants';
+import * as m from '@/paraglide/messages';
 import { trackTokenUsage } from '@/lib/analytics/token-usage';
 import { buildThinkingProviderOptions } from '@/lib/llm-gateway/thinking-adapter';
 import { fastSalvageJson, repairStructuredJsonViaLlm } from '@/lib/ai/salvage-structured';
@@ -30,10 +31,12 @@ async function buildMissingApiKeyMessage(
       if (typeof mod.inspectUserModelKeyStatus === 'function') {
         const info = await mod.inspectUserModelKeyStatus(opts.userId);
         if (info.status === 'decrypt_failed') {
-          return `${fnName}: 云端已保存的 AI 密钥无法解密（可能因环境密钥变更失效），请在偏好设置中重新填写并保存 API Key (provider=${info.provider || opts.providerKey}, model=${info.modelId || opts.modelId || defaultEngineModel})`;
+          // paraglide 双语文案（批次 B i18n 收口）：服务端按请求 locale 出文案，
+          // 英文用户不再看到硬编码中文；provider/model 调试细节保留在尾部
+          return `${fnName}: ${m.toast_key_decrypt_failed()} (provider=${info.provider || opts.providerKey}, model=${info.modelId || opts.modelId || defaultEngineModel})`;
         }
         if (info.status === 'missing') {
-          return `${fnName}: 当前账号未在云端配置可用的 AI 密钥，请先在偏好设置中配置 API Key`;
+          return `${fnName}: ${m.toast_missing_api_key()}`;
         }
       }
     } catch (err) {
@@ -41,7 +44,7 @@ async function buildMissingApiKeyMessage(
       console.warn(`[ai] inspectUserModelKeyStatus failed in ${fnName}:`, err);
     }
   }
-  return `${fnName}: 未检测到可用的用户 AI 密钥配置 (provider=${opts.providerKey}, model=${opts.modelId || defaultEngineModel})`;
+  return `${fnName}: ${m.toast_missing_api_key()} (provider=${opts.providerKey}, model=${opts.modelId || defaultEngineModel})`;
 }
 
 export const modelName = DEFAULT_AI_MODEL;

@@ -16,6 +16,11 @@ const mockResolveActiveUserModel = vi.fn();
 const mockToInjectableStructuredModel = vi.fn();
 vi.mock('@/lib/ai/user-model-resolver', () => ({
   resolveActiveUserModel: (userId?: string | null) => mockResolveActiveUserModel(userId),
+  // route 已改走 key-status helper（批次 B）：mock 派生同语义，保留旧断言（MISSING → 400）
+  resolveUserModelWithKeyStatus: async (userId?: string | null) => {
+    const model = await mockResolveActiveUserModel(userId);
+    return model ? { ok: true as const, model } : { ok: false as const, code: 'MISSING_API_KEY' as const };
+  },
   toInjectableStructuredModel: (model: any) => mockToInjectableStructuredModel(model),
 }));
 
