@@ -443,7 +443,7 @@ func TestPlanDegenerateAliasesCountOnce(t *testing.T) {
 		{Name: "章 B", TargetPaths: []string{"demo/core"}},
 		{Name: "章 C", TargetPaths: []string{"net"}},
 	}
-	assert.True(t, planDegenerate(plan, root), "2 个真实分区 + 1 个别名写法应判退化")
+	assert.True(t, planDegenerate(plan, root, false), "2 个真实分区 + 1 个别名写法应判退化")
 }
 
 // TestObtainPlanDegenerateFailClosed_TableDriven 退化规划新契约:
@@ -645,7 +645,7 @@ func TestPlanDegenerateFlatRepo_TableDriven(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			root := BuildRepoTree(tt.files, "repo")
-			assert.Equal(t, tt.degenerate, planDegenerate(tt.plan, root))
+			assert.Equal(t, tt.degenerate, planDegenerate(tt.plan, root, false))
 		})
 	}
 }
@@ -1040,7 +1040,7 @@ func TestScoreSubtreeFileTeachingDepth_TableDriven(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sorted := sortSubtreeFilesByRelevance(tt.files, tt.depth)
+			sorted := sortSubtreeFilesByRelevance(tt.files, tt.depth, false)
 			require.NotEmpty(t, sorted)
 			assert.Equal(t, tt.wantFirst, sorted[0].Path)
 		})
@@ -1049,14 +1049,342 @@ func TestScoreSubtreeFileTeachingDepth_TableDriven(t *testing.T) {
 	t.Run("深度项做加法而非重写基线", func(t *testing.T) {
 		// standard 与空串均退回纯基线
 		for _, f := range []FileMap{doc, deepInternal, entry, hotEngine} {
-			assert.Equal(t, scoreSubtreeFile(f, ""), scoreSubtreeFile(f, TeachingDepthStandard),
+			assert.Equal(t, scoreSubtreeFile(f, "", false), scoreSubtreeFile(f, TeachingDepthStandard, false),
 				"standard 深度应与基线权重完全一致: %s", f.Path)
 		}
 		// overview：文档加分、深层内部降权
-		assert.Greater(t, scoreSubtreeFile(doc, TeachingDepthOverview), scoreSubtreeFile(doc, ""))
-		assert.Less(t, scoreSubtreeFile(deepInternal, TeachingDepthOverview), scoreSubtreeFile(deepInternal, ""))
+		assert.Greater(t, scoreSubtreeFile(doc, TeachingDepthOverview, false), scoreSubtreeFile(doc, "", false))
+		assert.Less(t, scoreSubtreeFile(deepInternal, TeachingDepthOverview, false), scoreSubtreeFile(deepInternal, "", false))
 		// deep：高热核心与 spec 加权
-		assert.Greater(t, scoreSubtreeFile(hotEngine, TeachingDepthDeep), scoreSubtreeFile(hotEngine, ""))
-		assert.Greater(t, scoreSubtreeFile(specFile, TeachingDepthDeep), scoreSubtreeFile(specFile, ""))
+		assert.Greater(t, scoreSubtreeFile(hotEngine, TeachingDepthDeep, false), scoreSubtreeFile(hotEngine, "", false))
+		assert.Greater(t, scoreSubtreeFile(specFile, TeachingDepthDeep, false), scoreSubtreeFile(specFile, "", false))
 	})
+}
+
+// ─────────────────────────────────────────────────────────────
+// 专题切片（thematic_slice） drill 核心通道
+// 意图主权红线：thematic 只来自 customPrompt 非空 + 模型输出的 IntentMode，
+// 代码层零关键词猜测；customPrompt == "" 的全链路与现状逐字节等价。
+// ─────────────────────────────────────────────────────────────
+
+// fakeContextPlanner 带 customPrompt 注入与调用观测的规划桩（实现
+// teachingContextAware）：obtainPlan 经该接口读取用户定制指令以切换
+// 专题骨架/rollup 渲染通道，并捕获每次调用的 skeleton/rollups/feedback
+// 供意图收敛时序断言。
+type fakeContextPlanner struct {
+	fakePlanner
+	customPrompt   string
+	skeletons      []string
+	rollupsHistory []map[string]string
+	feedbacks      []string
+}
+
+func (f *fakeContextPlanner) TeachingContext() (string, string) { return "", f.customPrompt }
+
+func (f *fakeContextPlanner) Plan(ctx context.Context, skeleton string, rollups map[string]string, feedback string, lang string) (string, error) {
+	f.skeletons = append(f.skeletons, skeleton)
+	f.rollupsHistory = append(f.rollupsHistory, rollups)
+	f.feedbacks = append(f.feedbacks, feedback)
+	return f.fakePlanner.Plan(ctx, skeleton, rollups, feedback, lang)
+}
+
+// TestParsePlanFocusFilesOnlyChapter 专题章结构校验放宽：focusFiles-only
+// 章 targetPaths 可为空（TS 侧 zod 放行 + normalizer 清 undefined 后透传），
+// 双空章仍拒绝（结构物理底线）。
+func TestParsePlanFocusFilesOnlyChapter(t *testing.T) {
+	resp, err := parsePlan(`{"intentMode":"thematic_slice","chapters":[
+		{"name":"专题章","summary":"聚焦","focusFiles":["core/a.go"]}
+	]}`)
+	require.NoError(t, err)
+	require.Len(t, resp.Chapters, 1)
+	assert.Empty(t, resp.Chapters[0].TargetPaths, "focusFiles-only 章 targetPaths 可为空")
+	assert.Equal(t, []string{"core/a.go"}, resp.Chapters[0].FocusFiles)
+	assert.Equal(t, "thematic_slice", resp.IntentMode)
+
+	_, err = parsePlan(`{"chapters":[{"name":"双空章","summary":"s"}]}`)
+	require.Error(t, err, "targetPaths 与 focusFiles 双空的章必须拒收")
+	assert.Contains(t, err.Error(), "focusFiles")
+}
+
+// TestPlanDegenerateThematicFloor_TableDriven 专题退化判定只守物理底线
+// （>=1 章即放行，分区覆盖/根指向等全仓启发式全部跳过——聚焦章节宁缺毋滥，
+// 绝不以分区数倒逼模型扩章）；legacy 口径（thematic=false）逐字节保持原判定。
+func TestPlanDegenerateThematicFloor_TableDriven(t *testing.T) {
+	files := []FileMap{
+		{Path: "a/f.go", LOC: 10},
+		{Path: "b/f.go", LOC: 10},
+		{Path: "c/f.go", LOC: 10},
+		{Path: "README.md", LOC: 10},
+	}
+	root := BuildRepoTree(files, "repo")
+	tests := []struct {
+		name       string
+		plan       []PlanChapter
+		thematic   bool
+		degenerate bool
+	}{
+		{
+			name:       "thematic 单章 focusFiles 不退化",
+			plan:       []PlanChapter{{Name: "专题章", FocusFiles: []string{"a/f.go"}}},
+			thematic:   true,
+			degenerate: false,
+		},
+		{
+			name:       "thematic 单章指向根也不退化（真实性由预验证求交裁决）",
+			plan:       []PlanChapter{{Name: "专题章", TargetPaths: []string{"."}}},
+			thematic:   true,
+			degenerate: false,
+		},
+		{
+			name:       "legacy 单章仍退化",
+			plan:       []PlanChapter{{Name: "孤章", TargetPaths: []string{"a"}}},
+			thematic:   false,
+			degenerate: true,
+		},
+		{
+			name: "legacy 过半根指向仍退化",
+			plan: []PlanChapter{
+				{Name: "章 1", TargetPaths: []string{"."}},
+				{Name: "章 2", TargetPaths: []string{"."}},
+				{Name: "章 3", TargetPaths: []string{"a"}},
+			},
+			thematic:   false,
+			degenerate: true,
+		},
+		{
+			name: "legacy 2 章单分区仍退化",
+			plan: []PlanChapter{
+				{Name: "章 1", TargetPaths: []string{"a"}},
+				{Name: "章 2", TargetPaths: []string{"a"}},
+			},
+			thematic:   false,
+			degenerate: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.degenerate, planDegenerate(tt.plan, root, tt.thematic))
+		})
+	}
+}
+
+// TestObtainPlanThematicIntentConvergence 意图收敛时序与通道选择表驱动：
+// 骨架通道切换、首发留档继承、最终归一 fail-closed、反馈重规划携 lastRollups。
+func TestObtainPlanThematicIntentConvergence(t *testing.T) {
+	goodPlan := `{"chapters":[
+		{"name":"第 1 章:起步","summary":"s","targetPaths":["README.md"],"phase":"入门"},
+		{"name":"第 2 章:核心","summary":"s","targetPaths":["core"],"phase":"实战"},
+		{"name":"第 3 章:网络","summary":"s","targetPaths":["net"],"phase":"实战"}
+	]}`
+
+	t.Run("customPrompt 非空切换专题骨架通道（定向符号索引段在场）", func(t *testing.T) {
+		m := buildDrillRepo()
+		p := &fakeContextPlanner{
+			customPrompt: "聚焦 core 状态机",
+			fakePlanner:  fakePlanner{first: `{"intentMode":"thematic_slice","chapters":[{"name":"专题章","summary":"s","targetPaths":["core"]}]}`},
+		}
+		resp, _, _, err := obtainPlan(context.Background(), p, m.Tree, "zh-CN", 3, 1)
+		require.NoError(t, err)
+		require.NotEmpty(t, p.skeletons)
+		assert.Contains(t, p.skeletons[0], "定向符号索引", "专题任务应携带符号索引段")
+		assert.Equal(t, "thematic_slice", resp.IntentMode)
+	})
+
+	t.Run("customPrompt 空 skeleton 与现状逐字节一致", func(t *testing.T) {
+		m := buildDrillRepo()
+		p := &fakeContextPlanner{fakePlanner: fakePlanner{first: goodPlan}}
+		resp, _, _, err := obtainPlan(context.Background(), p, m.Tree, "zh-CN", 3, 1)
+		require.NoError(t, err)
+		require.NotEmpty(t, p.skeletons)
+		assert.Equal(t, RenderSkeleton(m.Tree), p.skeletons[0], "全仓通道骨架渲染零漂移")
+		assert.NotContains(t, p.skeletons[0], "定向符号索引")
+		assert.Equal(t, "full_repo", resp.IntentMode)
+	})
+
+	t.Run("customPrompt 空时模型越权 intentMode 被强制 full_repo（fail-closed）", func(t *testing.T) {
+		m := buildDrillRepo()
+		p := &fakeContextPlanner{fakePlanner: fakePlanner{first: `{"intentMode":"thematic_slice","chapters":[
+			{"name":"章 A","summary":"s","targetPaths":["core"]},
+			{"name":"章 B","summary":"s","targetPaths":["net"]},
+			{"name":"章 C","summary":"s","targetPaths":["util"]}
+		]}`}}
+		resp, _, diag, err := obtainPlan(context.Background(), p, m.Tree, "zh-CN", 3, 1)
+		require.NoError(t, err)
+		assert.Equal(t, "full_repo", resp.IntentMode, "customPrompt 为空时模型越权声明无效")
+		assert.Equal(t, "full_repo", diag.IntentMode)
+	})
+
+	t.Run("A5 修订响应漏报 intentMode 继承首发 thematic 判定", func(t *testing.T) {
+		m := buildDrillRepo()
+		p := &fakeContextPlanner{
+			customPrompt: "聚焦传输层",
+			fakePlanner: fakePlanner{
+				first: `{"intentMode":"thematic_slice","chapters":[{"name":"首发","summary":"s","targetPaths":["core"]}],"needRollup":["net"]}`,
+				second: `{"chapters":[
+					{"name":"修订·核心","summary":"s","targetPaths":["core"]},
+					{"name":"修订·网络","summary":"s","targetPaths":["net"]},
+					{"name":"修订·工具","summary":"s","targetPaths":["util"]}
+				]}`,
+			},
+		}
+		resp, replanned, diag, err := obtainPlan(context.Background(), p, m.Tree, "zh-CN", 3, 1)
+		require.NoError(t, err)
+		assert.True(t, replanned)
+		assert.Equal(t, "thematic_slice", resp.IntentMode, "p2 漏报 intentMode 应继承首发留档")
+		assert.Equal(t, "thematic_slice", diag.IntentMode)
+		// 专题通道补料渲染：直属文件行 + 专题中性排序（与全仓采样偏置渲染严格隔离）
+		require.Len(t, p.rollupsHistory, 2)
+		sub := findSubtree(m.Tree, "net")
+		require.NotNil(t, sub)
+		assert.Equal(t, RenderSubtreeSkeletonWithFiles(sub, 1, thematicRollupFileBudget),
+			p.rollupsHistory[1]["net"], "专题补料应携直属文件行")
+		assert.Contains(t, p.rollupsHistory[1]["net"], "| loc:", "文件行口径")
+	})
+
+	t.Run("反馈重规划携带 lastRollups 补料视野", func(t *testing.T) {
+		m := buildDrillRepo()
+		p := &fakeContextPlanner{
+			customPrompt: "聚焦核心",
+			fakePlanner: fakePlanner{
+				first:  `{"chapters":[{"name":"首发孤章","summary":"s","targetPaths":["core"]}],"needRollup":["net"]}`,
+				second: `{"chapters":[{"name":"修订孤章","summary":"s","targetPaths":["core"]}]}`,
+				feedbackPlan: `{"chapters":[
+					{"name":"救回·核心","summary":"s","targetPaths":["core"]},
+					{"name":"救回·网络","summary":"s","targetPaths":["net"]},
+					{"name":"救回·工具","summary":"s","targetPaths":["util"]}
+				]}`,
+			},
+		}
+		resp, replanned, _, err := obtainPlan(context.Background(), p, m.Tree, "zh-CN", 3, 1)
+		require.NoError(t, err)
+		assert.True(t, replanned)
+		require.NotEmpty(t, resp.Chapters)
+		assert.Equal(t, "救回·核心", resp.Chapters[0].Name, "应采用反馈重规划救回结果")
+		require.Len(t, p.skeletons, 3, "首发+A5 修订+反馈重规划共 3 次调用")
+		require.NotNil(t, p.rollupsHistory[2], "反馈重规划必须携带 lastRollups（补料视野不丢失）")
+		assert.Contains(t, p.rollupsHistory[2], "net")
+		require.Len(t, p.feedbacks, 3)
+		assert.Contains(t, p.feedbacks[2], "物理校验", "反馈文本应携带退化物理事实")
+	})
+}
+
+// TestRunDrillThematicFocusFilesDirect 焦点直出：预验证求交剔除幻觉路径、
+// 根名前缀与 #锚点修饰归一化、真实路径确定性装配（零子树池认领零 LLM）。
+func TestRunDrillThematicFocusFilesDirect(t *testing.T) {
+	patterns := loadPatterns(t)
+	m := buildDrillRepo()
+	p := &fakeContextPlanner{
+		customPrompt: "聚焦 core 状态机",
+		fakePlanner: fakePlanner{first: `{"intentMode":"thematic_slice","chapters":[
+			{"name":"专题章","summary":"s","focusFiles":["core/a.go","ghost/nope.go","demo/core/b.go","core/a.go#Engine"]}
+		]}`},
+	}
+	res, err := RunDrill(context.Background(), m, p, subModel{}, patterns, "zh-CN", "", 0)
+	require.NoError(t, err)
+	assert.True(t, res.Thematic, "DrillResult.Thematic 必须标注专题模式")
+	require.Len(t, res.Chapters, 1)
+	var got []string
+	for _, f := range res.Chapters[0].Files {
+		got = append(got, f.Path)
+	}
+	// core/a.go#Engine 剥锚点后与 core/a.go 重复，装甲层 seenAnchors 去重
+	assert.Equal(t, []string{"core/a.go", "core/b.go"}, got, "焦点直出 = 求交后真实路径")
+	assert.NotContains(t, got, "ghost/nope.go", "幻觉 focusFile 必须被预验证剔除")
+	assert.Empty(t, res.DroppedPlan, "混合章（部分焦点有效）不整体弃章")
+}
+
+// TestRunDrillThematicSingleLargeRepoKeepsFocusAssembly 专题装配例外：
+// thematic+single+任一章带 focusFiles 时不进入 Run() 早退、不因 FileCount>800
+// 覆写 matrix——保持 single 落入焦点确定性装配（零额外 LLM）。
+func TestRunDrillThematicSingleLargeRepoKeepsFocusAssembly(t *testing.T) {
+	patterns := loadPatterns(t)
+	files := []FileMap{
+		{Path: "core/engine.go", LOC: 120, Exports: []string{"Engine"}, Hotness: 90},
+		{Path: "core/state.go", LOC: 80, Exports: []string{"State"}, Hotness: 40},
+	}
+	for i := 0; i < 850; i++ {
+		files = append(files, FileMap{Path: fmt.Sprintf("bulk/f%04d.go", i), LOC: 10})
+	}
+	m := &RepoMap{RepoName: "huge", Files: files}
+	m.Tree = BuildRepoTree(files, "huge")
+	require.Greater(t, m.Tree.FileCount, 800, "夹具必须越过 single 容量护栏")
+
+	p := &fakeContextPlanner{
+		customPrompt: "聚焦 core 引擎",
+		fakePlanner: fakePlanner{first: `{"curriculumMode":"single","intentMode":"thematic_slice","chapters":[
+			{"name":"引擎章","summary":"s","focusFiles":["core/engine.go","core/state.go","bulk/ghost.go"]}
+		]}`},
+	}
+	res, err := RunDrill(context.Background(), m, p, subModel{}, patterns, "zh-CN", "", 0)
+	require.NoError(t, err)
+	assert.Equal(t, "single", res.CurriculumMode, "thematic+focusFiles 必须保持 single，绝不因 >800 覆写 matrix")
+	assert.True(t, res.Thematic)
+	require.Len(t, res.Chapters, 1)
+	require.Len(t, res.Chapters[0].Files, 2, "章文件 = 求交后 focusFiles（bulk/ghost.go 幻觉剔除）")
+	assert.Equal(t, "core/engine.go", res.Chapters[0].Files[0].Path)
+	assert.Equal(t, "core/state.go", res.Chapters[0].Files[1].Path)
+}
+
+// TestRunDrillThematicNoReadmeHegemony 专题子树选材与装甲全链无文档霸权：
+// thematic 评分跳过 README/docs+500 入口偏置（低分文档被挤出单章预算），
+// 装甲 WithoutReadmeBackfill 不注入 README 保底。
+func TestRunDrillThematicNoReadmeHegemony(t *testing.T) {
+	patterns := loadPatterns(t)
+	files := []FileMap{
+		{Path: "README.md", LOC: 300, IsDoc: true},
+		{Path: "core/README.md", LOC: 200, IsDoc: true},
+		{Path: "core/engine.go", LOC: 150, Exports: []string{"Engine"}, Hotness: 90},
+	}
+	for i := 0; i < 9; i++ {
+		files = append(files, FileMap{
+			Path:    fmt.Sprintf("core/impl_%02d.go", i),
+			LOC:     100 + i,
+			Exports: []string{fmt.Sprintf("Sym%d", i)},
+			Hotness: 50 - i,
+		})
+	}
+	m := &RepoMap{RepoName: "slice", Files: files}
+	m.Tree = BuildRepoTree(files, "slice")
+
+	p := &fakeContextPlanner{
+		customPrompt: "聚焦 core 引擎实现",
+		fakePlanner: fakePlanner{first: `{"intentMode":"thematic_slice","chapters":[
+			{"name":"引擎章","summary":"s","targetPaths":["core"]}
+		]}`},
+	}
+	res, err := RunDrill(context.Background(), m, p, subModel{}, patterns, "zh-CN", "", 0)
+	require.NoError(t, err)
+	require.NotEmpty(t, res.Chapters)
+	require.NotEmpty(t, res.Chapters[0].Files)
+	assert.Equal(t, "core/engine.go", res.Chapters[0].Files[0].Path,
+		"thematic 评分首课时必须是高信噪比代码文件，绝不允许 README 霸占")
+	for _, ch := range res.Chapters {
+		for _, f := range ch.Files {
+			assert.NotEqual(t, "core/README.md", f.Path, "低分专题外文档不得挤进单章预算")
+			assert.NotEqual(t, "README.md", f.Path, "装甲 WithoutReadmeBackfill 后 README 不得保底回流")
+		}
+	}
+}
+
+// TestAttachCompanionsThematicSkipsDirectoryPass 协同挂载专题口径：
+// thematic 只跑 Pass 0（AST 物理边），跳过 Pass 1 同子系统目录补位——
+// 无 AST 边的文件不挂载（专题协同只信物理边）；非 thematic 保持现状。
+func TestAttachCompanionsThematicSkipsDirectoryPass(t *testing.T) {
+	files := []FileMap{
+		{Path: "pkg/core/index.ts", LOC: 500, Exports: []string{"core"}},
+		{Path: "pkg/core/helper.ts", LOC: 300},
+	}
+	m := &RepoMap{RepoName: "mono", Files: files}
+	root := BuildRepoTree(files, "mono")
+	subsystems := []SubsystemSpec{{Name: "core", Prefix: "pkg/core"}}
+	chapters := []cognitive.OutlineChapter{
+		{Files: []cognitive.ChapterFile{{Path: "pkg/core/index.ts"}}},
+	}
+
+	AttachSubtreeCompanionsWithMap(chapters, root, m, subsystems, false)
+	assert.NotEmpty(t, companionPaths(chapters), "非 thematic 应保持 Pass 1 目录补位现状")
+
+	chapters[0].Files[0].CompanionFiles = nil
+	AttachSubtreeCompanionsWithMap(chapters, root, m, subsystems, true)
+	assert.Empty(t, companionPaths(chapters), "thematic 无 AST 边的文件不得经 Pass 1 挂载")
 }

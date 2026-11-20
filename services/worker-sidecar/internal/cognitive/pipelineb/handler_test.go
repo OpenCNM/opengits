@@ -1173,3 +1173,248 @@ func TestHandleTreeOutlineDepth1AstEdgeCompanions(t *testing.T) {
 		"同子系统关联文件必须挂载（AST 边第一轮或同子系统补位第二轮）")
 	assert.NotContains(t, comps, "packages/react-dom/src/index.ts", "主课时自身不出现在协同集")
 }
+
+// ─────────────────────────────────────────────────────────────
+// 专题定向增量采样（enrich_thematic.go）与排除清单专题标注。
+// 缓存/归档路径稀疏 AST 遇 customPrompt 重试时请求期补提专题符号；
+// upsert 原位替换合入（FileCount 不变、零重复叶子），共享缓存树
+// 零污染，fail-open 全分支留痕。
+// ─────────────────────────────────────────────────────────────
+
+// buildThematicFixtureMap 构造缓存命中同构的 RepoMap 夹具（树 + 叶子 + 上卷），
+// 返回 m 与共享树引用（原缓存树零污染断言用）。
+func buildThematicFixtureMap(t *testing.T, files []FileMap) (*RepoMap, *RepoTreeNode) {
+	t.Helper()
+	tree := BuildRepoTree(files, "thematic-r")
+	m := &RepoMap{RepoName: "thematic-r", Files: tree.LeafFiles(), Tree: tree}
+	for _, f := range m.Files {
+		m.TotalLOC += f.LOC
+	}
+	m.EstTokens = estimateTokensFor(m)
+	return m, tree
+}
+
+// TestThematicAstSparseGate_TableDriven 稀疏门限边界：分母 0、全无导出、
+// 占比恰在阈值两侧、测试/配置文件不计入分母。
+func TestThematicAstSparseGate_TableDriven(t *testing.T) {
+	// 10 个非测试叶子仅 1 个有导出（恰好 10%，严格 <0.1 判非稀疏）
+	exactlyTen := []FileMap{{Path: "x.ts", Exports: []string{"X"}}}
+	for i := 0; i < 9; i++ {
+		exactlyTen = append(exactlyTen, FileMap{Path: fmt.Sprintf("f%d.ts", i)})
+	}
+	// 20 个非测试叶子仅 1 个有导出（5%）
+	belowTen := []FileMap{{Path: "y.ts", Exports: []string{"Y"}}}
+	for i := 0; i < 19; i++ {
+		belowTen = append(belowTen, FileMap{Path: fmt.Sprintf("g%d.ts", i)})
+	}
+
+	tests := []struct {
+		name  string
+		files []FileMap
+		want  bool
+	}{
+		{"分母 0（全是测试/配置文件）视为稀疏", []FileMap{{Path: "a_test.go", IsTest: true}, {Path: "go.mod", IsConfig: true}}, true},
+		{"全部叶子无导出 → 稀疏", []FileMap{{Path: "a/a.ts"}, {Path: "b/b.ts"}}, true},
+		{"导出占比 5% → 稀疏", belowTen, true},
+		{"导出占比恰好 10% 不算稀疏（严格 <0.1）", exactlyTen, false},
+		{"测试与配置文件不计入分母：唯一业务叶子有导出 → 非稀疏", []FileMap{{Path: "core.ts", Exports: []string{"C"}}, {Path: "core_test.ts", IsTest: true}, {Path: "pkg.json", IsConfig: true}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m, _ := buildThematicFixtureMap(t, tt.files)
+			assert.Equal(t, tt.want, thematicAstSparse(m))
+		})
+	}
+}
+
+// TestComputeExcludedFilesThematicAnnotation 专题标注逻辑：thematic 时兜底
+// 分支业务源码改标"非当前专题范围"，测试/配置/文档等既有专项 reason 不变。
+func TestComputeExcludedFilesThematicAnnotation(t *testing.T) {
+	files := []FileMap{
+		{Path: "src/business.go", LOC: 10},
+		{Path: "src/chosen.go", LOC: 12},
+		{Path: "src/util_test.go", LOC: 5, IsTest: true},
+		{Path: "config.yaml", LOC: 3, IsConfig: true},
+		{Path: "docs/guide.md", LOC: 8, IsDoc: true},
+	}
+	m := &RepoMap{RepoName: "r", Files: files, Tree: BuildRepoTree(files, "r")}
+	chapters := []cognitive.OutlineChapter{{
+		Name:  "第 1 章",
+		Files: []cognitive.ChapterFile{{Path: "src/chosen.go", ShortTitle: "chosen"}},
+	}}
+
+	reasonOf := func(list []ExcludedFile) map[string]string {
+		out := make(map[string]string, len(list))
+		for _, e := range list {
+			out[e.Path] = e.Reason
+		}
+		return out
+	}
+
+	legacy := reasonOf(ComputeExcludedFiles(m, chapters, false))
+	assert.Equal(t, "辅助文件", legacy["src/business.go"])
+	assert.Equal(t, "测试文件", legacy["src/util_test.go"])
+	assert.Equal(t, "环境配置", legacy["config.yaml"])
+	assert.Equal(t, "补充文档", legacy["docs/guide.md"])
+	assert.NotContains(t, legacy, "src/chosen.go", "章节采纳文件不入排除清单")
+
+	thematic := reasonOf(ComputeExcludedFiles(m, chapters, true))
+	assert.Equal(t, "非当前专题范围", thematic["src/business.go"], "兜底分支业务源码必须改标专题外")
+	assert.Equal(t, "测试文件", thematic["src/util_test.go"], "既有专项 reason 保持不变")
+	assert.Equal(t, "环境配置", thematic["config.yaml"], "既有专项 reason 保持不变")
+	assert.Equal(t, "补充文档", thematic["docs/guide.md"], "既有专项 reason 保持不变")
+}
+
+// TestEnrichMapWithThematicSampling_TableDriven 专题增量补提全路径：
+// 门限直通不采样、upsert 重建工作树且共享缓存树零污染、抓取失败
+// 与采样器零点名 fail-open 原样返回。
+func TestEnrichMapWithThematicSampling_TableDriven(t *testing.T) {
+	patterns := loadPatterns(t)
+	defs := loadLangDefs(t)
+
+	// 稀疏夹具：11 个业务叶子仅 1 个有导出（1/11 ≈ 0.091 < 0.1 稀疏阈值——
+	// 缓存冷启动策略 B 同构，其余叶子 Exports == nil；导出归属 renderBase
+	// 保留供补提后的调用边解析）
+	sparseFiles := []FileMap{
+		{Path: "pkg/base.ts", LOC: 4, Exports: []string{"renderBase"}},
+		{Path: "pkg/plain.ts", LOC: 3},
+		{Path: "pkg/theme.ts", LOC: 3},
+	}
+	for i := 0; i < 8; i++ {
+		sparseFiles = append(sparseFiles, FileMap{Path: fmt.Sprintf("pkg/extra_%d.ts", i), LOC: 3})
+	}
+	// 非稀疏夹具：业务叶子全部有导出
+	denseFiles := []FileMap{
+		{Path: "pkg/base.ts", LOC: 4, Exports: []string{"renderBase"}},
+		{Path: "pkg/theme.ts", LOC: 3, Exports: []string{"theme"}},
+	}
+	// theme.ts 补提内容：导出 theme 且调用 base.ts 的导出符号（真实 defs AST 提取）
+	themeContent := "import { renderBase } from './base';\nexport function theme() { return renderBase(); }\n"
+
+	tests := []struct {
+		name          string
+		files         []FileMap
+		customPrompt  string
+		samplerFiles  []string
+		fetchErr      error
+		fetchContents map[string]string
+		wantFetched   bool
+		wantEnriched  bool
+	}{
+		{
+			name:         "非稀疏缓存直通：零抓取零改写",
+			files:        denseFiles,
+			customPrompt: "聚焦主题模块",
+			samplerFiles: []string{"pkg/plain.ts"},
+		},
+		{
+			name:         "空 customPrompt 门限直通：零抓取",
+			files:        sparseFiles,
+			samplerFiles: []string{"pkg/theme.ts"},
+		},
+		{
+			name:          "稀疏缓存 + customPrompt → 定向补提并 upsert 重建工作树",
+			files:         sparseFiles,
+			customPrompt:  "聚焦主题模块",
+			samplerFiles:  []string{"pkg/theme.ts"},
+			fetchContents: map[string]string{"pkg/theme.ts": themeContent},
+			wantFetched:   true,
+			wantEnriched:  true,
+		},
+		{
+			name:         "抓取失败 fail-open：原样返回",
+			files:        sparseFiles,
+			customPrompt: "聚焦主题模块",
+			samplerFiles: []string{"pkg/theme.ts"},
+			fetchErr:     errors.New("network reset"),
+			wantFetched:  true,
+		},
+		{
+			name:         "采样器零点名（fallback-8）fail-open：零抓取",
+			files:        sparseFiles,
+			customPrompt: "聚焦主题模块",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m, sharedTree := buildThematicFixtureMap(t, tt.files)
+			beforeLeaves := sharedTree.LeafFiles()
+
+			fetchCalls := 0
+			h := &Handler{
+				patternsFn: func() cognitive.Patterns { return patterns },
+				defsFn:     func() *rsg.LanguageDefinitions { return defs },
+			}
+			h.SetSampler(&customSamplerFunc{fn: func(ctx context.Context, req SampleRequest) (*OutlineSamplerResult, error) {
+				return &OutlineSamplerResult{NeedFiles: tt.samplerFiles}, nil
+			}})
+			h.SetConcurrentBlobFetcher(func(ctx context.Context, apiBase, owner, repo, sha string, paths []string, token, userAgent string) (map[string]string, bool, error) {
+				fetchCalls++
+				if tt.fetchErr != nil {
+					return nil, false, tt.fetchErr
+				}
+				return tt.fetchContents, false, nil
+			})
+			h.SetGitHubConfig("thematic-token", "", "UA-Thematic")
+
+			req := TreeOutlineRequest{
+				Owner:        "o",
+				Repo:         "thematic-r",
+				SHA:          "sha1",
+				CustomPrompt: tt.customPrompt,
+			}
+			got := h.enrichMapWithThematicSampling(context.Background(), m, req, patterns, nil)
+
+			require.Same(t, m, got, "契约：恒返回同一 m（原地演进或原样直通）")
+			if !tt.wantFetched {
+				assert.Zero(t, fetchCalls, "门限直通不得触发抓取")
+			}
+			if !tt.wantEnriched {
+				assert.Same(t, sharedTree, m.Tree, "直通/失败路径不得重建工作树")
+				return
+			}
+
+			// 成功路径：工作树 upsert 重建、专题符号可见、共享缓存树零污染
+			assert.NotSame(t, sharedTree, m.Tree, "补提后必须全量重建工作树")
+			assert.Equal(t, len(beforeLeaves), len(m.Files), "upsert 合入：文件数不变（同路径原位升级）")
+			assert.Equal(t, len(beforeLeaves), m.Tree.FileCount, "零重复叶子")
+
+			var theme *FileMap
+			for i := range m.Files {
+				if m.Files[i].Path == "pkg/theme.ts" {
+					theme = &m.Files[i]
+				}
+			}
+			require.NotNil(t, theme, "补提叶子必须仍在地图中")
+			assert.Contains(t, theme.Exports, "theme", "专题文件导出符号必须可见")
+			assert.NotEmpty(t, theme.Imports, "导入模块必须同步补提")
+			assert.GreaterOrEqual(t, theme.Hotness, 1, "新热度=解析成功的外向边数")
+
+			foundEdge := false
+			for _, e := range m.CallEdges {
+				if e.Caller == "pkg/theme.ts" && e.Callee == "pkg/base.ts" && e.Symbol == "renderBase" {
+					foundEdge = true
+				}
+			}
+			assert.True(t, foundEdge, "新文件调用点必须解析为单向 AST 边")
+
+			wantLOC := 0
+			for _, f := range m.Files {
+				wantLOC += f.LOC
+			}
+			assert.Equal(t, wantLOC, m.TotalLOC, "TotalLOC 必须按合入后全量重算")
+			assert.Equal(t, estimateTokensFor(m), m.EstTokens, "EstTokens 必须按合入后重算")
+
+			// 原缓存树实例零污染（先持引用后对比）
+			afterLeaves := sharedTree.LeafFiles()
+			require.Len(t, afterLeaves, len(beforeLeaves))
+			for i := range beforeLeaves {
+				assert.Equal(t, beforeLeaves[i].Path, afterLeaves[i].Path)
+				assert.Equal(t, beforeLeaves[i].LOC, afterLeaves[i].LOC)
+				assert.Equal(t, len(beforeLeaves[i].Exports), len(afterLeaves[i].Exports))
+				assert.Equal(t, beforeLeaves[i].Hotness, afterLeaves[i].Hotness)
+			}
+		})
+	}
+}

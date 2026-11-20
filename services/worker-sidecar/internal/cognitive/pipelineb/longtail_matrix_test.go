@@ -149,7 +149,7 @@ func TestLongtailPlanDegenerate_TableDriven(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := loadLongtailFixture(t, tt.fixture)
-			assert.Equal(t, tt.degenerate, planDegenerate(tt.plan, skipRootWrapper(m.Tree)))
+			assert.Equal(t, tt.degenerate, planDegenerate(tt.plan, skipRootWrapper(m.Tree), false))
 		})
 	}
 }

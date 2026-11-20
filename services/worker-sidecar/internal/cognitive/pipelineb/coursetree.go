@@ -2,6 +2,7 @@ package pipelineb
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 	"strings"
 
@@ -121,6 +122,14 @@ func BuildCourseTree(repoName string, res *DrillResult, root *RepoTreeNode) *Cou
 			primary := ""
 			if len(targetPaths) > 0 {
 				primary = targetPaths[0]
+			} else {
+				// 专题切片：章无 TargetPaths 时按组锚定口径从章文件推导 primary（该组首章首文件目录），
+				// 运行中模块锚定其首章；尚无模块时当前章即新组首章
+				anchor := []cognitive.OutlineChapter{ch}
+				if len(groups) > 0 {
+					anchor = groups[len(groups)-1].chapters
+				}
+				primary = firstFileDir(anchor)
 			}
 			isRootPrimary := primary == "" || primary == "." || primary == "README.md" || (rootName != "" && primary == rootName)
 			currentIsRoot := currentPrimary == "" || currentPrimary == "." || currentPrimary == "README.md" || (rootName != "" && currentPrimary == rootName)
@@ -179,6 +188,17 @@ func BuildCourseTree(repoName string, res *DrillResult, root *RepoTreeNode) *Cou
 		for _, tp := range targetPaths {
 			if tp != "" && !sliceContains(g.sourcePaths, tp) {
 				g.sourcePaths = append(g.sourcePaths, tp)
+			}
+		}
+	}
+
+	// 专题切片的章可能只有章文件而无 TargetPaths：确定性回填 sourcePaths，
+	// 避免 AttachTopologies 因 scope 为空静默跳过子课 Scale 2 拓扑图。
+	// 回填先于 OverviewCourse 的 rootName 兜底：章文件口径优先于根名猜测。
+	for _, g := range groups {
+		if len(g.sourcePaths) == 0 && len(g.chapters) > 0 {
+			if dir := deriveGroupSourceDir(g.chapters); dir != "" {
+				g.sourcePaths = []string{dir}
 			}
 		}
 	}
@@ -251,6 +271,81 @@ func sliceContains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// normalizedFileDir 取仓库相对路径所在目录；根级文件（path.Dir 为 "."）归一为空串，
+// 与 TargetPaths 空值语义对齐（避免 scope "." 误触发 Scale 2 拓扑）。
+func normalizedFileDir(p string) string {
+	dir := path.Dir(p)
+	if dir == "." {
+		return ""
+	}
+	return dir
+}
+
+// firstFileDir 按章序取首个非空文件路径所在目录（组锚定口径：该组首章首文件目录）。
+func firstFileDir(chapters []cognitive.OutlineChapter) string {
+	for _, ch := range chapters {
+		for _, f := range ch.Files {
+			if strings.TrimSpace(f.Path) != "" {
+				return normalizedFileDir(f.Path)
+			}
+		}
+	}
+	return ""
+}
+
+// commonDirPrefix 按目录分段取两目录的最长公共前缀（分段比较，杜绝字符串前缀误命中，
+// 如 "core" 与 "cored" 无公共目录）。
+func commonDirPrefix(a, b string) string {
+	if a == "" || b == "" {
+		return ""
+	}
+	aSegs := strings.Split(a, "/")
+	bSegs := strings.Split(b, "/")
+	n := len(aSegs)
+	if len(bSegs) < n {
+		n = len(bSegs)
+	}
+	var segs []string
+	for i := 0; i < n; i++ {
+		if aSegs[i] != bSegs[i] {
+			break
+		}
+		segs = append(segs, aSegs[i])
+	}
+	if len(segs) == 0 {
+		return ""
+	}
+	return strings.Join(segs, "/")
+}
+
+// deriveGroupSourceDir 从一组章文件确定性推导取材目录：
+// 多文件取最长公共目录前缀；目录互不相关（公共前缀为空）时按首章优先取首章首文件目录；
+// 推导为空串（根级文件）时保持为空，与现状语义一致。
+func deriveGroupSourceDir(chapters []cognitive.OutlineChapter) string {
+	var dirs []string
+	for _, ch := range chapters {
+		for _, f := range ch.Files {
+			if strings.TrimSpace(f.Path) != "" {
+				dirs = append(dirs, normalizedFileDir(f.Path))
+			}
+		}
+	}
+	if len(dirs) == 0 {
+		return ""
+	}
+	common := dirs[0]
+	for _, d := range dirs[1:] {
+		common = commonDirPrefix(common, d)
+		if common == "" {
+			break
+		}
+	}
+	if common != "" {
+		return common
+	}
+	return firstFileDir(chapters)
 }
 
 // AttachTopologies 为课程树注入多尺度架构全景图 (Scale 1 全局图 + Scale 2 各子课组件协作图)。

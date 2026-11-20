@@ -462,7 +462,7 @@ func TestDrillMicroRepoDegeneracyAdaption(t *testing.T) {
 	}
 
 	// 微型仓 2 章不应判定为退化
-	if planDegenerate(plan, root) {
+	if planDegenerate(plan, root, false) {
 		t.Error("微型仓（FileCount <= 3）2 章规划不应判定为退化")
 	}
 

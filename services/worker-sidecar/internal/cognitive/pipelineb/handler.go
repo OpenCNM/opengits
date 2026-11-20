@@ -327,6 +327,19 @@ func samplingStatsFields(stats map[string]any, s *SamplingStats) map[string]any 
 	return stats
 }
 
+// resolveOutlineToken 树大纲请求的 GitHub token 解析（优先级：请求级
+// GitHubToken > Token > Handler 常量）。空串由调用方按各自语义处置：
+// tree-first 冷启动 fail-closed 拒绝；缓存/归档路径专题补提 fail-open 直通。
+func (h *Handler) resolveOutlineToken(req TreeOutlineRequest) string {
+	if t := req.GitHubToken; t != "" {
+		return t
+	}
+	if t := req.Token; t != "" {
+		return t
+	}
+	return h.GitHubToken
+}
+
 // tryTreeFirst 尝试通过 GitHub Trees API + GraphQL 批量拉取执行 Tree-First 秒级快速导入（纯内存构建）。
 // 若遇到 >100,000 截断、网络异常或未提供 Token，返回错误触发 Fail-closed 降级。
 // 策略分级路由：作用域有效内容文件在阈值内走策略 A（全量 AST，短路 LLM 采样器），
@@ -341,13 +354,7 @@ func (h *Handler) tryTreeFirst(ctx context.Context, req TreeOutlineRequest, patt
 		cb = progressFn[0]
 	}
 
-	effectiveToken := req.GitHubToken
-	if effectiveToken == "" {
-		effectiveToken = req.Token
-	}
-	if effectiveToken == "" {
-		effectiveToken = h.GitHubToken
-	}
+	effectiveToken := h.resolveOutlineToken(req)
 	if effectiveToken == "" {
 		return nil, nil, errors.New("no github token available for tree-first ingest")
 	}
@@ -900,6 +907,11 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 		m.EstTokens = estimateTokensFor(m)
 	}
 
+	// 专题定向增量补提（fail-open）：默认导入建的稀疏 AST 缓存遇上
+	// customPrompt 重试时，请求期定向采样补齐专题符号——缓存实例共享
+	// 只读，补提全量重建工作树，绝不回写缓存
+	m = h.enrichMapWithThematicSampling(r.Context(), m, req, patterns, cb)
+
 	// 调用方预算契约：budgetMs 显式声明时收紧总 ctx（与 15min 缺省取小），
 	// LLM 切片由 Run 按 ctx 剩余额度动态推导——预算所有权归真正的持有者
 	handlerBudget := 15 * time.Minute
@@ -932,7 +944,8 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 		subsystems := DiscoverSubsystems(SubsystemSourcesFromRepoMap(m), patterns)
 		AttachSubtreeCompanionsWithMap(res.Chapters, m.Tree, m, subsystems)
 		macroTopo := BuildMacroTopology(m, "", 1, patterns)
-		excludedFiles := ComputeExcludedFiles(m, res.Chapters)
+		// 深度 1 单发快路径非专题驱动：恒按非专题口径标注
+		excludedFiles := ComputeExcludedFiles(m, res.Chapters, false)
 		sendSuccess(http.StatusOK, map[string]any{
 			"ok":            true,
 			"depth":         1,
@@ -959,7 +972,7 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 
 	if res.CurriculumMode == "single" {
 		macroTopo := BuildMacroTopology(m, "", 1, patterns)
-		excludedFiles := ComputeExcludedFiles(m, res.Chapters)
+		excludedFiles := ComputeExcludedFiles(m, res.Chapters, res.Thematic)
 		sendSuccess(http.StatusOK, map[string]any{
 			"ok":            true,
 			"depth":         1,
@@ -979,7 +992,7 @@ func (h *Handler) HandleTreeOutline(w http.ResponseWriter, r *http.Request) {
 
 	tree := BuildCourseTree(req.Repo, res, skipRootWrapper(m.Tree))
 	tree.AttachTopologies(m, patterns)
-	excludedFiles := ComputeExcludedFiles(m, res.Chapters)
+	excludedFiles := ComputeExcludedFiles(m, res.Chapters, res.Thematic)
 	sendSuccess(http.StatusOK, map[string]any{
 		"ok":            true,
 		"depth":         2,
@@ -1097,7 +1110,10 @@ type ExcludedFile struct {
 }
 
 // ComputeExcludedFiles 对比全量扫描文件与大纲采纳文件，计算未纳入大纲的安全出口文件清单。
-func ComputeExcludedFiles(m *RepoMap, chapters []cognitive.OutlineChapter) []ExcludedFile {
+// thematic 为专题模式标注：归入最终兜底分支（无专项 reason）的正常业务源码
+// 改标 "非当前专题范围"——用户 customPrompt 重试时明确区分"专题外"与"辅助"；
+// 测试/配置/文档等既有专项 reason 保持不变。
+func ComputeExcludedFiles(m *RepoMap, chapters []cognitive.OutlineChapter, thematic bool) []ExcludedFile {
 	if m == nil || len(m.Files) == 0 {
 		return nil
 	}
@@ -1119,6 +1135,11 @@ func ComputeExcludedFiles(m *RepoMap, chapters []cognitive.OutlineChapter) []Exc
 			continue
 		}
 		reason := "辅助文件"
+		if thematic {
+			// 专题模式：兜底分支的正常业务源码明确标注"专题外"，
+			// 与下方测试/配置/文档等既有专项 reason 严格区分
+			reason = "非当前专题范围"
+		}
 		lower := strings.ToLower(clean)
 		if f.IsTest || strings.Contains(lower, "test") || strings.Contains(lower, "spec") {
 			reason = "测试文件"

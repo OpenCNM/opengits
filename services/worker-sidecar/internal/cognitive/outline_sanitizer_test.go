@@ -393,3 +393,108 @@ func TestCognitiveLoadIngestPatternsFailClosed(t *testing.T) {
 	})
 }
 
+// buildReadmeBackfillFixture 构造 README 保底豁免测试的统一夹具：
+// README 真实存在但默认未入纲，另含一个幻觉路径章用于锁定其余装甲行为。
+func buildReadmeBackfillFixture(t *testing.T, readmeInOutline bool) ([]OutlineChapter, []GitNode, []CandidateOutlineFile, Patterns) {
+	t.Helper()
+
+	nodes := []GitNode{
+		{Path: "README.md", Type: "blob"},
+		{Path: "core/a.go", Type: "blob"},
+		{Path: "net/x.go", Type: "blob"},
+	}
+
+	chapterFiles := []ChapterFile{{Path: "core/a.go"}}
+	chapterName := "第 1 章: 核心实现"
+	if readmeInOutline {
+		chapterFiles = []ChapterFile{{Path: "README.md"}, {Path: "core/a.go"}}
+		chapterName = "第 1 章: 总览与核心实现"
+	}
+	chapters := []OutlineChapter{
+		{Name: chapterName, Files: chapterFiles},
+		{
+			Name: "第 2 章: 幻觉章节",
+			Files: []ChapterFile{
+				{Path: "ghost/nonexistent.go"}, // 真实树中不存在，将被装甲剔除
+			},
+		},
+	}
+
+	patterns, err := LoadIngestPatterns("")
+	require.NoError(t, err)
+
+	candidates := []CandidateOutlineFile{
+		{Path: "README.md", IsDoc: true},
+		{Path: "core/a.go"},
+		{Path: "net/x.go"},
+	}
+	return chapters, nodes, candidates, patterns
+}
+
+// TestSanitizeAndIntersectOutline_ReadmeBackfillOption 验证 README 保底的可选豁免：
+// 默认不传 opts 时保底仍生效（零行为漂移）；传 WithoutReadmeBackfill 时不再插入，
+// 且路径求交、幻觉剔除、章号重编号等其余装甲行为完全不变。
+func TestSanitizeAndIntersectOutline_ReadmeBackfillOption(t *testing.T) {
+	tests := []struct {
+		name            string
+		readmeInOutline bool
+		opts            []SanitizeOption
+		expectFiles     []string
+		expectFirst     string
+	}{
+		{
+			name:            "README 未入纲且不传 opts：保底仍生效并前插第一章首位",
+			readmeInOutline: false,
+			opts:            nil,
+			expectFiles:     []string{"README.md", "core/a.go"},
+			expectFirst:     "第 1 章：核心实现",
+		},
+		{
+			name:            "README 未入纲且传 WithoutReadmeBackfill：不再插入，幻觉路径仍剔除",
+			readmeInOutline: false,
+			opts:            []SanitizeOption{WithoutReadmeBackfill()},
+			expectFiles:     []string{"core/a.go"},
+			expectFirst:     "第 1 章：核心实现",
+		},
+		{
+			name:            "README 已显式入纲且不传 opts：位置不变且不重复插入",
+			readmeInOutline: true,
+			opts:            nil,
+			expectFiles:     []string{"README.md", "core/a.go"},
+			expectFirst:     "第 1 章：总览与核心实现",
+		},
+		{
+			name:            "README 已显式入纲且传 WithoutReadmeBackfill：与默认产出完全一致",
+			readmeInOutline: true,
+			opts:            []SanitizeOption{WithoutReadmeBackfill()},
+			expectFiles:     []string{"README.md", "core/a.go"},
+			expectFirst:     "第 1 章：总览与核心实现",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			chapters, nodes, candidates, patterns := buildReadmeBackfillFixture(t, tt.readmeInOutline)
+			res := SanitizeAndIntersectOutline(chapters, nodes, "", "zh-CN", candidates, patterns, tt.opts...)
+
+			require.Len(t, res.Sanitized, 1, "幻觉章被剔除后仅剩 1 章")
+			assert.Equal(t, tt.expectFirst, res.Sanitized[0].Name, "幸存章章号应连续归一")
+
+			gotPaths := make([]string, len(res.Sanitized[0].Files))
+			for i, f := range res.Sanitized[0].Files {
+				gotPaths[i] = f.Path
+			}
+			assert.Equal(t, tt.expectFiles, gotPaths)
+
+			assert.Contains(t, res.DroppedPaths, "ghost/nonexistent.go", "幻觉路径应始终被装甲剔除")
+		})
+	}
+
+	t.Run("默认保底插入携带中文短标题", func(t *testing.T) {
+		chapters, nodes, candidates, patterns := buildReadmeBackfillFixture(t, false)
+		res := SanitizeAndIntersectOutline(chapters, nodes, "", "zh-CN", candidates, patterns)
+		require.Len(t, res.Sanitized, 1)
+		require.NotEmpty(t, res.Sanitized[0].Files)
+		assert.Equal(t, "项目概览与入门指南", res.Sanitized[0].Files[0].ShortTitle)
+	})
+}

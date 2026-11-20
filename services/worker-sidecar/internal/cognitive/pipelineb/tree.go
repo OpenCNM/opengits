@@ -449,3 +449,232 @@ func (n *RepoTreeNode) leafFilesIndexed() ([]FileMap, map[string]*FileMap) {
 	}
 	return n.leafList, n.leafIdx
 }
+
+// ─────────────────────────────────────────────────────────────
+// 专题切片渲染(customPrompt 非空时的"符号可见性"通道)。
+// 规划器在专题任务下需要超越 1 层目录上卷的符号级视野:索引段给
+// 高信噪比 AST 符号行(Hotness 主序);稀疏仓追加代表性文件轮转
+// 清单防止对未提取目录完全失明(失效封闭:无 AST 载荷时退化为
+// LOC 中性视图,绝不虚构符号)。全程纯确定性投影,零网络零 LLM。
+// ─────────────────────────────────────────────────────────────
+
+const (
+	// thematicSkeletonBudget 专题骨架符号索引段默认行预算(调用方未显式传正数 maxFiles 时的认知预算帽)。
+	thematicSkeletonBudget = 60
+	// thematicSparseSymbolRatio 稀疏判定阈值:非测试非配置文件中带 AST 符号的占比低于此值
+	// 视为稀疏仓,追加代表性文件轮转清单,防止规划器对未提取目录完全失明。
+	thematicSparseSymbolRatio = 0.1
+)
+
+// HasSparseAstSymbols 确定性稀疏判定:非测试非配置文件(口径与符号索引段一致)
+// 中带 AST 导出符号的占比是否严格低于 thematicSparseSymbolRatio。分母为 0
+// (空仓或全测试/配置)视为稀疏——调用方需兜底清单避免完全失明。
+// 纯 FileMap 结构化字段判定,零正则零语法扫描(Chomsky 边界)。
+func HasSparseAstSymbols(root *RepoTreeNode) bool {
+	var total, withSymbols int
+	for _, f := range root.LeafFiles() {
+		if f.IsTest || f.IsConfig {
+			continue
+		}
+		total++
+		if len(f.Exports) > 0 {
+			withSymbols++
+		}
+	}
+	if total == 0 {
+		return true
+	}
+	return float64(withSymbols)/float64(total) < thematicSparseSymbolRatio
+}
+
+// RenderThematicSkeleton 专题切片双段骨架:
+// 第一段原样复用 RenderSkeleton 物理上卷行(保证 targetPaths 与骨架物理对齐,
+// 规划器引用的目录锚点不漂移);第二段为"定向符号索引"——LeafFiles 中带 AST
+// 导出符号的非测试非配置文件,按 Hotness→符号数→LOC→Path 中性序输出摘要行。
+// 稀疏仓(HasSparseAstSymbols 同口径)追加"代表性文件清单"兜底段:未进索引的
+// 文件按顶层分区桶轮转展示。各段行数为零时对应标题行不输出(避免空段噪声)。
+func RenderThematicSkeleton(root *RepoTreeNode, maxFiles int) string {
+	var sb strings.Builder
+	// 第一段:物理骨架原样输出(targetPaths 物理对齐,逐字节复用既有渲染)
+	sb.WriteString(RenderSkeleton(root))
+
+	budget := thematicSkeletonBudget
+	if maxFiles > 0 {
+		budget = maxFiles
+	}
+
+	leaves := root.LeafFiles()
+
+	// 第二段:定向符号索引(带 AST 导出符号的代码文件,中性信噪比排序)
+	symbolFiles := make([]FileMap, 0, len(leaves))
+	for _, f := range leaves {
+		if !f.IsTest && !f.IsConfig && len(f.Exports) > 0 {
+			symbolFiles = append(symbolFiles, f)
+		}
+	}
+	if len(symbolFiles) > 0 {
+		symbolFiles = sortFilesThematic(symbolFiles)
+		limit := min(len(symbolFiles), budget)
+		sb.WriteString("=== 定向符号索引(高信噪比 AST 提取文件) ===\n")
+		for i := 0; i < limit; i++ {
+			writeThematicSymbolLine(&sb, symbolFiles[i])
+		}
+	}
+
+	// 稀疏兜底段:与 HasSparseAstSymbols 同口径;未进符号索引的文件按顶层分区轮转
+	if HasSparseAstSymbols(root) {
+		renderThematicFallback(&sb, leaves, budget)
+	}
+	return sb.String()
+}
+
+// renderThematicFallback 稀疏仓兜底清单:未进符号索引(无 AST 符号)的非测试
+// 非配置文件按顶层目录段分桶(根散文件归 "(root)"),桶内 LOC 降序→Path 升序,
+// 跨桶轮转每次各取 1 行,总行数不超 budget;桶名升序保证跨调用字节确定。
+func renderThematicFallback(sb *strings.Builder, leaves []FileMap, budget int) {
+	buckets := map[string][]FileMap{}
+	for _, f := range leaves {
+		if f.IsTest || f.IsConfig || len(f.Exports) > 0 {
+			continue // 已进符号索引或按口径排除的文件不入兜底
+		}
+		seg := thematicTopSegment(f.Path)
+		buckets[seg] = append(buckets[seg], f)
+	}
+	if len(buckets) == 0 {
+		return
+	}
+	names := make([]string, 0, len(buckets))
+	for k := range buckets {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	// 桶内排序：LOC 降序 → Path 升序（与本函数 docstring 契约一致；
+	// LeafFiles 原序是纯字典序，不满足 LOC 主序——不排则轮转行序漂移）
+	for _, k := range names {
+		b := buckets[k]
+		sort.SliceStable(b, func(i, j int) bool {
+			if b[i].LOC != b[j].LOC {
+				return b[i].LOC > b[j].LOC
+			}
+			return b[i].Path < b[j].Path
+		})
+		buckets[k] = b
+	}
+	cursors := make(map[string]int, len(names))
+	sb.WriteString("=== 代表性文件清单(未提取符号,按分区配额轮转) ===\n")
+	remaining := budget
+	for remaining > 0 {
+		progressed := false
+		for _, name := range names {
+			if remaining <= 0 {
+				break
+			}
+			b := buckets[name]
+			if cursors[name] >= len(b) {
+				continue
+			}
+			f := b[cursors[name]]
+			fmt.Fprintf(sb, "%s | loc:%d\n", f.Path, f.LOC)
+			cursors[name]++
+			remaining--
+			progressed = true
+		}
+		if !progressed {
+			break
+		}
+	}
+}
+
+// thematicTopSegment 顶层分区段:path 第一段;无目录分隔的根散文件归 "(root)"。
+func thematicTopSegment(path string) string {
+	p := strings.Trim(path, "/")
+	if i := strings.IndexByte(p, '/'); i >= 0 {
+		return p[:i]
+	}
+	return "(root)"
+}
+
+// writeThematicSymbolLine 单行符号索引:path | layer:%s | hot:%d | exports:%s。
+// layer 用紧凑标签(arch_model 锚点行同款);未知层级(枚举域外,视为"空")
+// 整段省略;exports 滤空后截前 8 个逗号连接(信噪比帽,呼应 MaxExportsPerFile)。
+func writeThematicSymbolLine(sb *strings.Builder, f FileMap) {
+	sb.WriteString(f.Path)
+	if f.Layer >= LayerFoundation && f.Layer <= LayerInterface {
+		fmt.Fprintf(sb, " | layer:%s", multiScaleLayerTag(f.Layer))
+	}
+	fmt.Fprintf(sb, " | hot:%d | exports:%s\n", f.Hotness, thematicExportsPreview(f.Exports))
+}
+
+// thematicExportsPreview 导出符号预览:滤空后截前 8 个逗号连接。
+func thematicExportsPreview(exports []string) string {
+	parts := make([]string, 0, min(len(exports), 8))
+	for _, e := range exports {
+		if e == "" {
+			continue
+		}
+		parts = append(parts, e)
+		if len(parts) >= 8 {
+			break
+		}
+	}
+	return strings.Join(parts, ",")
+}
+
+// RenderSubtreeSkeletonWithFiles 带直属文件行的子树骨架:目录上卷行语义与
+// RenderSubtreeSkeleton 完全一致,但每个目录行下追加该目录直属文件的
+// Top fileBudget 行(专题中性排序 sortFilesThematic,弃用采样偏置排序器)。
+// fileBudget <= 0 时退化为纯目录骨架(与 RenderSubtreeSkeleton 字节等价)。
+func RenderSubtreeSkeletonWithFiles(n *RepoTreeNode, depth, fileBudget int) string {
+	var sb strings.Builder
+	writeNodeLine(&sb, "", n)
+	if fileBudget > 0 && len(n.Files) > 0 {
+		writeThematicFileLines(&sb, "  ", sortFilesThematic(n.Files), fileBudget)
+	}
+	renderChildrenAtWithFiles(&sb, n, "  ", 1, depth, fileBudget)
+	return sb.String()
+}
+
+// renderChildrenAtWithFiles renderChildrenAt 的文件行跟随版:目录行后插入直属文件 Top 行。
+func renderChildrenAtWithFiles(sb *strings.Builder, n *RepoTreeNode, indent string, level, depth, fileBudget int) {
+	if level > depth {
+		return
+	}
+	kids := append([]*RepoTreeNode(nil), n.Children...)
+	sort.Slice(kids, func(i, j int) bool { return kids[i].Name < kids[j].Name })
+	for _, c := range kids {
+		writeNodeLine(sb, indent, c)
+		if fileBudget > 0 && len(c.Files) > 0 {
+			writeThematicFileLines(sb, indent+"  ", sortFilesThematic(c.Files), fileBudget)
+		}
+		renderChildrenAtWithFiles(sb, c, indent+"  ", level+1, depth, fileBudget)
+	}
+}
+
+// writeThematicFileLines 中性文件行:- %s | loc:%d(不带 doc/config/test 标签,
+// 与采样语义的 renderFileSampleLine 严格隔离)。
+func writeThematicFileLines(sb *strings.Builder, indent string, files []FileMap, budget int) {
+	limit := min(len(files), budget)
+	for i := 0; i < limit; i++ {
+		fmt.Fprintf(sb, "%s- %s | loc:%d\n", indent, files[i].Path, files[i].LOC)
+	}
+}
+
+// sortFilesThematic 专题中性排序(采样偏置的反面):Hotness 降序 → 导出符号数
+// 降序 → LOC 降序 → Path 升序。不引入 doc/config 入口偏置——专题切片关注符号
+// 信噪比;Path 终序键保证同键文件跨调用字节确定。
+func sortFilesThematic(files []FileMap) []FileMap {
+	out := append([]FileMap(nil), files...)
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Hotness != out[j].Hotness {
+			return out[i].Hotness > out[j].Hotness
+		}
+		if len(out[i].Exports) != len(out[j].Exports) {
+			return len(out[i].Exports) > len(out[j].Exports)
+		}
+		if out[i].LOC != out[j].LOC {
+			return out[i].LOC > out[j].LOC
+		}
+		return out[i].Path < out[j].Path
+	})
+	return out
+}

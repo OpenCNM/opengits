@@ -170,6 +170,15 @@ export function normalizeOutlinePlan(raw: unknown): unknown {
     }
   }
 
+  // 1b. 顶层意图模式 intentMode 归一化（Thematic Slice Intent Mode）：
+  //     仅信任模型输出的 intentMode 字段，合法值（'full_repo'|'thematic_slice'）透传，
+  //     非法/缺失清空为 undefined——严禁默认填 'full_repo'（Go 侧负责缺省归一），
+  //     严禁在归一器中做任何意图关键词猜测（Syntax ≠ Intent，主权在确定性代码）。
+  const intentModeRaw = typeof obj.intentMode === 'string' ? obj.intentMode.trim() : '';
+  const intentMode: 'full_repo' | 'thematic_slice' | undefined =
+    intentModeRaw === 'full_repo' || intentModeRaw === 'thematic_slice' ? intentModeRaw : undefined;
+  const thematic = intentMode === 'thematic_slice';
+
   // 2. 章节数组别名解析（Chapters Aliasing）
   let rawChapters: unknown[] = [];
   if (Array.isArray(obj.chapters)) {
@@ -180,9 +189,12 @@ export function normalizeOutlinePlan(raw: unknown): unknown {
     rawChapters = obj.sections;
   }
 
-  // 若完全没有章节，保留原状交由后续 schema fail-closed 拦截
+  // 若完全没有章节，保留原状交由后续 schema fail-closed 拦截（intentMode 仍随对象携带）
   if (rawChapters.length === 0) {
-    return obj;
+    return {
+      ...obj,
+      intentMode,
+    };
   }
 
   // 3. 章节数量弹性裁剪（Chapters Clamping）：
@@ -239,7 +251,10 @@ export function normalizeOutlinePlan(raw: unknown): unknown {
       mod = currentMod;
     } else {
       // 首章或整体缺失 moduleTitle 的极端情况：依据 phase 与序号确定性衍生
-      if (phase === '入门') {
+      if (thematic) {
+        // 专题切片模式：严禁重新引入全仓锚定式文案，统一中立专题保底（三 phase 分支合一）
+        mod = `模块 ${modCounter}: 核心专题剖析`;
+      } else if (phase === '入门') {
         mod = `模块 ${modCounter}: 架构全景与环境准备`;
       } else if (phase === '进阶') {
         mod = `模块 ${modCounter}: 核心引擎与关键机制`;
@@ -284,8 +299,19 @@ export function normalizeOutlinePlan(raw: unknown): unknown {
     }
     ch.summary = summary;
 
-    // (e) 目标路径 targetPaths 格式归一化与保底
+    // (e) 专题聚焦文件 focusFiles 池归一（别名 focusFiles/focus_files）：
+    //     数组化、逐项 trim、去空；缺失时不制造空数组键（保持 undefined，zod optional）
+    const focusRaw = ch.focusFiles ?? ch.focus_files;
+    let focus: string[] = [];
+    if (Array.isArray(focusRaw)) {
+      focus = focusRaw.map((p) => (typeof p === 'string' ? p.trim() : '')).filter((p) => p.length > 0);
+    } else if (typeof focusRaw === 'string' && focusRaw.trim().length > 0) {
+      focus = [focusRaw.trim()];
+    }
+
+    // (e-1) 目标路径 targetPaths 格式归一化（别名 targetPaths/paths/target_paths/files）
     let targets: string[] = [];
+    const hasTargetsAlias = ch.targetPaths != null || ch.paths != null || ch.target_paths != null;
     const rawTargets = ch.targetPaths ?? ch.paths ?? ch.target_paths ?? ch.files;
     if (Array.isArray(rawTargets)) {
       targets = rawTargets
@@ -295,8 +321,33 @@ export function normalizeOutlinePlan(raw: unknown): unknown {
       targets = [rawTargets.trim()];
     }
 
+    // (e-2) files 别名分流（thematic 关键修复）：专题切片模式下，模型习惯把聚焦文件
+    //       清单写进 files；当 targetPaths/paths/target_paths 三个别名均缺失时，files
+    //       池归入 focusFiles（而非 targetPaths 被截 4 吞掉）。非专题模式保持现行为
+    //       （files → targetPaths）逐字节不变。
+    if (thematic && !hasTargetsAlias && targets.length > 0) {
+      focus = [...focus, ...targets];
+      targets = [];
+    }
+
+    // focusFiles 收敛：去重 + 截 8（Token 预算控制）；仅非空时写入键
+    focus = Array.from(new Set(focus)).slice(0, 8);
+    // 别名残留擦除：原始 focusFiles/focus_files 键经 { ...item } 透传保留，
+    // 必须确保不变式「键存在 ⇒ 值已归一；归一后为空 ⇒ 键不存在（undefined）」，
+    // 严禁把未清洗的别名原文（空串/空白项）泄露给下游 zod 闸门与 Go 消费方
+    delete ch.focus_files;
+    if (focus.length > 0) {
+      ch.focusFiles = focus;
+    } else {
+      delete ch.focusFiles;
+    }
+
+    // (e-3) README 保底条件化：仅当该章归一后 focusFiles 为空时注入，严禁给已声明
+    //       聚焦文件的专题章塞进无关 README 目标；focus 非空时 targetPaths 保持 []
     if (targets.length === 0) {
-      targets = ['README.md'];
+      if (focus.length === 0) {
+        targets = ['README.md'];
+      }
     } else if (targets.length > 4) {
       targets = targets.slice(0, 4);
     }
@@ -325,6 +376,8 @@ export function normalizeOutlinePlan(raw: unknown): unknown {
 
   return {
     ...obj,
+    // intentMode 键恒在：非法/缺失值为 undefined（清除 ...obj 透传的非法字面量，zod optional 可见）
+    intentMode,
     curriculumMode: mode,
     chapters: healedChapters,
     ...(needRoll !== undefined ? { needRollup: needRoll } : {}),

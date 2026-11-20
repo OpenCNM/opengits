@@ -276,3 +276,148 @@ func TestBuildCourseTree(t *testing.T) {
 		})
 	}
 }
+
+// TestBuildCourseTree_EmptyTargetPathsBackfill 验证专题切片章无 TargetPaths 时
+// SourcePaths 的确定性回填：公共目录 / 跨目录取首章目录 / 根级文件保持空，
+// 以及 modTitle primary 的组锚定口径推导。
+func TestBuildCourseTree_EmptyTargetPathsBackfill(t *testing.T) {
+	tests := []struct {
+		name     string
+		repoName string
+		plan     []PlanChapter
+		chapters []cognitive.OutlineChapter
+		checkFn  func(t *testing.T, tree *CourseTree)
+	}{
+		{
+			name:     "无 TargetPaths：SourcePaths 回填为章文件公共目录",
+			repoName: "slice-core-repo",
+			plan: []PlanChapter{
+				{ModuleTitle: "模块 1: 状态机核心", Name: "第 1 章: 状态定义与迁移"},
+				{ModuleTitle: "模块 1: 状态机核心", Name: "第 2 章: 事件驱动与守卫"},
+			},
+			chapters: []cognitive.OutlineChapter{
+				{Name: "第 1 章: 状态定义与迁移", Files: []cognitive.ChapterFile{{Path: "core/state.go"}}},
+				{Name: "第 2 章: 事件驱动与守卫", Files: []cognitive.ChapterFile{{Path: "core/transition.go"}}},
+			},
+			checkFn: func(t *testing.T, tree *CourseTree) {
+				t.Helper()
+				require.NotNil(t, tree.OverviewCourse)
+				assert.Equal(t, []string{"core"}, tree.OverviewCourse.SourcePaths, "应回填为章文件公共目录")
+			},
+		},
+		{
+			name:     "章文件跨不相关目录：按首章优先取首章首文件目录",
+			repoName: "slice-mixed-repo",
+			plan: []PlanChapter{
+				{ModuleTitle: "模块 1: 状态机核心", Name: "第 1 章: 状态定义与迁移"},
+				{ModuleTitle: "模块 1: 状态机核心", Name: "第 2 章: 网络传输层"},
+			},
+			chapters: []cognitive.OutlineChapter{
+				{Name: "第 1 章: 状态定义与迁移", Files: []cognitive.ChapterFile{{Path: "core/state.go"}}},
+				{Name: "第 2 章: 网络传输层", Files: []cognitive.ChapterFile{{Path: "net/conn.go"}}},
+			},
+			checkFn: func(t *testing.T, tree *CourseTree) {
+				t.Helper()
+				require.NotNil(t, tree.OverviewCourse)
+				assert.Equal(t, []string{"core"}, tree.OverviewCourse.SourcePaths, "目录互不相关时应取首章首文件目录")
+			},
+		},
+		{
+			name:     "根级文件：推导为空串保持现状不回填",
+			repoName: "slice-root-repo",
+			plan: []PlanChapter{
+				{ModuleTitle: "模块 1: 基础总览", Name: "第 1 章: 简单章 A"},
+				{ModuleTitle: "模块 1: 基础总览", Name: "第 2 章: 简单章 B"},
+			},
+			chapters: []cognitive.OutlineChapter{
+				{Name: "第 1 章: 简单章 A", Files: []cognitive.ChapterFile{{Path: "a.go"}}},
+				{Name: "第 2 章: 简单章 B", Files: []cognitive.ChapterFile{{Path: "b.go"}}},
+			},
+			checkFn: func(t *testing.T, tree *CourseTree) {
+				t.Helper()
+				require.NotNil(t, tree.OverviewCourse)
+				// 根级文件推导为空串 → 组回填保持空，OverviewCourse 走既有
+				// rootName 兜底（pre-existing 全仓行为，红线 1 不改动）；
+				// 断言兜底值即同时证明组回填未注入任何伪目录
+				assert.Equal(t, []string{"slice-root-repo"}, tree.OverviewCourse.SourcePaths,
+					"根级文件组回填应保持空，OverviewCourse 走 rootName 兜底")
+			},
+		},
+		{
+			name:     "无 TargetPaths 无 ModuleTitle：primary 取首章目录参与模块标题推导",
+			repoName: "slice-notitle-repo",
+			plan: []PlanChapter{
+				{Name: "第 1 章: 状态定义与迁移", Phase: "进阶"},
+				{Name: "第 2 章: 事件驱动与守卫", Phase: "进阶"},
+			},
+			chapters: []cognitive.OutlineChapter{
+				{Name: "第 1 章: 状态定义与迁移", Files: []cognitive.ChapterFile{{Path: "core/state.go"}}},
+				{Name: "第 2 章: 事件驱动与守卫", Files: []cognitive.ChapterFile{{Path: "core/transition.go"}}},
+			},
+			checkFn: func(t *testing.T, tree *CourseTree) {
+				t.Helper()
+				require.NotNil(t, tree.OverviewCourse)
+				assert.Equal(t, "模块 1: core 核心实现", tree.OverviewCourse.Name, "primary 应取首章首文件目录参与标题推导")
+				assert.Equal(t, []string{"core"}, tree.OverviewCourse.SourcePaths)
+				assert.Empty(t, tree.SubCourses, "组锚定口径下同目录章节应聚合进同一模块")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := &DrillResult{
+				Plan:     tt.plan,
+				Chapters: tt.chapters,
+			}
+			tree := BuildCourseTree(tt.repoName, res, &RepoTreeNode{Name: tt.repoName})
+			tt.checkFn(t, tree)
+		})
+	}
+}
+
+// TestBuildCourseTree_EmptyTargetPathsAttachTopologies 验证 SourcePaths 回填后，
+// 子课 Scale 2 拓扑图不再因 scope 为空被 AttachTopologies 静默跳过。
+func TestBuildCourseTree_EmptyTargetPathsAttachTopologies(t *testing.T) {
+	patterns := loadPatterns(t)
+
+	files := []FileMap{
+		{Path: "core/state.go", LOC: 200, Layer: LayerPipeline, Exports: []string{"Transition"}},
+		{Path: "core/guard.go", LOC: 120, Layer: LayerPipeline, Exports: []string{"Guard"}},
+		{Path: "net/conn.go", LOC: 150, Layer: LayerFoundation, Exports: []string{"Dial"}},
+	}
+	m := &RepoMap{
+		RepoName: "slice-repo",
+		Files:    files,
+		Tree:     BuildRepoTree(files, "slice-repo"),
+	}
+
+	plan := []PlanChapter{
+		{ModuleTitle: "模块 1: 状态机核心", Name: "第 1 章: 状态定义与迁移"},
+		{ModuleTitle: "模块 2: 网络传输", Name: "第 2 章: 连接与拨号"},
+	}
+	chapters := []cognitive.OutlineChapter{
+		{
+			Name:  "第 1 章: 状态定义与迁移",
+			Files: []cognitive.ChapterFile{{Path: "core/state.go"}, {Path: "core/guard.go"}},
+		},
+		{
+			Name:  "第 2 章: 连接与拨号",
+			Files: []cognitive.ChapterFile{{Path: "net/conn.go"}},
+		},
+	}
+
+	tree := BuildCourseTree("slice-repo", &DrillResult{Plan: plan, Chapters: chapters}, &RepoTreeNode{Name: "slice-repo"})
+	tree.AttachTopologies(m, patterns)
+
+	require.NotNil(t, tree.MacroTopology)
+	require.NotNil(t, tree.OverviewCourse, "模块 1 应归入 OverviewCourse")
+	require.Len(t, tree.SubCourses, 1, "模块 2 应归入 SubCourses")
+
+	assert.Equal(t, []string{"core"}, tree.OverviewCourse.SourcePaths, "总览课应回填公共目录")
+
+	require.NotNil(t, tree.SubCourses[0].Topology, "回填后子课不得因 scope 为空静默跳过 Scale 2 拓扑")
+	assert.Equal(t, 2, tree.SubCourses[0].Topology.Scale)
+	assert.Equal(t, "net", tree.SubCourses[0].Topology.Scope)
+	assert.Equal(t, []string{"net"}, tree.SubCourses[0].SourcePaths)
+}

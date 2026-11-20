@@ -1489,7 +1489,7 @@
   "workbench_reorganize_more_label": "展开细节",
   "workbench_reorganize_more_sub": "纵深展开模块实现",
   "workbench_reorganize_more_prompt": "纵深展开核心子系统的代码实现，将关键逻辑流拆解为独立专题章节",
-  "workbench_reorganize_custom_btn": "提要求",
+  "workbench_reorganize_custom_btn": "自定义",
   "workbench_reorganize_undo": "撤回上一版",
   "workbench_reorganize_ai_expand": "AI 扩写",
   "workbench_reorganize_ai_expanding": "扩写中...",

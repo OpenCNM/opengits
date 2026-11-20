@@ -40,14 +40,23 @@ type PlanChapter struct {
 	Name        string   `json:"name"`
 	Summary     string   `json:"summary"`
 	TargetPaths []string `json:"targetPaths"`
-	Phase       string   `json:"phase"`
-	DrillDown   bool     `json:"drillDown"`
+	// FocusFiles 专题焦点文件(模型点名的文件级路径;thematic 意图下
+	// targetPaths 可为空,章粒度由焦点文件直接定义)。规划层不做路径
+	// 真实性判断——幻觉剔除统一交由预验证求交阶段(物理边界裁决)。
+	FocusFiles []string `json:"focusFiles,omitempty"`
+	Phase      string   `json:"phase"`
+	DrillDown  bool     `json:"drillDown"`
 }
 
 type planResponse struct {
 	Chapters       []PlanChapter `json:"chapters"`
 	NeedRoll       []string      `json:"needRollup"`
 	CurriculumMode string        `json:"curriculumMode"`
+	// IntentMode 意图模式声明(模型输出,TS 侧 zod 放行后透传):
+	// "full_repo"=全仓课程 / "thematic_slice"=专题切片。
+	// 意图主权红线:thematic 判定只来自 customPrompt 非空 + 本字段,
+	// 代码层绝不写任何关键词/正则意图猜测。
+	IntentMode string `json:"intentMode,omitempty"`
 }
 
 // PlannerModel 规划调用抽象(outline_plan_v1)。
@@ -67,6 +76,9 @@ type DrillResult struct {
 	DroppedPaths   []string      // 幻觉装甲砍除
 	Duration       time.Duration
 	CurriculumMode string
+	// Thematic 专题切片模式标注(obtainPlan 已按 customPrompt 门控过):
+	// handler 侧 ComputeExcludedFiles 据此把专题外文件与辅助文件区分标注。
+	Thematic bool
 	// Diagnostics 规划阶段确定性诊断（Phase 2 观测：随响应 stats 透传，
 	// Node 侧单行结构化摘要消费——先量化后扩容，Phase 3 触发判据的数据源）。
 	Diagnostics PipelineDiagnostics `json:"diagnostics,omitempty"`
@@ -102,10 +114,18 @@ type PipelineDiagnostics struct {
 	// 契约回显——观测面直接关联档位与结果，用户反馈式扩容的证据字段）。
 	NeedRollupQuota int `json:"needRollupQuota,omitempty"`
 	NeedRollupDepth int `json:"needRollupDepth,omitempty"`
+	// IntentMode 规划意图收敛结果(full_repo/thematic_slice)——观测面关联
+	// 意图模式与退化率/救回率,专题切片质量分账的数据字段。
+	IntentMode string `json:"intentMode,omitempty"`
 }
 
 // drillChapterFileCap 汇编单章文件上限(认知预算硬上限,防巨型章膨胀)。
 const drillChapterFileCap = 8
+
+// thematicRollupFileBudget 专题补料 rollup 的目录行直属文件预算(行数/目录):
+// 聚焦视野只需"该分区有什么文件"的中性清单(专题排序 Hotness 主序),
+// 12 行足以覆盖单目录高信噪比文件;全仓通道的采样偏置渲染不受影响。
+const thematicRollupFileBudget = 12
 
 // DefaultDrillConcurrency 默认下钻并发度（严格 <= 2，防止压垮外部通道）。
 const DefaultDrillConcurrency = 2
@@ -223,26 +243,38 @@ func runDrillLevel(
 		return nil, &PlanErrorWithDiagnostics{Err: fmt.Errorf("plan: %w", err), Diagnostics: planDiag}
 	}
 
+	// thematic 判定（obtainPlan 出口已按 customPrompt 门控归一：customPrompt
+	// 为空时 IntentMode 恒为 full_repo，绝无越权专题通道；此处只读模型输出）。
+	thematic := planResp.IntentMode == "thematic_slice"
+
 	effectiveCap := DrillSubtreeFileCap()
 
 	if planResp.CurriculumMode == "single" {
-		if m.Tree.FileCount <= 800 {
-			res, err := Run(ctx, m, model, patterns, targetLanguage)
-			if err != nil {
-				return nil, fmt.Errorf("single mode run: %w", err)
+		// 专题装配例外（意图主权）：thematic 且任一章带 focusFiles 时不进入
+		// Run() 早退、不因 FileCount>800 覆写——保持 single 落入下方装配路径，
+		// 由预验证求交后的焦点文件确定性直出（零额外 LLM）。轻量预检只看
+		// "有章声明焦点"，真实性裁决统一下沉到预验证求交阶段。
+		thematicSingleFocus := thematic && hasAnyFocusFiles(planResp.Chapters)
+		if !thematicSingleFocus {
+			if m.Tree.FileCount <= 800 {
+				res, err := Run(ctx, m, model, patterns, targetLanguage)
+				if err != nil {
+					return nil, fmt.Errorf("single mode run: %w", err)
+				}
+				AttachSubtreeCompanionsWithMap(res.Chapters, root, m, subsystems)
+				return &DrillResult{
+					Chapters:       res.Chapters,
+					Plan:           planResp.Chapters,
+					Replanned:      replanned,
+					DroppedPaths:   res.DroppedPaths,
+					CurriculumMode: "single",
+					Diagnostics:    planDiag,
+					Thematic:       thematic,
+				}, nil
+			} else {
+				log.Printf("[pipelineb] Guardrail repo size (%d files) exceeds single mode capacity, overriding to matrix mode\n", m.Tree.FileCount)
+				planResp.CurriculumMode = "matrix"
 			}
-			AttachSubtreeCompanionsWithMap(res.Chapters, root, m, subsystems)
-			return &DrillResult{
-				Chapters:       res.Chapters,
-				Plan:           planResp.Chapters,
-				Replanned:      replanned,
-				DroppedPaths:   res.DroppedPaths,
-				CurriculumMode: "single",
-				Diagnostics:    planDiag,
-			}, nil
-		} else {
-			log.Printf("[pipelineb] Guardrail repo size (%d files) exceeds single mode capacity, overriding to matrix mode\n", m.Tree.FileCount)
-			planResp.CurriculumMode = "matrix"
 		}
 	}
 
@@ -250,6 +282,10 @@ func runDrillLevel(
 
 	// 目标预验证(规划非确定性,可能引用骨架外路径):无效目标剔除,
 	// 全无效的规划章丢弃并登记(不再浪费下钻与跳过统计)。
+	// 专题扩展:焦点文件与全集树叶索引精确求交(normalizePlanPaths 已做
+	// 根名前缀/反引号/#后缀清洗),命中才保留归一化后的真实路径——焦点
+	// 视野同样不豁免物理边界(幻觉剔除单一口径,与 targetPaths 同闸)。
+	_, leafIdx := root.leafFilesIndexed()
 	validPlan := make([]PlanChapter, 0, len(plan))
 	droppedPlan := []string{}
 	pathSet := map[string]bool{}
@@ -267,7 +303,23 @@ func runDrillLevel(
 				}
 			}
 		}
-		if len(valid) == 0 {
+		// 焦点文件求交：防御性再清洗与 parsePlan 侧同语义（幂等），精确
+		// 匹配全集树叶索引；预验证即截到单章认知预算硬上限
+		validFocus := make([]string, 0, len(ch.FocusFiles))
+		for _, ff := range ch.FocusFiles {
+			p := normalizeFocusFile(root.Name, ff)
+			if p == "" {
+				continue
+			}
+			if _, ok := leafIdx[p]; ok {
+				validFocus = append(validFocus, p)
+			}
+		}
+		if len(validFocus) > drillChapterFileCap {
+			validFocus = validFocus[:drillChapterFileCap]
+		}
+		ch.FocusFiles = validFocus
+		if len(valid) == 0 && len(validFocus) == 0 {
 			droppedPlan = append(droppedPlan, ch.Name)
 			continue
 		}
@@ -298,7 +350,10 @@ func runDrillLevel(
 	skipped := []string{}
 
 	if os.Getenv("DRILL_LLM_SUBTREE") == "1" {
-		// 实验模式：显式声明 DRILL_LLM_SUBTREE=1 时，按子树触发 LLM 选材
+		// 实验模式：显式声明 DRILL_LLM_SUBTREE=1 时，按子树触发 LLM 选材。
+		// 专题评分（scoreSubtreeFile 的 thematic 中性化）仅默认路径生效——
+		// 本分支选材权交给子树 LLM，代码评分不参与；仅 capFiles 的 README
+		// 保底豁免随 thematic 门控透传（专题视野不做文档霸权）。
 		type subResult struct {
 			path     string
 			chapters []cognitive.OutlineChapter
@@ -350,7 +405,7 @@ func runDrillLevel(
 					return
 				}
 
-				leaves := capFiles(allSubLeaves, effectiveCap)
+				leaves := capFiles(allSubLeaves, effectiveCap, thematic)
 				subMap := &RepoMap{RepoName: m.RepoName + "/" + sub.Name, Files: leaves, Tree: sub}
 				for _, f := range leaves {
 					subMap.TotalLOC += f.LOC
@@ -410,7 +465,9 @@ func runDrillLevel(
 				skipped = append(skipped, tp)
 				continue
 			}
-			sortedLeaves := sortSubtreeFilesByRelevance(allSubLeaves, teachingDepth)
+			// thematic 透传评分中性化：跳过 README/docs+500 与 config+200
+			// 入口偏置——专题切片按符号信噪比选材，不做文档霸权
+			sortedLeaves := sortSubtreeFilesByRelevance(allSubLeaves, teachingDepth, thematic)
 			byPath[tp] = chunkFilesIntoOutlineChapters(sortedLeaves, drillChapterFileCap)
 		}
 		sort.Strings(skipped)
@@ -424,18 +481,27 @@ func runDrillLevel(
 	var chapters []cognitive.OutlineChapter
 	for _, pch := range plan {
 		var files []cognitive.ChapterFile
-		for _, tp := range pch.TargetPaths {
-			pool := byPath[tp]
-			i := next[tp]
-			if i < len(pool) {
-				for _, f := range pool[i].Files {
-					if len(files) >= drillChapterFileCap {
-						break
+		if len(pch.FocusFiles) > 0 {
+			// 专题焦点直出：预验证求交后的真实路径直接成为主文件——跳过
+			// 子树池认领（确定性装配，零额外 LLM；文件已在预验证阶段截到
+			// drillChapterFileCap，无需二次封顶）
+			for _, p := range pch.FocusFiles {
+				files = append(files, cognitive.ChapterFile{Path: p})
+			}
+		} else {
+			for _, tp := range pch.TargetPaths {
+				pool := byPath[tp]
+				i := next[tp]
+				if i < len(pool) {
+					for _, f := range pool[i].Files {
+						if len(files) >= drillChapterFileCap {
+							break
+						}
+						files = append(files, f)
 					}
-					files = append(files, f)
+					next[tp] = i + 1
+					lastClaim[tp] = len(chapters)
 				}
-				next[tp] = i + 1
-				lastClaim[tp] = len(chapters)
 			}
 		}
 		if len(files) == 0 {
@@ -460,11 +526,19 @@ func runDrillLevel(
 		}
 	}
 
-	san := cognitive.SanitizeAndIntersectOutline(chapters, allNodes, "", targetLanguage, allCandidates, patterns)
+	// 装甲：thematic 时豁免 README 保底回填（专题切片只看目标专题，文档
+	// 霸权不在装甲层复发）；全仓通道不传选项，行为逐字节一致。
+	var sanOpts []cognitive.SanitizeOption
+	if thematic {
+		sanOpts = append(sanOpts, cognitive.WithoutReadmeBackfill())
+	}
+	san := cognitive.SanitizeAndIntersectOutline(chapters, allNodes, "", targetLanguage, allCandidates, patterns, sanOpts...)
 	chapters = san.Sanitized
 	droppedPaths := san.DroppedPaths
 
-	AttachSubtreeCompanionsWithMap(chapters, root, m, subsystems)
+	// 协同挂载：thematic 只跑 Pass 0（AST 物理边），跳过 Pass 1 同子系统
+	// 目录补位——专题协同只信物理边，目录就近弱信号会让专题外文件挤占预算
+	AttachSubtreeCompanionsWithMap(chapters, root, m, subsystems, thematic)
 
 	// WP4.1 深度 2：覆盖率门禁仅观测（Gall's Law——下游逐子树 LLM 成本受控，
 	// 不触发重规划/子树重跑；缺失告警与覆盖率指标只进结构化日志，不进 UI）。
@@ -499,12 +573,21 @@ func runDrillLevel(
 		DroppedPaths:   droppedPaths,
 		CurriculumMode: planResp.CurriculumMode,
 		Diagnostics:    planDiag,
+		Thematic:       thematic,
 	}, nil
 }
 
 // planDegenerate 退化判定:非根分区覆盖 <3,或过半章指向根(模型偷懒
 // 整仓一章)——确定性兜底接管(收敛漏斗:模型起草,代码裁决)。
-func planDegenerate(plan []PlanChapter, root *RepoTreeNode) bool {
+// thematic=true 时只守物理底线:parsePlan 已保证 >=1 章,焦点章的存在性
+// 由 runDrillLevel 预验证对真实路径求交裁决——分区覆盖/根指向等全仓
+// 启发式全部跳过(用户聚焦意图主权:绝不以分区数倒逼模型扩章)。
+func planDegenerate(plan []PlanChapter, root *RepoTreeNode, thematic bool) bool {
+	if thematic {
+		// 专题切片：章数物理底线 len(plan) >= 1 已由 parsePlan 保证，直接放行
+		// （聚焦章节宁缺毋滥——1 章专题是合法产物，不是退化）
+		return false
+	}
 	if root.FileCount <= 3 {
 		// 微型仓模式：物理分区本来就 <= 3，只要模型给出了 >= 2 个规划章即视为有效
 		return len(plan) < 2
@@ -557,13 +640,68 @@ func normalizePlanPaths(plan []PlanChapter, root *RepoTreeNode) {
 		for j, tp := range plan[i].TargetPaths {
 			plan[i].TargetPaths[j] = normalizeTargetPath(root.Name, tp)
 		}
+		for j, ff := range plan[i].FocusFiles {
+			plan[i].FocusFiles[j] = normalizeFocusFile(root.Name, ff)
+		}
 	}
+}
+
+// normalizeFocusFile 焦点文件归一化：normalizeTargetPath 的文件级扩展——
+// 追加 "#" 后缀剥离（与 outline_sanitizer 的 path#anchor 剥离同语义：模型
+// 常以 "path#Symbol" 修饰焦点，锚点真实性由装甲层裁决，预验证只认文件路径）。
+// 反引号/空白/根名前缀/引导斜杠清洗由 normalizeTargetPath 统一承担。
+func normalizeFocusFile(rootName, p string) string {
+	p = normalizeTargetPath(rootName, p)
+	if i := strings.IndexByte(p, '#'); i >= 0 {
+		p = strings.TrimSpace(p[:i])
+	}
+	return p
+}
+
+// hasAnyFocusFiles 轻量预检：任一章声明了非空 focusFiles 即视为可装配。
+// 只裁决 single 模式的分支走向（严禁 >800 覆写闸吞掉专题装配路径）；
+// 严格的真实性求交校验在目标预验证阶段执行。
+func hasAnyFocusFiles(plan []PlanChapter) bool {
+	for _, ch := range plan {
+		if len(ch.FocusFiles) > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // planFeedbackText 反馈重规划的修正指令:携带物理校验失败的具体事实
 // (未解析目标/根目标占比),让模型一次修正——收敛漏斗的反馈闭环,
 // 与网关侧 json_mode 反馈重试同一哲学。
-func planFeedbackText(plan []PlanChapter, root *RepoTreeNode) string {
+// thematic=true 时反馈只指向物理事实（targetPaths/focusFiles 无法解析到
+// 骨架图与符号索引中的真实路径），不输出分区数要求——聚焦章节宁缺毋滥。
+func planFeedbackText(plan []PlanChapter, root *RepoTreeNode, thematic bool) string {
+	if thematic {
+		_, leafIdx := root.leafFilesIndexed()
+		var unresolved []string
+		for _, ch := range plan {
+			for _, tp := range ch.TargetPaths {
+				// 根名/"." 目标 = 整仓,恒可解析(findSubtree 同语义),不入未解析清单
+				if tp != root.Name && tp != "." && findSubtree(root, tp) == nil {
+					unresolved = append(unresolved, tp)
+				}
+			}
+			for _, ff := range ch.FocusFiles {
+				if p := normalizeFocusFile(root.Name, ff); p != "" {
+					if _, ok := leafIdx[p]; !ok {
+						unresolved = append(unresolved, ff)
+					}
+				}
+			}
+		}
+		var sb strings.Builder
+		sb.WriteString("上次专题规划未通过物理校验:")
+		if len(unresolved) > 0 {
+			fmt.Fprintf(&sb, "以下 targetPaths/focusFiles 无法解析到骨架图与符号索引中的真实路径: %s;", strings.Join(unresolved, ", "))
+		}
+		sb.WriteString("请逐字复制符号索引或骨架行中的路径标识,聚焦章节宁缺毋滥。")
+		return sb.String()
+	}
 	if root.FileCount <= 3 {
 		return "上次大纲规划章数不足:请至少给出 2 个教学章,严格遵循输出结构。"
 	}
@@ -641,7 +779,20 @@ func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, t
 	if rollupDepth < 1 {
 		rollupDepth = rollupDepthL0
 	}
+	// 用户定制指令经 teachingContextAware 从 planner 实例随路读取（GatewayPlanner
+	// 已实现该接口，测试桩按需实现）——obtainPlan 签名保持不变，意图条件不在
+	// 调用链上裸传（与 coverage 观测同一挂载哲学）。customPrompt == "" 时全链路
+	// （骨架/rollups/门禁/反馈）与现状逐字节一致（红线 1：能力不倒退）。
+	customPrompt := ""
+	if ca, ok := planner.(teachingContextAware); ok {
+		_, customPrompt = ca.TeachingContext()
+	}
+	// 骨架通道选择：专题任务切换双段骨架（物理上卷行 + 定向符号索引），规划器
+	// 获得超越 1 层目录上卷的符号级视野；全仓通道保持原骨架渲染逐字节不变。
 	skeleton := RenderSkeleton(root)
+	if customPrompt != "" {
+		skeleton = RenderThematicSkeleton(root, thematicSkeletonBudget)
+	}
 	var raw string
 	for attempt := 0; attempt < 2; attempt++ {
 		raw, err = planner.Plan(ctx, skeleton, nil, "", targetLanguage)
@@ -665,6 +816,9 @@ func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, t
 		return nil, false, diag, err
 	}
 	normalizePlanPaths(resp.Chapters, root)
+	// 意图收敛时序 ①：首发原始判定先留档——A5 修订响应漏报 intentMode 时
+	// 继承首发（继承的是模型自己的判定，不是代码猜测，零关键词匹配）。
+	firstIntent := resp.IntentMode
 	// A5:模型可请求补充子树上卷(≤3),补料重规划一次。概率性超额
 	//(巨仓自然想上卷更多分区)确定性收敛为按序前 3——旧语义"超 3 全部
 	// 丢弃"把模型的合理意图整锅扔掉,只为了让校验闸少写一行截断
@@ -679,22 +833,45 @@ func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, t
 	if len(resp.NeedRoll) > rollupQuota {
 		resp.NeedRoll = resp.NeedRoll[:rollupQuota]
 	}
+	// lastRollups 留档：A5 补料重规划成功后的反馈重规划仍携带补料视野
+	// （专题/补料上下文不因退化反馈而丢失——重规划看到的世界与首发一致）。
+	var lastRollups map[string]string
 	if len(resp.NeedRoll) > 0 {
 		rollups := map[string]string{}
 		for _, p := range resp.NeedRoll {
 			if sub := findSubtree(root, p); sub != nil {
-				rollups[p] = RenderSubtreeSkeleton(sub, rollupDepth)
+				// 专题通道补料带直属文件行（专题中性排序，规划器点名分区时可见
+				// "该分区有什么文件"）；全仓通道保持采样偏置渲染逐字节不变
+				if customPrompt != "" {
+					rollups[p] = RenderSubtreeSkeletonWithFiles(sub, rollupDepth, thematicRollupFileBudget)
+				} else {
+					rollups[p] = RenderSubtreeSkeleton(sub, rollupDepth)
+				}
 			}
 		}
 		if p2, ok := tryReplanningWithRollups(ctx, planner, skeleton, rollups, targetLanguage, root); ok {
 			resp, replanned = p2, true
+			// 意图收敛时序 ②：修订响应漏报 intentMode 时继承首发判定
+			if resp.IntentMode == "" && firstIntent == "thematic_slice" {
+				resp.IntentMode = "thematic_slice"
+			}
+			lastRollups = rollups
 		}
 		// 修订失败回落首发规划
 	}
-	if planDegenerate(resp.Chapters, root) {
+	// 意图收敛时序 ③ 最终归一（收敛点必须在 planDegenerate 判定之前）：
+	// customPrompt 为空强制 full_repo（全仓主权在代码，模型越权声明无效）；
+	// customPrompt 非空而模型漏报时归一 full_repo——fail-closed 不劣于现状，
+	// 绝不写任何关键词猜测。
+	if customPrompt == "" || resp.IntentMode == "" {
+		resp.IntentMode = "full_repo"
+	}
+	thematic := customPrompt != "" && resp.IntentMode == "thematic_slice"
+	diag.IntentMode = resp.IntentMode
+	if planDegenerate(resp.Chapters, root, thematic) {
 		diag.PlanDegenerateTriggered = true
 		log.Printf("[pipelineb] DrillPlan degenerate plan (root=%s, chapters=%d) -> feedback replan\n", root.Name, len(resp.Chapters))
-		raw2, err2 := planner.Plan(ctx, skeleton, nil, planFeedbackText(resp.Chapters, root), targetLanguage)
+		raw2, err2 := planner.Plan(ctx, skeleton, lastRollups, planFeedbackText(resp.Chapters, root, thematic), targetLanguage)
 		if err2 != nil {
 			// 反馈重规划物理失败（限流/瞬断/密钥失效）≠ 规划退化：
 			// 保真上抛底层错误（sendPipelineError 的 errors.As 依此透传网关码），
@@ -710,7 +887,15 @@ func obtainPlan(ctx context.Context, planner PlannerModel, root *RepoTreeNode, t
 		if err2 == nil {
 			if resp2, err3 := parsePlan(raw2); err3 == nil {
 				normalizePlanPaths(resp2.Chapters, root)
-				if !planDegenerate(resp2.Chapters, root) {
+				// 救回规划同样过意图归一闸：customPrompt=="" 时模型私改
+				// intentMode 绝不允许把 runDrillLevel 掰进专题通道（闸不变量：
+				// thematic 只来自 customPrompt 非空 + 模型输出，obtainPlan 出口
+				// 恒已归一）；漏报时归一 full_repo（fail-closed，不继承首发——
+				// 反馈重规划是模型对新规划的独立裁决）。
+				if customPrompt == "" || resp2.IntentMode == "" {
+					resp2.IntentMode = "full_repo"
+				}
+				if !planDegenerate(resp2.Chapters, root, thematic) {
 					if resp2.CurriculumMode == "" {
 						resp2.CurriculumMode = "matrix"
 					}
@@ -764,8 +949,11 @@ func parsePlan(raw string) (*planResponse, error) {
 		return nil, errors.New("zero plan chapters")
 	}
 	for _, c := range p.Chapters {
-		if strings.TrimSpace(c.Name) == "" || len(c.TargetPaths) == 0 {
-			return nil, errors.New("invalid plan chapter (empty name or targets)")
+		// 专题切片的章可只带 focusFiles（targetPaths 为空数组合法，TS 侧 zod
+		// 已放行）；结构校验只拦"双空"章——focusFiles 条目的路径真实性不做
+		// 规划层判断，幻觉剔除统一交由预验证求交阶段（物理边界裁决）。
+		if strings.TrimSpace(c.Name) == "" || (len(c.TargetPaths) == 0 && len(c.FocusFiles) == 0) {
+			return nil, errors.New("invalid plan chapter (empty name, targets and focusFiles)")
 		}
 	}
 	return &p, nil
@@ -859,14 +1047,17 @@ const (
 // teachingDepth（WP3.3）：overview 提升文档/入口/门面导出、降权深层内部与测试；
 // deep 提升高 Hotness/高 LOC 非测试核心与 spec/invariant 契约文件；
 // 空串或 standard 仅按基线权重。
-func scoreSubtreeFile(f FileMap, teachingDepth string) int {
+// thematic：跳过 IsDoc+500 与 IsConfig+200 两个入口偏置加分块（专题切片按
+// 符号信噪比选材，不做文档霸权）；其余 Layer/Exports/Hotness/LOC/测试惩罚/
+// teachingDepth 加减项全部保留。零关键词匹配，纯结构化字段门控。
+func scoreSubtreeFile(f FileMap, teachingDepth string, thematic bool) int {
 	score := 0
-	// 1. 文档与 README 优先（架构导图与设计说明）
-	if f.IsDoc {
+	// 1. 文档与 README 优先（架构导图与设计说明）——thematic 豁免
+	if f.IsDoc && !thematic {
 		score += 500
 	}
-	// 2. 主配置文件与包清单（模块元数据核心）
-	if f.IsConfig {
+	// 2. 主配置文件与包清单（模块元数据核心）——thematic 豁免
+	if f.IsConfig && !thematic {
 		score += 200
 	}
 	// 3. 架构核心拓扑分层 (Foundation > Pipeline > Interface)
@@ -972,12 +1163,13 @@ func isSpecInvariantPath(p string) bool {
 }
 
 // sortSubtreeFilesByRelevance 确定性按架构与教学权重降序排列文件。
-func sortSubtreeFilesByRelevance(files []FileMap, teachingDepth string) []FileMap {
+// thematic 透传 scoreSubtreeFile：跳过文档/配置入口偏置（专题中性排序）。
+func sortSubtreeFilesByRelevance(files []FileMap, teachingDepth string, thematic bool) []FileMap {
 	sorted := make([]FileMap, len(files))
 	copy(sorted, files)
 	sort.SliceStable(sorted, func(i, j int) bool {
-		si := scoreSubtreeFile(sorted[i], teachingDepth)
-		sj := scoreSubtreeFile(sorted[j], teachingDepth)
+		si := scoreSubtreeFile(sorted[i], teachingDepth, thematic)
+		sj := scoreSubtreeFile(sorted[j], teachingDepth, thematic)
 		if si != sj {
 			return si > sj
 		}
@@ -1011,7 +1203,7 @@ func chunkFilesIntoOutlineChapters(files []FileMap, chunkSize int) []cognitive.O
 	return res
 }
 
-func capFiles(files []FileMap, cap int) []FileMap {
+func capFiles(files []FileMap, cap int, thematic bool) []FileMap {
 	if len(files) <= cap {
 		return files
 	}
@@ -1026,12 +1218,16 @@ func capFiles(files []FileMap, cap int) []FileMap {
 		byTop[seg] = append(byTop[seg], f)
 	}
 	out := make([]FileMap, 0, cap)
-	for _, f := range files { // README/docs 保底
-		if len(out) >= cap {
-			break
-		}
-		if f.IsDoc {
-			out = append(out, f)
+	// README/docs 保底（thematic 豁免：专题切片不做文档霸权，与装甲层
+	// WithoutReadmeBackfill 同一口径——保底注入会让专题外文档挤占配额）
+	if !thematic {
+		for _, f := range files {
+			if len(out) >= cap {
+				break
+			}
+			if f.IsDoc {
+				out = append(out, f)
+			}
 		}
 	}
 	taken := map[string]bool{}
@@ -1130,13 +1326,22 @@ var genericImportDirSegments = map[string]struct{}{
 //   - 第二轮：同子系统内 depth*100 - len(companions) 补位；
 //   - 严禁仅因共享 packages/（depth==1）跨子包错挂——子系统清单非空时
 //     跨 SubsystemSpec 的文件两轮皆不挂载。
-func AttachSubtreeCompanionsWithMap(chapters []cognitive.OutlineChapter, root *RepoTreeNode, m *RepoMap, subsystems []SubsystemSpec) {
-	attachSubtreeCompanions(chapters, root, m, subsystems)
+//
+// thematic（variadic 追加，缺省 false = 历史行为零漂移）：专题切片只执行
+// 第一轮 AST 边挂载，跳过第二轮同子系统目录补位——专题协同只信 AST 物理
+// 边，目录就近的弱信号会让专题外文件挤占协同预算（深度 1 调用点不传参
+// 自动兼容，无需改动）。
+func AttachSubtreeCompanionsWithMap(chapters []cognitive.OutlineChapter, root *RepoTreeNode, m *RepoMap, subsystems []SubsystemSpec, thematic ...bool) {
+	th := false
+	if len(thematic) > 0 {
+		th = thematic[0]
+	}
+	attachSubtreeCompanions(chapters, root, m, subsystems, th)
 }
 
 // attachSubtreeCompanions 挂载核心实现（m/subsystems 均 nil 安全：
 // 双 nil 退化为纯目录拓扑就近挂载的历史行为）。
-func attachSubtreeCompanions(chapters []cognitive.OutlineChapter, root *RepoTreeNode, m *RepoMap, subsystems []SubsystemSpec) {
+func attachSubtreeCompanions(chapters []cognitive.OutlineChapter, root *RepoTreeNode, m *RepoMap, subsystems []SubsystemSpec, thematic bool) {
 	if len(chapters) == 0 || root == nil {
 		return
 	}
@@ -1209,8 +1414,14 @@ func attachSubtreeCompanions(chapters []cognitive.OutlineChapter, root *RepoTree
 	}
 
 	mounted := make(map[string]bool, len(unselected))
-	// 两段字典序：第一轮 AST 边文件挂满，第二轮同子系统 depth 补位
-	for pass := 0; pass < 2; pass++ {
+	// 两段字典序：第一轮 AST 边文件挂满，第二轮同子系统 depth 补位。
+	// thematic 只跑第一轮（Pass 0）：专题协同只信 AST 物理边，同子系统
+	// 目录补位的弱信号放行会让专题外文件挤占 MaxCompanionsPerLesson 预算。
+	passLimit := 2
+	if thematic {
+		passLimit = 1
+	}
+	for pass := 0; pass < passLimit; pass++ {
 		for _, u := range unselected {
 			if mounted[u.Path] {
 				continue

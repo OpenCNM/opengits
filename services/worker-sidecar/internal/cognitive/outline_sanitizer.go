@@ -8,6 +8,22 @@ import (
 	"github.com/opengits/worker-sidecar/internal/mdpat"
 )
 
+// sanitizeConfig 装甲可选行为配置（SanitizeOption 载体）。
+type sanitizeConfig struct {
+	skipReadmeBackfill bool
+}
+
+// SanitizeOption 大纲装甲可选行为开关（variadic 追加，缺省零行为漂移）。
+type SanitizeOption func(*sanitizeConfig)
+
+// WithoutReadmeBackfill 豁免 README 保底回填。专题切片（用户只看目标专题）场景下，
+// README 存在但未被任何章纳入时不再强制插入第一章首位，杜绝文档霸权在装甲层复发。
+func WithoutReadmeBackfill() SanitizeOption {
+	return func(c *sanitizeConfig) {
+		c.skipReadmeBackfill = true
+	}
+}
+
 // SanitizeAndIntersectOutline 防大模型路径幻觉硬装甲 (严格与 Git Tree 真实节点做集合交集)
 func SanitizeAndIntersectOutline(
 	chapters []OutlineChapter,
@@ -16,7 +32,12 @@ func SanitizeAndIntersectOutline(
 	targetLanguage string,
 	candidateFiles []CandidateOutlineFile,
 	patterns Patterns,
+	opts ...SanitizeOption,
 ) SanitizeOutlineResult {
+	cfg := sanitizeConfig{}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
 	isZh := targetLanguage == "" || targetLanguage == "zh-CN" || targetLanguage == "zh"
 	isJa := targetLanguage == "ja"
 	cleanPrefix := strings.Trim(strings.Trim(prefix, " "), "/")
@@ -286,34 +307,37 @@ func SanitizeAndIntersectOutline(
 	}
 
 	// 检查 README 是否存在但未被纳入，未纳入则保底补充在第一章首位
-	readmePath := FindReadmePath(nodes, cleanPrefix, patterns)
-	if readmePath != "" && realFilePaths[readmePath] && !seenAnchors[readmePath] {
-		readmeIncluded := false
-		for _, ch := range sanitized {
-			for _, file := range ch.Files {
-				if file.Path == readmePath {
-					readmeIncluded = true
+	// （专题切片可经 WithoutReadmeBackfill 豁免：不做文档霸权，只看目标专题）
+	if !cfg.skipReadmeBackfill {
+		readmePath := FindReadmePath(nodes, cleanPrefix, patterns)
+		if readmePath != "" && realFilePaths[readmePath] && !seenAnchors[readmePath] {
+			readmeIncluded := false
+			for _, ch := range sanitized {
+				for _, file := range ch.Files {
+					if file.Path == readmePath {
+						readmeIncluded = true
+						break
+					}
+				}
+				if readmeIncluded {
 					break
 				}
 			}
-			if readmeIncluded {
-				break
+			if !readmeIncluded && len(sanitized) > 0 {
+				shortTitle := "Project Overview & Quickstart"
+				if isZh {
+					shortTitle = "项目概览与入门指南"
+				} else if isJa {
+					shortTitle = "プロジェクト概要とクイックスタートガイド"
+				}
+				sanitized[0].Files = append([]ChapterFile{
+					{
+						Path:       readmePath,
+						ShortTitle: shortTitle,
+					},
+				}, sanitized[0].Files...)
+				seenAnchors[readmePath] = true
 			}
-		}
-		if !readmeIncluded && len(sanitized) > 0 {
-			shortTitle := "Project Overview & Quickstart"
-			if isZh {
-				shortTitle = "项目概览与入门指南"
-			} else if isJa {
-				shortTitle = "プロジェクト概要とクイックスタートガイド"
-			}
-			sanitized[0].Files = append([]ChapterFile{
-				{
-					Path:       readmePath,
-					ShortTitle: shortTitle,
-				},
-			}, sanitized[0].Files...)
-			seenAnchors[readmePath] = true
 		}
 	}
 
