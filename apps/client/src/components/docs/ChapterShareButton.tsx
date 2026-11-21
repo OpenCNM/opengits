@@ -109,20 +109,11 @@ export function ChapterShareButton({ title, className = '', isPublic = true }: C
 
       setCopied(true);
 
-      // 若为私有教程，给予前置风险告知；公开教程给予正常直达提示
-      if (!isPublic) {
-        toastManager.add({
-          type: 'warning',
-          title: m.doc_share_private_title(),
-          description: m.doc_share_private_desc(),
-        });
-      } else {
-        toastManager.add({
-          type: 'success',
-          title: m.doc_share_copied_title(),
-          description: m.doc_share_copied_desc(),
-        });
-      }
+      toastManager.add({
+        type: 'success',
+        title: m.doc_share_copied_title(),
+        description: m.doc_share_copied_desc(),
+      });
 
       setTimeout(() => {
         setCopied(false);
@@ -133,7 +124,12 @@ export function ChapterShareButton({ title, className = '', isPublic = true }: C
         title: m.toast_action_failed(),
       });
     }
-  }, [title, isPublic]);
+  }, [title]);
+
+  // 仅公共教程允许展示分享按钮
+  if (!isPublic) {
+    return null;
+  }
 
   return (
     <button

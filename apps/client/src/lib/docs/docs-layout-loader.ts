@@ -363,9 +363,12 @@ export async function loadDocsLayoutData(
     );
   }
 
-  const { resolveMaintainerUserId } = await import('@/lib/repository-maintainer');
-  const maintainerUserId = await resolveMaintainerUserId(repository.id).catch(() => null);
-  const isMaintainer = Boolean(userId && maintainerUserId === userId);
+  let isMaintainer = false;
+  if (userId) {
+    const { resolveMaintainerUserId } = await import('@/lib/repository-maintainer');
+    const maintainerUserId = await resolveMaintainerUserId(repository.id).catch(() => null);
+    isMaintainer = maintainerUserId === userId;
+  }
   const relayEnabled = Boolean((repository as any).relayEnabled);
 
   return {

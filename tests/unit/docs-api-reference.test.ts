@@ -51,6 +51,7 @@ vi.mock('@/lib/state/chapter-version-projector', () => ({
 }));
 
 vi.mock('@/lib/docs/web-outline-projection', () => ({
+  getWebL1OutlineProjection: vi.fn().mockResolvedValue(null),
   getWebL1OutlineProjectionById: vi.fn().mockResolvedValue(null),
 }));
 

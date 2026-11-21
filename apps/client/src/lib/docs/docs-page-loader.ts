@@ -10,10 +10,10 @@ import { resolveMaintainerUserId } from '@/lib/repository-maintainer';
 import type { ChapterAsset } from '@/components/mdx/ChapterFoldout';
 import type { ChapterMapEntry } from '@/engine/chapter-map';
 import { GITHUB_ENDPOINTS, ENGINE_CONFIG } from '@/lib/config';
+import { hasCorruptionMarker } from '@/lib/constants';
 import { isWebDocRepository } from '@/lib/repository-resolver';
-import { getWebL1OutlineProjectionById } from './web-outline-projection';
+import { getWebL1OutlineProjection, getWebL1OutlineProjectionById } from './web-outline-projection';
 import { createTtlMicroCache } from './ttl-microcache';
-import { executeSidecarConceptGrounding } from '@/engine/symbols-driver';
 import { MODULE_ROLE_PATTERNS } from '@/engine/language-map';
 
 /**
@@ -112,6 +112,8 @@ export type DocPageResolution =
       /** 显式 ?edition= 未命中被静默回退时的提示面（P3-10：不再无声展示基础讲法） */
       editionFallback?: { requestedEdition: string };
       cognitiveScaffold?: DocCognitiveScaffold | null;
+      /** 已解析的激活大纲，供页面直接计算上一章/下一章，免去二次查库 */
+      activeOutline?: OutlineView | null;
     };
 
 export interface CachedRepoDocPageMetadata {
@@ -123,6 +125,16 @@ export interface CachedRepoDocPageMetadata {
 
 const REPO_DOC_PAGE_META_TTL_MS = 60_000;
 const repoPageMetaCache = new Map<string, { data: CachedRepoDocPageMetadata; expiresAt: number }>();
+
+/**
+ * 匿名访客公开章节整页装配微缓存（60s TTL，仅缓存已就绪的正文页，排除未初始化/损坏降级页）。
+ * 命中后 0 次 DB 查询、0 次 Sidecar 调用，直接进入 MDX 进程内 render LRU 渲染，实现秒开。
+ */
+const PUBLIC_DOC_PAGE_TTL_MS = 60_000;
+const publicDocPageCache = createTtlMicroCache<Extract<DocPageResolution, { type: 'doc' }>>(
+  PUBLIC_DOC_PAGE_TTL_MS,
+  256
+);
 
 /**
  * 纯仓库级页面元数据缓存（60s TTL LRU 内存缓存）。
@@ -189,6 +201,10 @@ export function clearRepoDocPageMetaCacheForTest() {
   repoPageMetaCache.clear();
 }
 
+export function clearPublicDocPageCacheForTest() {
+  publicDocPageCache.clear();
+}
+
 /**
  * 纯粹的文档页服务端数据装配管道。
  * 隔离数据库查询、路径回退、大纲多级定位、权限与关联模型。
@@ -203,25 +219,57 @@ export async function loadDocPageData({
   versionParam,
   userId,
 }: LoadDocPageOptions): Promise<DocPageResolution> {
-  const resolved = await resolveRepository(owner, repo, version || branch, edition);
-
   // 讲法作用域:非基础讲法的内部跳转必须携带 ?edition=,否则落回基础行
   // (文档不存在 → 404)。与 DocsEdition.appendEditionQuery 同语义。
   const editionQuery = edition ? `?edition=${encodeURIComponent(edition)}` : '';
-  let repository = resolved?.repository;
 
-  // 复用 L1 内存投影快照与大纲
+  // 0. L1 纯内存 Fast-Path：未指定 version/branch 时优先从 L1 大纲投影直接取公开仓快照，免去 resolveRepository 查库
+  let resolved: Awaited<ReturnType<typeof resolveRepository>> | null = null;
+  let repository: any = null;
   let outlineCache: OutlineView | null | undefined = undefined;
-  if (repository?.id) {
-    const l1Proj = await getWebL1OutlineProjectionById(repository.id);
-    if (l1Proj?.repoSnapshot) {
-      repository = {
-        ...l1Proj.repoSnapshot,
-        ...repository,
-      };
-      if (l1Proj.outline && l1Proj.outline.outlineId) {
-        outlineCache = l1Proj.outline;
+
+  if (!version && !branch) {
+    const l1Hit = await getWebL1OutlineProjection(owner, repo, edition);
+    if (l1Hit && l1Hit.repoSnapshot.isPublic) {
+      if (edition && l1Hit.edition.toLowerCase() !== edition.toLowerCase()) {
+        const slugPath = slug && slug.length > 0 ? `/${slug.join('/')}` : '';
+        return { type: 'redirect', url: `/docs/${owner}/${repo}${slugPath}` };
       }
+      repository = { ...l1Hit.repoSnapshot, gitSha: l1Hit.gitSha };
+      if (l1Hit.outline && l1Hit.outline.outlineId) {
+        outlineCache = l1Hit.outline;
+      }
+    }
+  }
+
+  if (!repository) {
+    resolved = await resolveRepository(owner, repo, version || branch, edition);
+    repository = resolved?.repository;
+
+    // 复用 L1 内存投影快照与大纲
+    if (repository?.id) {
+      const l1Proj = await getWebL1OutlineProjectionById(repository.id);
+      if (l1Proj?.repoSnapshot) {
+        repository = {
+          ...l1Proj.repoSnapshot,
+          ...repository,
+        };
+        if (l1Proj.outline && l1Proj.outline.outlineId) {
+          outlineCache = l1Proj.outline;
+        }
+      }
+    }
+  }
+
+  // 匿名访客公开章节整页快路径命中（0 DB / 0 Sidecar）
+  const publicCacheKey =
+    !userId && repository?.isPublic && !version && !branch
+      ? `${repository.id}:${(slug || []).join('/')}:${versionParam ?? ''}:${edition ?? ''}`
+      : null;
+  if (publicCacheKey) {
+    const cachedPublicDoc = publicDocPageCache.get(publicCacheKey);
+    if (cachedPublicDoc) {
+      return cachedPublicDoc;
     }
   }
 
@@ -501,42 +549,9 @@ export async function loadDocPageData({
   const isPublic = !!doc.repository?.isPublic;
   const hasRepoProfile = !!doc.repository?.repoProfile;
 
-  // 关联信息异步并行拉取：仓级只读元数据走 60s LRU 内存缓存，当前章节的 ChapterVersion、
-  // UpdateJob 与认知脚手架 grounding 全部并行（grounding 原在版本解析后串行 await，
-  // 其 1.5s 超时预算直接叠加进页面关键路径；sha 键结果不可变经 driver 层缓存二次免打）
-  const loadScaffold = async (): Promise<DocCognitiveScaffold | null> => {
-    if (!doc?.path) return null;
-    const { subsystemName, subsystemDuty } = inferDocSubsystem(doc.path, doc.title);
-
-    let backboneFiles: Array<{ path: string; role: string; pageRank: number }> = [];
-    const gitSha = repository?.gitSha || doc.repository?.gitSha;
-    if (gitSha) {
-      try {
-        const grounding = await executeSidecarConceptGrounding({
-          owner,
-          repo,
-          sha: gitSha,
-          conceptName: subsystemName,
-          timeoutMs: 1500,
-        });
-        if (grounding?.backboneFiles && grounding.backboneFiles.length > 0) {
-          const subsystemLower = subsystemName.toLowerCase();
-          const matched = grounding.backboneFiles.filter((f) =>
-            f.path.toLowerCase().includes(subsystemLower)
-          );
-          backboneFiles = (matched.length > 0 ? matched : grounding.backboneFiles).slice(0, 4);
-        }
-      } catch {
-        backboneFiles = [];
-      }
-    }
-
-    return { subsystemName, subsystemDuty, backboneFiles };
-  };
-
   const isVirtualDoc = Boolean((doc as { isVirtual?: boolean }).isVirtual);
 
-  const [repoMeta, versionData, activeUpdateJob, cognitiveScaffold] = await Promise.all([
+  const [repoMeta, versionData, activeUpdateJob] = await Promise.all([
     fetchRepoDocPageMetadata(doc.repositoryId, owner, repo, isPublic, hasRepoProfile),
     isVirtualDoc
       ? Promise.resolve({
@@ -557,7 +572,6 @@ export async function loadDocPageData({
           console.warn('[DocsPageLoader] Failed to fetch active chapter update job:', e);
           return null;
         }),
-    isVirtualDoc ? Promise.resolve(null) : loadScaffold(),
   ]);
 
   const { chapterVersions, viewerVersionVotes, validContentIds, inlineContentById } = versionData;
@@ -623,13 +637,7 @@ export async function loadDocPageData({
     }
   }
 
-  // ── 认知脚手架：已在主 Promise.all 并行装配完成（sha 键 grounding 结果
-  // 经 driver 层不可变缓存，同 commit 同概念进程内只打一次 sidecar）──
-  if (cognitiveScaffold) {
-    doc = { ...doc, cognitiveScaffold } as any;
-  }
-
-  return {
+  const result: Extract<DocPageResolution, { type: 'doc' }> = {
     type: 'doc',
     repository,
     doc,
@@ -645,8 +653,15 @@ export async function loadDocPageData({
     repoProfile,
     chapterAssets,
     editionFallback,
-    cognitiveScaffold,
+    cognitiveScaffold: null,
+    activeOutline: outlineCache,
   };
+
+  if (publicCacheKey && doc.content && !hasCorruptionMarker(doc.content)) {
+    publicDocPageCache.set(publicCacheKey, result);
+  }
+
+  return result;
 }
 
 // ── 请求级去重：generateMetadata 与 Page 各调用一次相同参数的 loadDocPageData，

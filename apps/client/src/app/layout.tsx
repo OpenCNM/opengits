@@ -56,6 +56,7 @@ import { ThemeInitializer } from "@/components/providers/ThemeProvider";
 import { getFumadocsTranslations } from "@/lib/i18n/fumadocs-i18n";
 
 import { cookies } from 'next/headers';
+import { getSessionHelper } from '@/lib/auth-helper';
 
 export default async function RootLayout({
   children,
@@ -64,7 +65,14 @@ export default async function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
+  const [cookieStore, session] = await Promise.all([
+    cookies(),
+    getSessionHelper().catch((err) => {
+      // 容错降级: 根布局读取会话异常时降级为未登录态，不阻断首屏 SSR
+      console.warn('[RootLayout] Failed to read session:', err);
+      return null;
+    }),
+  ]);
   const rawLocale = cookieStore.get('PARAGLIDE_LOCALE')?.value || cookieStore.get('NEXT_LOCALE')?.value || 'en';
   const locale = ['en', 'zh-CN'].includes(rawLocale) ? rawLocale : 'en';
 
@@ -89,7 +97,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <LocaleProvider initialLocale={locale}>
-          <AuthProvider>
+          <AuthProvider session={session ?? null}>
             <ToastProvider position="bottom-right">
               <ImportWizardProvider>
                 <RootProvider 

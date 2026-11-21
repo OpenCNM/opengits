@@ -8,7 +8,10 @@ import { ChevronLeft } from 'lucide-react';
 import SyncPrompt from '@/components/SyncPrompt';
 import { AITelemetryProvider } from '@/components/telemetry/AITelemetryProvider';
 import { RepoViewBeacon } from '@/components/docs/RepoViewBeacon';
-import { resolveRepositoryAnyEdition, isRepositoryGroupPublic } from '@/lib/repository-resolver';
+import { GuestAutoLogin } from '@/components/docs/GuestAutoLogin';
+import { isRepositoryGroupPublic } from '@/lib/repository-resolver';
+import { getWebL1OutlineProjection } from '@/lib/docs/web-outline-projection';
+import { loadDocsLayoutData, fetchWebL1OutlineProjection } from '@/lib/docs/docs-layout-loader';
 import { EditionAwareDocsLayout, DocsEditionSwitcher, DocsEditionModelBadge } from '@/components/docs/DocsEdition';
 import { DocsModuleTabs } from '@/components/docs/DocsModuleTabs';
 import { AskAiNavButton } from '@/components/docs/AskAiNavButton';
@@ -26,7 +29,6 @@ import { IngestQueueProvider } from '@/components/ingest/IngestQueueContext';
 import { AssistantContainer } from '@/components/chat/AssistantContainer';
 import { DocsLoginGate } from '@/components/docs/DocsLoginGate';
 import { getSessionHelper } from '@/lib/auth-helper';
-import { loadDocsLayoutData } from '@/lib/docs/docs-layout-loader';
 import { buildFumadocsPageTree } from '@/lib/docs/docs-nav-tree';
 import { ComponentErrorBoundary } from '@/components/ui/ComponentErrorBoundary';
 
@@ -38,9 +40,21 @@ export async function generateMetadata({
   params: Promise<{ owner: string; repo: string }>;
 }): Promise<Metadata> {
   const { owner, repo } = await params;
-  const resolved = await resolveRepositoryAnyEdition(owner, repo).catch(() => null);
-  const isPublic = resolved?.repository
-    ? (resolved.repository.isPublic || (await isRepositoryGroupPublic(owner, repo).catch(() => false)))
+  // 优先命中 L1 纯内存投影，0 次 DB 查询直接与 Layout 共享同一份快照
+  const projection = await getWebL1OutlineProjection(owner, repo, undefined, () =>
+    fetchWebL1OutlineProjection(owner, repo)
+  ).catch((err) => {
+    // 容错降级: metadata 阶段读取 L1 投影异常时降级为 noindex，不阻断页面渲染
+    console.warn('[DocsLayoutMetadata] Failed to load L1 projection:', err);
+    return null;
+  });
+  const isPublic = projection?.repoSnapshot
+    ? (projection.repoSnapshot.isPublic ||
+        (await isRepositoryGroupPublic(owner, repo).catch((err) => {
+          // 容错降级: 公开组可见性查询失败时保守降级为 false（noindex）
+          console.warn('[DocsLayoutMetadata] Failed to check public group:', err);
+          return false;
+        })))
     : false;
   return { robots: isPublic ? { index: true, follow: true } : { index: false, follow: false } };
 }
@@ -288,6 +302,7 @@ export default async function Layout({
           <ComponentErrorBoundary>
             <RepoViewBeacon repositoryId={repositoryId} />
           </ComponentErrorBoundary>
+          <GuestAutoLogin active={!userId && repoIsPublic} repoSlug={`${owner}/${repo}`} />
         </ReadingProgressProvider>
       </IngestQueueProvider>
     </AITelemetryProvider>

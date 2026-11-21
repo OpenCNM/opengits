@@ -173,6 +173,7 @@ export default async function Page({
     repoProfile,
     chapterAssets,
     editionFallback,
+    activeOutline: resolvedOutline,
   } = resolved;
 
   const isNativeWebMirror = isNativeWebDocMirror({
@@ -299,12 +300,15 @@ export default async function Page({
   const rawMdx = doc.content || '';
   const { MdxContent, safeToc, frontmatter, compileFailed } = await compileDocMdx(rawMdx, relativePath, doc.title);
 
-  // 教学顺序的上一章/下一章与站内超链接重映射上下文（激活大纲存在时；失败静默——导航是增强能力）
+  // 教学顺序的上一章/下一章与站内超链接重映射上下文（优先复用 loader 已解析大纲，免去二次查库）
   let prevNext: { prev: { title: string; url: string } | null; next: { title: string, url: string } | null } = { prev: null, next: null };
   let activeOutline: OutlineView | null = null;
   try {
-    const { getActiveOutline } = await import('@/lib/outline-reader');
-    const outline = await getActiveOutline(doc.repositoryId);
+    let outline: OutlineView | null = resolvedOutline !== undefined ? resolvedOutline : null;
+    if (resolvedOutline === undefined) {
+      const { getActiveOutline } = await import('@/lib/outline-reader');
+      outline = await getActiveOutline(doc.repositoryId);
+    }
     if (outline) {
       activeOutline = outline;
       const { prev, next } = adjacentNavigableNodes(outline, doc.path);
@@ -380,12 +384,14 @@ export default async function Page({
               </DocsTitle>
               <GenerationLevelBadge level={doc.generationLevel} />
             </div>
-            <div className="shrink-0">
-              <ChapterShareButton
-                title={frontmatter?.title || doc.title}
-                isPublic={Boolean(doc.repository?.isPublic)}
-              />
-            </div>
+            {Boolean(doc.repository?.isPublic) && (
+              <div className="shrink-0">
+                <ChapterShareButton
+                  title={frontmatter?.title || doc.title}
+                  isPublic={true}
+                />
+              </div>
+            )}
           </div>
         )}
 

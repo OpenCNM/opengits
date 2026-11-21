@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { loadDocPageData } from '@/lib/docs/docs-page-loader';
+import { loadDocPageData, clearPublicDocPageCacheForTest } from '@/lib/docs/docs-page-loader';
 import { prisma } from '@/lib/db';
 import * as repoResolver from '@/lib/repository-resolver';
 import * as docsFetch from '@/lib/docs-fetch';
@@ -51,6 +51,7 @@ vi.mock('@/lib/state/chapter-version-projector', () => ({
 }));
 
 vi.mock('@/lib/docs/web-outline-projection', () => ({
+  getWebL1OutlineProjection: vi.fn().mockResolvedValue(null),
   getWebL1OutlineProjectionById: vi.fn().mockResolvedValue(null),
 }));
 
@@ -61,6 +62,7 @@ vi.mock('@/lib/repository-maintainer', () => ({
 describe('Docs Root Index Resolution (ERR_TOO_MANY_REDIRECTS 根治测试)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearPublicDocPageCacheForTest();
   });
 
   it('WebDoc 根文档为 index.md 时，slug=undefined 正常返回 doc 而不是循环重定向', async () => {
