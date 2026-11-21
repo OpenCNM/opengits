@@ -1,4 +1,5 @@
 import type { SystemPromptPayload } from './prompt-registry';
+import type { ReorganizeCategoryIntent } from '@/lib/constants';
 
 /**
  * 全局统一的 L0 伴生概念与教学自测清单提炼提示词指令（集中定义，禁止各处内联拼接）
@@ -955,7 +956,7 @@ Requirements:
     key: 'outline_prompt_expand',
     name: '课程大纲重排需求 AI 扩写',
     module: 'scout',
-    modelConfig: { temperature: 0.35, maxTokens: 500 },
+    modelConfig: { temperature: 0.35 },
     promptSchema: {
       role: 'You are a Senior Technical Curriculum Architect and Repository Analyst.',
       taskDescription: `Expand or draft a concise, actionable course-outline reorganization instruction in {{targetLanguage}} based on the user's draft intent, the live repository metadata, and the current outline structure.
@@ -966,13 +967,17 @@ Project Context:
 - Tech Tags: {{tags}}
 - Scope Prefix: {{scopePrefix}}
 
+Category Intent Boundary (deterministic scope constraint for this request):
+{{categoryIntent}}
+
 Current Outline Skeleton:
 {{outlineSummary}}
 
 User's Draft Input:
 {{userInputSection}}`,
       rules: [
-        'Return a JSON object containing only the field "expandedPrompt".',
+        'Return a JSON object with exactly two fields: "shortLabel" and "expandedPrompt".',
+        '"shortLabel" is a menu-friendly short tag written in {{targetLanguage}}: 6-12 Chinese characters or 2-4 English words, no surrounding quotes, no trailing punctuation, self-contained meaning (e.g. "聚焦第2章状态机" or "Focus checkout state machine").',
         'Keep "expandedPrompt" concise and high-density (80-160 Chinese characters or 30-60 English words) as plain text without greetings, preambles, markdown headings, bullet lists, or outer quotes.',
         'GROUNDING RULE: Reference ONLY chapters, parts, modules, or file paths that actually exist in Current Outline Skeleton or Tech Tags. Never fabricate nonexistent modules.',
         'FIDELITY RULE: Preserve the user\'s explicit focus or exclusions (e.g. if the user wants to focus only on state machines or skip basics, explicitly instruct pruning unrelated chapters and deepening the requested ones).',
@@ -980,6 +985,7 @@ User's Draft Input:
       ],
       language: 'zh-CN',
       outputSchemaHint: {
+        shortLabel: '聚焦第2章状态机',
         expandedPrompt:
           '精简通用基础搭建章节；重点围绕《第2章：会话认证核心》的状态流转与《第4章：Stripe 订阅支付》的结账状态机，深入剖析核心模块的设计模式、状态边界与异常恢复逻辑。',
       },
@@ -1035,4 +1041,15 @@ export function renderPresetDirective(key: string): string {
   const preset = ALL_PROMPT_PRESETS.find((p) => p.key === key);
   return preset?.promptSchema.taskDescription || '';
 }
+
+/**
+ * 「换个思路」分类语义边界（确定性变量文本，供 /api/ai/expand-outline-prompt 组装 {{categoryIntent}}）。
+ * 模板本体仍收敛于上方 outline_prompt_expand preset —— 变量文本与 prompt SSOT 同文件集中管理。
+ */
+export const REORGANIZE_CATEGORY_INTENTS: Record<ReorganizeCategoryIntent, string> = {
+  clarify: 'Organizational restructure only: keep the current chapter count and overall scope; re-group, re-order and re-narrate chapters for clearer layering and module boundaries. Do not add or delete chapters.',
+  compact: 'Condense: merge secondary modules, auxiliary tools and edge configurations into backbone chapters; reduce the total chapter count toward a tighter backbone.',
+  expand: 'Deepen: split key subsystems or the requested chapters into dedicated topic chapters with deeper code-level analysis; keep the remaining chapters compact.',
+  general: 'No fixed category boundary; follow the user\'s draft intent freely.',
+};
 

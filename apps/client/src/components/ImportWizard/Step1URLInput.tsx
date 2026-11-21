@@ -12,7 +12,7 @@ import { Popover, PopoverTrigger, PopoverPopup } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { inspectGithubUrl } from '@/lib/url-inspector';
 import { useImportWizard } from './ImportWizardContext';
-import { useImportWizardStore } from '@/lib/stores/import-wizard-store';
+import { useImportWizardStore, wizardFlow } from '@/lib/stores/import-wizard-store';
 import { triggerGithubReauth } from '@/lib/import-wizard/wizard-reauth';
 import { ScoutFeedbackCard } from './ScoutFeedbackCard';
 import { WizardModelSelector } from './common/WizardModelSelector';
@@ -387,7 +387,7 @@ export function Step1URLInput() {
   <Select
   value={targetLanguage}
   onValueChange={(val) => {
-    if (val) setTargetLanguage(val);
+    if (val) wizardFlow.updateTargetLanguage(val);
   }}
   disabled={loading}
   >

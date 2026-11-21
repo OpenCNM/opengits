@@ -7,6 +7,7 @@ import {
   useImportWizardStore,
   wizardSetters,
   wizardFlow,
+  readPersistedTargetLanguage,
   type WizardDedupInfo,
   type ScoutErrorInfo,
   type WizardScoutData,
@@ -203,7 +204,12 @@ export function ImportWizardProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // 第一性原理：targetLanguage（教程内容生成目标语言）与 locale（界面展示多语言）正交隔离。
-    // 仅在 targetLanguage 尚未初始化且无任何设定时，使用界面 locale 作为初值兜底，绝不覆盖用户已选偏好。
+    // 优先恢复用户在浏览器中手动选择并持久化的目标语言；无记录且尚未初始化时才以界面 locale 兜底。
+    const persisted = readPersistedTargetLanguage();
+    if (persisted) {
+      setTargetLanguage(persisted);
+      return;
+    }
     const current = useImportWizardStore.getState().targetLanguage;
     if (!current && locale) {
       setTargetLanguage(locale);

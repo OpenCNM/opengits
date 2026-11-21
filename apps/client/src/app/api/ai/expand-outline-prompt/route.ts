@@ -2,7 +2,12 @@ import { z } from 'zod';
 import { defineRoute, ok } from '@/lib/api/server/define-route';
 import { ApiError } from '@/lib/api/server/api-error';
 import { ENGINE_CONFIG } from '@/lib/config';
-import { resolveGenerativeLanguage } from '@/lib/constants';
+import {
+  resolveGenerativeLanguage,
+  REORGANIZE_CATEGORY_INTENT_IDS,
+  REORGANIZE_SHORT_LABEL_MAX,
+} from '@/lib/constants';
+import { REORGANIZE_CATEGORY_INTENTS } from '@/lib/prompt-presets';
 import { resolveUserModelWithKeyStatus, toInjectableStructuredModel } from '@/lib/ai/user-model-resolver';
 import { getModel, generateStructured, trackTokenUsage } from '@/lib/ai';
 import { PromptRegistry } from '@/lib/prompt-registry';
@@ -20,6 +25,7 @@ const ExpandOutlinePromptSchema = z.object({
   tags: z.array(z.string().max(60)).max(20).optional().default([]),
   scopePrefix: z.string().max(300).optional().default(''),
   targetLanguage: z.string().max(40).optional(),
+  categoryIntent: z.enum(REORGANIZE_CATEGORY_INTENT_IDS).optional().default('general'),
   outline: z.array(OutlineExpandItemSchema).min(1).max(60),
 });
 
@@ -41,6 +47,21 @@ function buildOutlineSummary(outline: Array<z.infer<typeof OutlineExpandItemSche
   });
 
   return lines.join('\n');
+}
+
+/** 确定性归一：剥包裹引号（与 expandedPrompt 既有清洗同款） */
+function stripWrappingQuotes(s: string): string {
+  return s.trim().replace(/^["'「『]|["'」』]$/g, '');
+}
+
+/** 短标签确定性收敛：空缺回退取 expandedPrompt 首个分句，杜绝 "" 落菜单；超长截断至 REORGANIZE_SHORT_LABEL_MAX */
+function normalizeShortLabel(raw: string, expandedPrompt: string): string {
+  let s = stripWrappingQuotes(raw);
+  if (!s) {
+    s = stripWrappingQuotes(expandedPrompt.split(/[；;。.!！?？\n]/).find((seg) => seg.trim()) ?? '');
+  }
+  if (!s) s = expandedPrompt;
+  return s.slice(0, REORGANIZE_SHORT_LABEL_MAX);
 }
 
 export const POST = defineRoute({
@@ -85,6 +106,7 @@ export const POST = defineRoute({
 
     const compiled = await PromptRegistry.getCompiledPrompt('outline_prompt_expand', {
       targetLanguage,
+      categoryIntent: REORGANIZE_CATEGORY_INTENTS[body.categoryIntent],
       repoSlug: body.repoSlug.trim() || 'Unknown Repository',
       domain: body.domain.trim() || 'General',
       tags: body.tags.length > 0 ? body.tags.map((t) => `#${t}`).join(' ') : 'None',
@@ -98,9 +120,14 @@ export const POST = defineRoute({
         model,
         userId,
         temperature: compiled.modelConfig?.temperature ?? 0.35,
-        maxTokens: compiled.modelConfig?.maxTokens ?? 500,
+        ...(compiled.modelConfig?.maxTokens ? { maxTokens: compiled.modelConfig.maxTokens } : {}),
         disableThinking: true,
         schema: z.object({
+          // shortLabel 放宽为 catch 兜底：PromptRegistry 以 DB 为运行时事实源，历史种子的旧版
+          // 规则可能只返回单字段或类型漂移（数字/对象标签）。catch 让任何不合规输出收敛为 ''
+          // 交由 normalizeShortLabel 确定性漏斗派生（杜绝空串落菜单），JSON Schema 仍保持
+          // required（zod v4 实测与 .optional().default('') 产物一致），不破坏严格模式 provider。
+          shortLabel: z.string().max(120).catch('').describe('Menu-friendly short tag'),
           expandedPrompt: z.string().min(1).describe('Concise, grounded reorganization instruction'),
         }),
         prompt: compiled.compiledPrompt,
@@ -114,13 +141,14 @@ export const POST = defineRoute({
         provider: userModel.provider,
       });
 
-      const expandedPrompt = result.object.expandedPrompt.trim().replace(/^["'「『]|["'」』]$/g, '');
+      const expandedPrompt = stripWrappingQuotes(result.object.expandedPrompt);
       if (!expandedPrompt) {
         throw ApiError.internal('AI 扩写结果为空，请重试');
       }
 
       return ok({
         ok: true,
+        shortLabel: normalizeShortLabel(result.object.shortLabel, expandedPrompt),
         expandedPrompt,
       });
     } catch (err: unknown) {

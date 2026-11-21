@@ -77,6 +77,14 @@ const MEMORY_CACHE_TTL_MS = 10 * 60 * 1000;
 const memoryCache = new Map<string, CacheEntry>();
 
 /**
+ * 各预设 key 的缺省变量兜底：调用方未显式传入时注入默认值，
+ * 杜绝未替换的 {{var}} 字面量残留在编译文本中（getCompiledPrompt / mergeDefaultVars 共用）。
+ */
+const DEFAULT_KEY_VARS: Record<string, Record<string, string>> = {
+  outline_prompt_expand: { categoryIntent: 'general' },
+};
+
+/**
  * 统一 Prompt 注册服务中心 (PromptRegistry)
  * - 结合 Postgres (Prisma) 持久化 + 10 分钟内存缓存 + 代码零闪断兜底
  */
@@ -138,6 +146,7 @@ export class PromptRegistry {
       targetLanguage: targetLang,
       categoryNameSample: isZh ? '第一模块 · 核心原理与组件结构' : `Module 1 · Core Concepts`,
       shortTitleSample: isZh ? '架构引言' : `Architecture Overview`,
+      ...(DEFAULT_KEY_VARS[key] ?? {}),
       ...variables,
     };
 
@@ -157,13 +166,13 @@ export class PromptRegistry {
    */
   public static compilePresetSync(key: string, variables: Record<string, any> = {}): string {
     const schema = this.getDefaultFallbackSchema(key);
-    return this.renderPromptText(schema, this.mergeDefaultVars(schema, variables));
+    return this.renderPromptText(schema, this.mergeDefaultVars(schema, variables, key));
   }
 
   /**
    * 合并默认模板变量（getCompiledPrompt / compilePresetSync / compileFromCacheSync 共用）。
    */
-  private static mergeDefaultVars(schema: PromptSchemaDefinition, variables: Record<string, any>): Record<string, any> {
+  private static mergeDefaultVars(schema: PromptSchemaDefinition, variables: Record<string, any>, key?: string): Record<string, any> {
     const targetLang = variables.targetLanguage || schema.language || 'zh-CN';
     const isZh = !targetLang || targetLang === 'zh-CN' || targetLang === 'zh' || targetLang === 'none';
     return {
@@ -171,6 +180,7 @@ export class PromptRegistry {
       categoryNameSample: isZh ? '第一模块 · 核心原理与组件结构' : `Module 1 · Core Concepts`,
       shortTitleSample: isZh ? '架构引言' : `Architecture Overview`,
       navBlocksText: '(None)',
+      ...(key ? (DEFAULT_KEY_VARS[key] ?? {}) : {}),
       ...variables,
     };
   }
@@ -183,7 +193,7 @@ export class PromptRegistry {
   public static compileFromCacheSync(key: string, variables: Record<string, any> = {}): string | null {
     const entry = memoryCache.get(key);
     if (!entry) return null;
-    return this.renderPromptText(entry.data.promptSchema, this.mergeDefaultVars(entry.data.promptSchema, variables));
+    return this.renderPromptText(entry.data.promptSchema, this.mergeDefaultVars(entry.data.promptSchema, variables, key));
   }
 
   /**

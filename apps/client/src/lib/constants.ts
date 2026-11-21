@@ -416,7 +416,42 @@ export const STORAGE_KEYS = {
   CHAPTER_START_TIME: (docId: string) => `opengits:chapter_start:${docId}`,
   // 流程图按需深度切换本地持久化缓存（diagram_lens_${hash(chart)}_${depth}）
   DIAGRAM_LENS_CACHE: (hash: string, depth: string) => `diagram_lens_${hash}_${depth}`,
+  // 导入向导：用户手动选择的教程生成目标语言偏好
+  WIZARD_TARGET_LANGUAGE: 'opengits_wizard_target_language',
+  // 导入向导编排栏：按仓库作用域的「换个思路」自定义子项（分类内持久化短标签指令）
+  WORKBENCH_REORG_CUSTOM: (owner: string, repo: string) =>
+    `opengits-workbench-reorg-custom-${owner}/${repo}`,
 } as const;
+
+/**
+ * 「换个思路」编排栏的三级子选项分类（与 /api/ai/expand-outline-prompt 的 categoryIntent 契约对齐，
+ * 'general' 仅在 API 侧表示无分类的全局自定义入口，不作为 UI 分类存在）。
+ */
+export const REORGANIZE_CATEGORY_IDS = ['clarify', 'compact', 'expand'] as const;
+export type ReorganizeCategoryId = (typeof REORGANIZE_CATEGORY_IDS)[number];
+/** API 侧 categoryIntent 全量枚举（UI 三分类 + 全局自定义入口），供 Zod z.enum 直接消费 */
+export const REORGANIZE_CATEGORY_INTENT_IDS = ['clarify', 'compact', 'expand', 'general'] as const;
+export type ReorganizeCategoryIntent = (typeof REORGANIZE_CATEGORY_INTENT_IDS)[number];
+
+/** 大纲重排 pacing 全量档位（与 sidecar /v1/outline/tree 语义对齐：compact 5-7章 / normal 8-10章 / detailed 11-14章） */
+export const REORGANIZE_PACING_IDS = ['compact', 'normal', 'detailed'] as const;
+export type ReorganizePacing = (typeof REORGANIZE_PACING_IDS)[number];
+
+/** 学习者画像全量枚举（与 llm-gateway LEARNER_ARCHETYPE_FOCUS 查表键对齐） */
+export const REORGANIZE_ARCHETYPE_IDS = [
+  'architecture_overview',
+  'deep_dive_internals',
+  'cross_language_migrant',
+  'pedagogical_beginner',
+] as const;
+export type ReorganizeLearnerArchetype = (typeof REORGANIZE_ARCHETYPE_IDS)[number];
+
+/** 每个分类下最多保留的自定义子项条数（超出挤掉最旧，防列表膨胀） */
+export const REORGANIZE_CUSTOM_MAX_PER_CATEGORY = 3;
+/** 「展开细节」动态章节子项上限（按关联文件数降序截取，防 Popover 无界） */
+export const REORGANIZE_CHAPTER_OPTIONS_MAX = 8;
+/** AI 扩写产出的菜单短标签最大字符数（代码侧确定性截断，不信任模型自律） */
+export const REORGANIZE_SHORT_LABEL_MAX = 24;
 
 /**
  * JIT 插队优先级（服务端权威，客户端不可注入更高值）：

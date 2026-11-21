@@ -16,7 +16,7 @@ import { trackEvent } from '@/lib/telemetry/beacon';
 import { buildImportedTutorialHref } from '@/lib/import-wizard/navigation';
 import { WorkbenchOutlineEditor } from './workbench/WorkbenchOutlineEditor';
 import { WorkbenchReorganizeBar } from './workbench/WorkbenchReorganizeBar';
-import { type LearnerArchetype, type ReorganizeOptions } from './workbench/WorkbenchReorganizePanel';
+import { type LearnerArchetype, type ReorganizeOptions } from './workbench/workbench-reorganize-config';
 import { WorkbenchStep3Executing } from './workbench/WorkbenchStep3Executing';
 import { WorkbenchTranscriptionSettings } from './workbench/WorkbenchTranscriptionSettings';
 import { WizardModelBadge } from './common/WizardModelSelector';

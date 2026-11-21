@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { TRANSLATION_LANGUAGES } from '@/lib/constants';
+import { STORAGE_KEYS, SUPPORTED_LANGUAGES, TRANSLATION_LANGUAGES } from '@/lib/constants';
 import { DEFAULT_TRANSCRIPTION_PRESET_ID } from '@/lib/transcription-presets';
 import type { DedupResult } from '@/lib/repo-dedup';
 import type { ScoutPipelineResult } from '@/lib/scout/pipeline/types';
@@ -303,8 +303,39 @@ export const useImportWizardStore = create<ImportWizardData>(() => createInitial
  *  importMode/targetLandingPath/parsedUrlInfo/tagPool/拖拽三态/scoutSteps/
  *  showEmptyCategoryDialog/emptyCategoriesCount/customTagInput —— 原实现即不重置）。
  */
+const VALID_TARGET_LANGUAGES = new Set([
+  TRANSLATION_LANGUAGES.NONE_CODE,
+  ...SUPPORTED_LANGUAGES.map((l) => l.code),
+]);
+
+/** 读取浏览器中持久化的向导目标语言偏好（仅客户端有效） */
+export function readPersistedTargetLanguage(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEYS.WIZARD_TARGET_LANGUAGE);
+    if (saved && VALID_TARGET_LANGUAGES.has(saved)) {
+      return saved;
+    }
+  } catch (err) {
+    // 容错降级: 隐私模式或 localStorage 不可用时回退默认语言
+    console.warn('[import-wizard-store] Failed to read persisted targetLanguage:', err);
+  }
+  return null;
+}
+
+function persistTargetLanguage(lang: string): void {
+  if (typeof window === 'undefined' || !VALID_TARGET_LANGUAGES.has(lang)) return;
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.WIZARD_TARGET_LANGUAGE, lang);
+  } catch (err) {
+    // 容错降级: 存储空间受限或禁用存储时跳过持久化，不阻断当前会话切换
+    console.warn('[import-wizard-store] Failed to persist targetLanguage:', err);
+  }
+}
+
 export function createWizardResetPatch(locale?: string | null): Partial<ImportWizardData> {
   const initial = createInitialWizardData(locale);
+  const persistedLang = readPersistedTargetLanguage();
   return {
     isOpen: initial.isOpen,
     isCollapsed: initial.isCollapsed,
@@ -323,7 +354,7 @@ export function createWizardResetPatch(locale?: string | null): Partial<ImportWi
     recommendedPrefix: initial.recommendedPrefix,
     selectedPrefix: initial.selectedPrefix,
     menuStyle: initial.menuStyle,
-    targetLanguage: locale || TRANSLATION_LANGUAGES.DEFAULT_CODE,
+    targetLanguage: persistedLang || locale || TRANSLATION_LANGUAGES.DEFAULT_CODE,
     customPrompt: initial.customPrompt,
     aiCondensation: initial.aiCondensation,
     teachingDepth: initial.teachingDepth,
@@ -534,9 +565,10 @@ export const wizardFlow = {
       };
     });
   },
-  /** 正交更新目标语言（不清空或失效已探测的仓库拓扑快照） */
+  /** 正交更新目标语言（同步写入浏览器持久化偏好，不清空或失效已探测的仓库拓扑快照） */
   updateTargetLanguage(lang: string): void {
     if (!lang) return;
+    persistTargetLanguage(lang);
     useImportWizardStore.setState({ targetLanguage: lang });
   },
   /**
