@@ -1,0 +1,55 @@
+# 冷恢复
+
+## 冷恢复是什么
+
+进程重启后内存里的投影没了，第一次订阅要按需重建。
+
+<details data-layer="deep">
+<summary>源码深潜：冷恢复的内部状态</summary>
+
+### 内部状态与宽限期
+
+水合缓冲记录尚未落盘的事件。
+
+```ts // src/gateway.ts#hydratePublisher
+this.hydrate();
+```
+
+> [!WARNING] 宽限期不是超时
+> 到期只是停止等待，不代表失败。
+
+</details>
+
+## 常见踩坑
+
+把宽限期当成超时时间。
+
+<details data-layer="deep">
+<summary>源码深潜：兄弟方法清单</summary>
+
+- 一个条目
+
+</details>
+
+<details>
+<summary>普通折叠</summary>
+
+### 折叠里的标题
+
+正文。
+
+</details>
+
+> [!WARNING] 在 `.strict()` 的世界里，"给 schema 加一个字段"从来不是无害操作。
+
+> [!NOTE] 握手版本是兼容性开关，不是字段版本。新增可选字段**不递增协议握手版本号**。
+
+> [!WARNING] 兼容边界
+> 在 `.strict()` 的世界里，先协商能力位。
+
+> [!TIP] 独立首段标题
+>
+> 正文从第二段开始。
+
+> [!IMPORTANT]
+> 契约的生死必须两端对称。

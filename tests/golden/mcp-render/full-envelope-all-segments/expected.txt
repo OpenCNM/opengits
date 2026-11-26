@@ -1,0 +1,10 @@
+⚠ Edition fallback: requested "ed_deep" was not found; results below come from edition "速查手册版". Use list_resources to discover available editions.
+
+📍 Graph Position: …
+
+# Ch1
+Source Path: ch01.md
+
+body
+
+(Use read …)

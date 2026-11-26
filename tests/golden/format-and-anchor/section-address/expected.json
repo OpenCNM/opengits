@@ -1,0 +1,39 @@
+{
+  "roundTrips": [
+    {
+      "docPath": "docs/getting-started.md",
+      "headingPath": "core > overview",
+      "built": "docs/getting-started.md#core > overview",
+      "parsed": {
+        "docPath": "docs/getting-started.md",
+        "headingPath": "core > overview"
+      }
+    },
+    {
+      "docPath": "docs/a.md",
+      "headingPath": "",
+      "built": "docs/a.md#",
+      "parsed": {
+        "docPath": "docs/a.md",
+        "headingPath": ""
+      }
+    }
+  ],
+  "cleanAddresses": [
+    {
+      "docPath": "docs/foo.md",
+      "headingPath": "docs/foo.md#上下文设计",
+      "clean": "docs/foo.md#上下文设计"
+    },
+    {
+      "docPath": "code/intro.ts",
+      "headingPath": "cluster > overview",
+      "clean": "code/intro.ts#cluster > overview"
+    },
+    {
+      "docPath": "docs/a.md",
+      "headingPath": "  ",
+      "clean": "docs/a.md#"
+    }
+  ]
+}

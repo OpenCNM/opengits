@@ -1,0 +1,46 @@
+{
+  "fixturePath": "services/worker-sidecar/testdata/mcp-tool-output.golden.json",
+  "caseCount": 8,
+  "cases": [
+    {
+      "name": "plain-no-warning",
+      "bytes": 137,
+      "parityMatch": true
+    },
+    {
+      "name": "fallback-to-base-warning",
+      "bytes": 252,
+      "parityMatch": true
+    },
+    {
+      "name": "fallback-to-edition-with-label",
+      "bytes": 210,
+      "parityMatch": true
+    },
+    {
+      "name": "preamble-graphpos-shape",
+      "bytes": 97,
+      "parityMatch": true
+    },
+    {
+      "name": "footer-hint-shape",
+      "bytes": 115,
+      "parityMatch": true
+    },
+    {
+      "name": "full-envelope-all-segments",
+      "bytes": 124,
+      "parityMatch": true
+    },
+    {
+      "name": "fallback-with-preamble-and-footer",
+      "bytes": 234,
+      "parityMatch": true
+    },
+    {
+      "name": "empty-body-error-shape",
+      "bytes": 58,
+      "parityMatch": true
+    }
+  ]
+}

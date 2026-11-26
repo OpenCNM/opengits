@@ -1,0 +1,255 @@
+{
+  "voidTagCases": [
+    {
+      "name": "table-br-self-close",
+      "output": "| Col 1 | Col 2 |\n|---|---|\n| 配置项 | 说明1：<br />• 条目A<br />• 条目B |"
+    },
+    {
+      "name": "hr-img-wbr-void-elements",
+      "output": "段落一<hr />段落二\n<img src=\"/test.png\" alt=\"测试\" />\n<wbr />"
+    },
+    {
+      "name": "fenced-code-protected",
+      "output": "```html\n<br>\n<hr>\n<img src=\"foo.png\">\n```\n\n正文中的 <br />"
+    },
+    {
+      "name": "inline-code-protected",
+      "output": "正文使用 `<br>` 进行换行，而外部的 <br /> 会被自闭合"
+    }
+  ],
+  "prepareCases": [
+    {
+      "name": "strip-sentinels-concept-manifest-and-void-tags",
+      "output": "\n# 标题\n\n<Summary title=\"要点\">\n- 点1<br />点2\n</Summary>\n\n\n"
+    }
+  ],
+  "normalizeDeepDiveCases": [
+    {
+      "name": "compact-single-line-and-idempotent",
+      "output": "正文导语\n\n<details data-layer=\"deep\">\n<summary>源码深潜：内部状态</summary>\n\n```ts\nconst state = 1;\n```\n解释正文。\n\n</details>\n\n后续章节",
+      "idempotent": true
+    },
+    {
+      "name": "no-summary-blank-lines",
+      "output": "<details data-layer=\"deep\">\n\n无摘要正文\n\n</details>",
+      "idempotent": true
+    },
+    {
+      "name": "immune-in-inline-fence-and-comments",
+      "output": "教程说明 `<details data-layer=\"deep\"><summary>示例</summary>正文</details>` 行内语法。\n\n```mdx\n<details data-layer=\"deep\"><summary>围栏内</summary>```ts\nx()\n```</details>\n```\n\n<!-- <details data-layer=\"deep\"><summary>注释内</summary>正文</details> -->\n\n<details data-layer=\"deep\">\n<summary>真实深潜块</summary>\n\n紧跟围栏正文\n\n</details>",
+      "idempotent": true
+    },
+    {
+      "name": "escaped-backtick-and-jsx-brace-comparison",
+      "output": "转义 \\` 与 <Callout icon={a > b ? \"x\" : \"y\"}>\n\n<details data-layer=\"deep\">\n<summary>S</summary>\n\nBody\n\n</details>\n\n</Callout> 及 `code`。",
+      "idempotent": true
+    },
+    {
+      "name": "uppercase-details-component-untouched",
+      "output": "<Details data-layer=\"deep\"><Summary>Comp</Summary>Body</Details>",
+      "idempotent": true
+    }
+  ],
+  "stripDeepDiveCases": [
+    {
+      "name": "strip-deep-keep-normal-details-and-fences",
+      "output": "# 标题\n\n主线解释 `<details data-layer=\"deep\">行内示例</details>`。\n\n<details>\n<summary>普通折叠</summary>\n\n普通折叠内容保留。\n</details>\n\n```md\n<details data-layer=\"deep\"><summary>示例</summary>围栏外代码块应保留</details>\n```\n\n<!-- <details data-layer=\"deep\">注释外文本不受影响</details> -->\n\n主线收尾。"
+    },
+    {
+      "name": "unclosed-deep-dive-truncates-to-eof",
+      "output": "主线第一段\n\n"
+    },
+    {
+      "name": "compact-summary-with-fence",
+      "output": "导语\n\n保留后续主线"
+    },
+    {
+      "name": "escaped-backtick-and-jsx-brace-attr-on-details",
+      "output": "转义 \\` 后面有\n\n以及 `code`。"
+    }
+  ],
+  "scanFallbackTocCases": [
+    {
+      "name": "multiline-tags-and-inline-spans-plus-unicode-slugs",
+      "result": {
+        "toc": [
+          {
+            "depth": 1,
+            "title": "かな入門",
+            "url": "#かな入門"
+          },
+          {
+            "depth": 2,
+            "title": "한국어 概要",
+            "url": "#한국어-概要"
+          },
+          {
+            "depth": 2,
+            "title": "🚀 +++",
+            "url": "#h-4f39e15a59418235"
+          },
+          {
+            "depth": 2,
+            "title": "主线收尾",
+            "url": "#主线收尾"
+          }
+        ],
+        "deepDiveCount": 1
+      }
+    }
+  ],
+  "deepDiveHygieneCases": [
+    {
+      "name": "demote-headings-inside-deep-dive-and-count",
+      "output": "## 主线章节\n\n主线说明。\n\n<details data-layer=\"deep\">\n  <summary>深入剖析</summary>\n\n  **内部步骤 A**\n\n  内部细节。\n</details>\n\n<details>\n  <summary>普通折叠</summary>\n\n  ### 保留的标题\n</details>\n",
+      "deepDiveCount": 1
+    }
+  ],
+  "remarkCases": [
+    {
+      "name": "strip-esm-keep-export",
+      "output": "export const meta = { title: 'x' };\n\n# 正文\n"
+    },
+    {
+      "name": "tag-normalizer-kebab-to-pascal",
+      "output": "<CardGroup>\n  <Card>内容</Card>\n</CardGroup>\n"
+    },
+    {
+      "name": "safe-braces-single-identifier",
+      "output": "变量 <DynamicVar name=\"now\" /> 与 <DynamicVar name=\"API_URL\" /> 并存\n"
+    },
+    {
+      "name": "safe-braces-reserved-this",
+      "output": "\\{this}\n"
+    }
+  ],
+  "safeBracesAst": [
+    {
+      "name": "multi-word-prose-expression",
+      "node": {
+        "type": "text",
+        "value": "{Context Engineering}"
+      }
+    }
+  ],
+  "stripStyleHtml": "<div class=\"keep\"><span>text</span></div>",
+  "sanitizeSchemaChecks": {
+    "extraTagsPresent": true,
+    "defaultTagsPreserved": true,
+    "tagCountGreaterThanDefault": true,
+    "wildcardAttrs": [
+      "abbr",
+      "accept",
+      "acceptCharset",
+      "accessKey",
+      "action",
+      "align",
+      "alt",
+      "axis",
+      "border",
+      "cellPadding",
+      "cellSpacing",
+      "char",
+      "charOff",
+      "charSet",
+      "checked",
+      "clear",
+      "colSpan",
+      "color",
+      "cols",
+      "compact",
+      "coords",
+      "dateTime",
+      "dir",
+      "encType",
+      "frame",
+      "hSpace",
+      "headers",
+      "height",
+      "hrefLang",
+      "htmlFor",
+      "id",
+      "isMap",
+      "itemProp",
+      "label",
+      "lang",
+      "maxLength",
+      "media",
+      "method",
+      "multiple",
+      "name",
+      "noHref",
+      "noShade",
+      "noWrap",
+      "open",
+      "prompt",
+      "readOnly",
+      "rev",
+      "rowSpan",
+      "rows",
+      "rules",
+      "scope",
+      "selected",
+      "shape",
+      "size",
+      "span",
+      "start",
+      "summary",
+      "tabIndex",
+      "title",
+      "useMap",
+      "vAlign",
+      "value",
+      "width",
+      "className",
+      "id",
+      [
+        "data*",
+        {}
+      ],
+      "ariaLabel",
+      "ariaHidden",
+      "ariaDescribedby",
+      "ariaLabelledby",
+      "role"
+    ],
+    "aAttrs": [
+      "ariaDescribedBy",
+      "ariaLabel",
+      "ariaLabelledBy",
+      "dataFootnoteBackref",
+      "dataFootnoteRef",
+      [
+        "className",
+        "data-footnote-backref"
+      ],
+      "href",
+      "target",
+      "rel",
+      "download"
+    ],
+    "srcProtocols": [
+      "http",
+      "https",
+      "data"
+    ],
+    "inputAttrs": [
+      [
+        "disabled",
+        true
+      ],
+      [
+        "type",
+        "checkbox"
+      ],
+      "disabled"
+    ],
+    "codeAttrs": [
+      [
+        "className",
+        {}
+      ],
+      "language"
+    ]
+  }
+}

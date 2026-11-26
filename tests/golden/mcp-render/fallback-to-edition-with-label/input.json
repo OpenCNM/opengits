@@ -1,0 +1,12 @@
+{
+  "ctxFlags": {
+    "fallback": true,
+    "requestedEdition": "v16",
+    "edition": "ed_deep",
+    "editionLabel": "深度剖析版"
+  },
+  "result": {
+    "header": "# 📄 Source File: `a.go` [sha]\n\n",
+    "body": "```go\npackage x\n```\n"
+  }
+}

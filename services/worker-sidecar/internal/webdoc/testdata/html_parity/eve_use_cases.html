@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Use Cases – eve</title></head>
+<body>
+  <header class="sticky top-0 z-40 flex h-16 justify-center bg-background-200">
+    <nav aria-label="Primary navigation">
+      <ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul>
+    </nav>
+  </header>
+  <div id="nd-docs-layout">
+    <div>
+      <aside class="h-full w-[300px] pr-3 text-gray-900">
+        <nav aria-label="Documentation">
+          <ul>
+            <li><span>Introduction</span></li>
+            <li><a href="/docs/getting-started">Getting Started</a></li>
+            <li><a aria-current="page" href="/docs/use-cases">Use Cases</a></li>
+            <li><a href="/docs/channels">Channels</a></li>
+          </ul>
+        </nav>
+      </aside>
+    </div>
+    <main class="contents">
+      <article id="nd-page" data-full="false" class="flex flex-col w-full max-w-[900px] mx-auto">
+        <div data-mobile-docs-bar="true"><button type="button"><svg viewBox="0 0 16 16"><path d="M1 2h14"/></svg>Menu</button></div>
+        <div class="mb-8 flex flex-col-reverse gap-4 md:flex-row md:items-end md:justify-between">
+          <h1 data-geistdocs-article="title" class="text-[1.75em] font-semibold text-balance mb-0 min-w-0">Use Cases</h1>
+          <div class="mb-2 self-end">
+            <div class="inline-flex shrink-0 overflow-hidden rounded-md border border-gray-400">
+              <button aria-label="Copy page" type="button"><span>Copy page</span></button>
+              <button aria-label="Open page actions" type="button"><svg viewBox="0 0 16 16"><path d="M14 5"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div data-geistdocs-article="body" class="prose flex-1 mx-auto w-full">
+          <p>eve's two most common use cases are business agents for your own company and agents you ship to customers as a product.</p>
+          <div class="not-prose my-8 grid min-w-0 gap-4 sm:grid-cols-2">
+            <a class="group flex h-full min-w-0 flex-col rounded-xl border border-gray-alpha-400 bg-background-100 p-4 no-underline sm:p-5 gap-5" href="#business-agents">
+              <div class="flex flex-col gap-1">
+                <span class="text-copy-13 text-gray-900">For your team</span>
+                <span class="flex items-center justify-between gap-2 text-gray-1000 text-heading-20">Business agents<svg data-slot="geist-icon" height="16" viewBox="0 0 16 16" width="16" class="shrink-0 text-gray-700"><title>ArrowRight</title><path d="M6.75 3.94l3 3"/></svg></span>
+                <div class="text-copy-14 text-gray-900"><p>Automate a company function, like analytics, a software factory, marketing, or finance.</p></div>
+              </div>
+              <ul aria-label="Common channels" class="mt-auto flex list-none flex-wrap gap-2 p-0">
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 126 126" aria-hidden="true" class="size-4 shrink-0"><path d="M26 79"/></svg></span>Slack</li>
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 16 16" aria-hidden="true" class="size-4 shrink-0"><path d="M8 6"/></svg></span>Microsoft Teams</li>
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 1024 1024" aria-hidden="true" class="size-4 shrink-0"><path d="M512 0"/></svg></span>GitHub</li>
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 200 200" aria-hidden="true" class="size-4 shrink-0"><path d="M2 123"/></svg></span>Linear</li>
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-4 shrink-0"><circle cx="12" cy="12" r="9"/></svg></span>Web</li>
+              </ul>
+            </a>
+            <a class="group flex h-full min-w-0 flex-col rounded-xl border border-gray-alpha-400 bg-background-100 p-4 no-underline sm:p-5 gap-5" href="#agent-as-a-service-aaas">
+              <div class="flex flex-col gap-1">
+                <span class="text-copy-13 text-gray-900">For your customers</span>
+                <span class="flex items-center justify-between gap-2 text-gray-1000 text-heading-20">Agent as a Service (AaaS)<svg data-slot="geist-icon" height="16" viewBox="0 0 16 16" width="16" class="shrink-0 text-gray-700"><title>ArrowRight</title><path d="M6.75 3.94l3 3"/></svg></span>
+                <div class="text-copy-14 text-gray-900"><p>Build multi-tenant agentic applications that scale as you grow.</p></div>
+              </div>
+              <ul aria-label="Common channels" class="mt-auto flex list-none flex-wrap gap-2 p-0">
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-4 shrink-0"><title>iMessage</title><path d="M5 0"/></svg></span>iMessage</li>
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-4 shrink-0"><title>WhatsApp</title><path d="M17 14"/></svg></span>WhatsApp</li>
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 240 240" aria-hidden="true" class="size-4 shrink-0"><path d="M120 240"/></svg></span>Telegram</li>
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 800 620" aria-hidden="true" class="size-4 shrink-0"><path d="M677 51"/></svg></span>Discord</li>
+                <li class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-copy-13 text-gray-1000"><span class="flex text-gray-900 grayscale"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-4 shrink-0"><circle cx="12" cy="12" r="9"/></svg></span>Web</li>
+              </ul>
+            </a>
+          </div>
+          <h2 class="flex scroll-m-28 flex-row items-center gap-2" id="business-agents"><a class="peer" data-card="" href="#business-agents">Business agents</a><svg viewBox="0 0 16 16" aria-hidden="true" class="size-3.5 shrink-0 opacity-0"><path d="M8 1"/></svg></h2>
+          <p>A business agent takes on work for teams inside your company. Employees reach the agent in Slack, Microsoft Teams, or GitHub, and it acts on the company's own systems and data.</p>
+          <div class="not-prose my-6 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <a class="group flex h-full min-w-0 flex-col rounded-xl border border-gray-alpha-400 bg-background-100 p-4 no-underline sm:p-5 gap-2" href="https://github.com/vercel-labs/eve-software-factory-template/tree/main" rel="noopener noreferrer" target="_blank">
+              <span class="flex items-start justify-between gap-2 text-gray-1000 text-heading-16">Software factory<svg data-slot="geist-icon" height="16" viewBox="0 0 16 16" width="16" class="mt-0.5 shrink-0 text-gray-700"><title>ExternalArrow</title><path d="M6.75 4H6v1.5"/></svg></span>
+              <div class="text-copy-14 text-gray-900"><p>Agents plan features, open pull requests, review code, and respond to incidents alongside an engineering team.</p></div>
+              <span class="mt-auto flex flex-col gap-2 pt-3"><span class="flex items-center gap-1.5 text-gray-900 grayscale"><svg viewBox="0 0 1024 1024" aria-label="GitHub" class="size-3.5" role="img"><path d="M512 0"/></svg><svg viewBox="0 0 200 200" aria-label="Linear" class="size-3.5" role="img"><path d="M2 123"/></svg></span><span class="text-copy-13 text-gray-900">Software Factory<!-- --> template</span></span>
+            </a>
+            <a class="group flex h-full min-w-0 flex-col rounded-xl border border-gray-alpha-400 bg-background-100 p-4 no-underline sm:p-5 gap-2" href="https://github.com/vercel/eve/tree/main/apps/templates/eve-company-brain-template" rel="noopener noreferrer" target="_blank">
+              <span class="flex items-start justify-between gap-2 text-gray-1000 text-heading-16">Company brain<svg data-slot="geist-icon" height="16" viewBox="0 0 16 16" width="16" class="mt-0.5 shrink-0 text-gray-700"><title>ExternalArrow</title><path d="M6.75 4H6v1.5"/></svg></span>
+              <div class="text-copy-14 text-gray-900"><p>One agent holds the company's skills, tools, and approved connections, reachable where employees work.</p></div>
+              <span class="mt-auto flex flex-col gap-2 pt-3"><span class="flex items-center gap-1.5 text-gray-900 grayscale"><svg viewBox="0 0 126 126" aria-label="Slack" class="size-3.5" role="img"><path d="M26 79"/></svg><svg viewBox="0 0 90 90" aria-label="dbt" class="size-3.5" role="img"><path d="M85 4"/></svg><svg viewBox="0 0 53 37" aria-label="MotherDuck" class="size-3.5" role="img"><path d="M2 25"/></svg></span><span class="text-copy-13 text-gray-900">Company Brain<!-- --> template</span></span>
+            </a>
+            <a class="group flex h-full min-w-0 flex-col rounded-xl border border-gray-alpha-400 bg-background-100 p-4 no-underline sm:p-5 gap-2" href="https://github.com/vercel-labs/marketing-team-eve-template/tree/main" rel="noopener noreferrer" target="_blank">
+              <span class="flex items-start justify-between gap-2 text-gray-1000 text-heading-16">Marketing team<svg data-slot="geist-icon" height="16" viewBox="0 0 16 16" width="16" class="mt-0.5 shrink-0 text-gray-700"><title>ExternalArrow</title><path d="M6.75 4H6v1.5"/></svg></span>
+              <div class="text-copy-14 text-gray-900"><p>A lead agent routes work to specialists for positioning, long-form content, social, SEO, and email, then publishes through Notion, Typefully, and Resend.</p></div>
+              <span class="mt-auto flex flex-col gap-2 pt-3"><span class="flex items-center gap-1.5 text-gray-900 grayscale"><svg viewBox="0 0 24 24" aria-label="Web chat" class="size-3.5" role="img"><circle cx="12" cy="12" r="9"/></svg><svg viewBox="0 0 24 24" aria-label="Notion" class="size-3.5" role="img"><title>Notion</title><path d="M4 4"/></svg><svg viewBox="0 0 24 24" aria-label="Resend" class="size-3.5" role="img"><title>Resend</title><path d="M14 0"/></svg></span><span class="text-copy-13 text-gray-900">Marketing team<!-- --> template</span></span>
+            </a>
+          </div>
+          <h3 class="flex scroll-m-28 flex-row items-center gap-2" id="how-eve-supports-business-agents"><a class="peer" data-card="" href="#how-eve-supports-business-agents">How eve supports business agents</a><svg viewBox="0 0 16 16" aria-hidden="true" class="size-3.5 shrink-0 opacity-0"><path d="M8 1"/></svg></h3>
+          <p>An eve agent lives in <a href="/docs/concepts/project-structure">your repository</a>, so it is reviewed, deployed, and governed like the rest of your stack.</p>
+          <ul class="not-prose my-6 min-w-0 list-none border-gray-alpha-400 border-y p-0">
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16"><path d="M2 10"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Meet employees where they work</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>One agent serves Slack, Microsoft Teams, GitHub, Linear, and your own web apps, with a session for every conversation.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/channels">Channels<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Govern and audit every run</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>OpenTelemetry traces and Agent Runs record every session, model call, and tool call, so you can see what an agent did and why.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/observability/instrumentation">Observability<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16"><path d="M8 0"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Use your identity provider</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>Verify callers with any OIDC issuer, JWTs, or your own authenticator. Each connection then acts as the agent itself or on behalf of the signed-in user.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/guides/auth-and-route-protection">Identity and access<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 0"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Switch models without a code rewrite</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>Changing models is a one-line edit in agent.ts, and requests can fall back to another provider on failure.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/agent-config">Models<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Connect to approved services</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>Expose the MCP and OpenAPI services your IT team approves. Credentials stay in the runtime, and the model never sees them.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/connections">Connections<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16"><path d="M15 4"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Evaluate agent responses</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>Evals run the agent through real turns and score the result with code checks or a model judge.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/evals">Evals<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12 1"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Put deterministic steps in the loop</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>Tools are typed TypeScript functions the model chooses when to call. When a process must run the same way every time, use a workflow tool instead.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/tools/workflows">Workflow tools<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 2"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Run commands in sandboxed compute</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>Each session gets an isolated filesystem and shell for scripts, repositories, and generated files.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/sandbox">Sandbox<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+            <li class="flex min-w-0 gap-4 border-gray-alpha-400 border-b py-5 last:border-b-0"><span class="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-1000"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 9"/></svg></span><div class="flex min-w-0 flex-col gap-1.5 pt-1"><span class="text-gray-1000 text-heading-16">Keep a human in the loop</span><div class="max-w-[60ch] text-copy-14 text-gray-900"><p>Sessions pause while an approval is pending and resume when it resolves, even after a redeploy.</p></div><a class="mt-1 flex w-fit items-center gap-0.5 font-medium text-copy-14 text-gray-1000 no-underline hover:underline" href="/docs/human-in-the-loop">Human-in-the-loop<svg viewBox="0 0 16 16"><path d="M6 3"/></svg></a></div></li>
+          </ul>
+          <h2 class="flex scroll-m-28 flex-row items-center gap-2" id="agent-as-a-service-aaas"><a class="peer" data-card="" href="#agent-as-a-service-aaas">Agent as a Service (AaaS)</a><svg viewBox="0 0 16 16" aria-hidden="true" class="size-3.5 shrink-0 opacity-0"><path d="M8 1"/></svg></h2>
+          <p>In AaaS, the agent is the product. One multi-tenant deployment serves many customers over long stretches of time.</p>
+          <h2 class="flex scroll-m-28 flex-row items-center gap-2" id="start-building"><a class="peer" data-card="" href="#start-building">Start building</a><svg viewBox="0 0 16 16" aria-hidden="true" class="size-3.5 shrink-0 opacity-0"><path d="M8 1"/></svg></h2>
+          <p>Create an agent and open the terminal UI.</p>
+          <div class="group/copy relative my-4 overflow-hidden rounded-lg not-prose" data-geist-code-block="">
+            <button aria-label="Copy to clipboard" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2"/></svg></button>
+            <div data-section="content"><pre><code><span class="line"><span>npx</span><span> eve@latest</span><span> init</span><span> my-agent</span></span></code></pre></div>
+          </div>
+        </div>
+        <div class="mt-8 grid grid-cols-2 gap-4 border-gray-alpha-400 border-t pt-6">
+          <a class="group grid w-fit grid-cols-[auto_1fr] items-center gap-x-1.5 gap-y-1 text-gray-1000" href="/docs/getting-started"><span class="text-gray-900 text-sm col-start-2">Previous</span><svg viewBox="0 0 16 16" class="row-start-2"><path d="M5 1"/></svg><span class="row-start-2 font-medium col-start-2">Getting Started</span></a>
+          <a class="group grid w-fit grid-cols-[1fr_auto] items-center gap-x-1.5 gap-y-1 justify-self-end text-right text-gray-1000" href="/docs/concepts/project-structure"><span class="text-gray-900 text-sm col-start-1">Next</span><span class="row-start-2 font-medium col-start-1">Project Structure</span><svg viewBox="0 0 16 16" class="row-start-2"><path d="M5 1"/></svg></a>
+        </div>
+      </article>
+      <aside aria-label="Page navigation" id="nd-toc">
+        <nav aria-label="On this page">
+          <p>On this page</p>
+          <a href="#business-agents">Business agents</a>
+          <a href="#how-eve-supports-business-agents">How eve supports business agents</a>
+        </nav>
+        <div>
+          <nav aria-label="Page actions">
+            <button type="button"><span>Scroll to top</span></button>
+            <button type="button"><span>Give feedback</span></button>
+            <a href="https://github.com/vercel/eve/blob/main/docs/use-cases.mdx" rel="noopener noreferrer" target="_blank"><svg viewBox="0 0 24 24"><title>GitHub</title><path d="M12 0"/></svg><span>Edit this page on GitHub</span></a>
+          </nav>
+        </div>
+      </aside>
+    </main>
+  </div>
+</body>
+</html>

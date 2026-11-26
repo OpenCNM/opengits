@@ -1,0 +1,61 @@
+{
+  "op": "markdown-preview-and-fence-meta",
+  "isMarkdownCodeBlock": [
+    { "lang": "markdown" },
+    { "lang": "md" },
+    { "lang": "mdx" },
+    { "lang": "language-markdown" },
+    { "lang": "text", "filePath": "docs/communication-protocol-layers.md" },
+    { "lang": "", "filePath": "README.MD" },
+    { "lang": "ts", "filePath": "docs/communication-protocol-layers.md" },
+    { "lang": "python", "filePath": "README.md" },
+    { "lang": "ts", "filePath": "src/index.ts" }
+  ],
+  "splitMarkdownPreviewOmission": [
+    {
+      "name": "html-omission-comment",
+      "code": "# Z Code 通信协议分层\n\n> 说明文本\n\n<!-- ... [23 lines omitted for pedagogy (L5-L60)] -->\n"
+    },
+    {
+      "name": "legacy-double-slash-omission",
+      "code": "## 第 2 层：信封\n// ... [23 lines of defensive/internal logic omitted for pedagogy (L5-L60)]"
+    },
+    {
+      "name": "no-omission-untouched",
+      "code": "# Heading\n\nSome content"
+    }
+  ],
+  "extractCodeFenceMeta": [
+    "// docs/architecture/communication-protocol-layers.md",
+    "docs/README.md#get_current_time",
+    "file=\"docs/a.md\" (L1-L10)",
+    "// [File 2]",
+    null,
+    ""
+  ],
+  "isMarkdownFilePath": [
+    "docs/communication-protocol-layers.md",
+    "src/index.ts",
+    "README.MD",
+    null
+  ],
+  "tocSanitize": [
+    {
+      "name": "vnode-and-null-filtering",
+      "rawToc": [
+        {
+          "depth": 2,
+          "url": "#intro",
+          "title": {
+            "type": "span",
+            "props": {
+              "children": ["Hello ", { "type": "code", "props": { "children": "World" } }]
+            }
+          }
+        },
+        { "depth": 3, "url": "#step-1", "title": "步骤一" },
+        { "depth": 2, "url": "#empty", "title": null }
+      ]
+    }
+  ]
+}

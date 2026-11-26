@@ -1,0 +1,201 @@
+=== META ===
+{
+  "toc": [
+    {
+      "depth": 1,
+      "url": "#冷恢复",
+      "title": "冷恢复"
+    },
+    {
+      "depth": 2,
+      "url": "#冷恢复是什么",
+      "title": "冷恢复是什么"
+    },
+    {
+      "depth": 2,
+      "url": "#常见踩坑",
+      "title": "常见踩坑"
+    },
+    {
+      "depth": 3,
+      "url": "#折叠里的标题",
+      "title": "折叠里的标题"
+    }
+  ],
+  "frontmatter": {},
+  "deepDiveCount": 2,
+  "h1sToc": [
+    {
+      "depth": 2,
+      "url": "#冷恢复是什么",
+      "title": "冷恢复是什么"
+    },
+    {
+      "depth": 2,
+      "url": "#常见踩坑",
+      "title": "常见踩坑"
+    },
+    {
+      "depth": 3,
+      "url": "#折叠里的标题",
+      "title": "折叠里的标题"
+    }
+  ],
+  "h1sDeepDiveCount": 2
+}
+=== COMPILED ===
+"use strict";
+const {Fragment: _Fragment, jsx: _jsx, jsxs: _jsxs} = arguments[0];
+let toc = [{
+  depth: 1,
+  url: "#冷恢复",
+  title: _jsx(_Fragment, {
+    children: "冷恢复"
+  })
+}, {
+  depth: 2,
+  url: "#冷恢复是什么",
+  title: _jsx(_Fragment, {
+    children: "冷恢复是什么"
+  })
+}, {
+  depth: 2,
+  url: "#常见踩坑",
+  title: _jsx(_Fragment, {
+    children: "常见踩坑"
+  })
+}, {
+  depth: 3,
+  url: "#折叠里的标题",
+  title: _jsx(_Fragment, {
+    children: "折叠里的标题"
+  })
+}];
+function _createMdxContent(props) {
+  const _components = {
+    code: "code",
+    h1: "h1",
+    h2: "h2",
+    h3: "h3",
+    li: "li",
+    p: "p",
+    pre: "pre",
+    strong: "strong",
+    ul: "ul",
+    ...props.components
+  }, {Callout} = _components;
+  if (!Callout) _missingMdxReference("Callout", true);
+  return _jsxs(_Fragment, {
+    children: [_jsx(_components.h1, {
+      id: "冷恢复",
+      children: "冷恢复"
+    }), "\n", _jsx(_components.h2, {
+      id: "冷恢复是什么",
+      children: "冷恢复是什么"
+    }), "\n", _jsx(_components.p, {
+      children: "进程重启后内存里的投影没了，第一次订阅要按需重建。"
+    }), "\n", _jsxs("details", {
+      "data-layer": "deep",
+      children: [_jsx("summary", {
+        children: "冷恢复的内部状态"
+      }), _jsx(_components.p, {
+        children: _jsx(_components.strong, {
+          children: "内部状态与宽限期"
+        })
+      }), _jsx(_components.p, {
+        children: "水合缓冲记录尚未落盘的事件。"
+      }), _jsx(_components.pre, {
+        "data-code": "this.hydrate();",
+        "data-file": "src/gateway.ts",
+        "data-language": "ts",
+        "data-highlighted-html": "<pre class=\"shiki shiki-themes github-light github-dark solarized-light github-light\" style=\"--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-parchment:#657B83;--shiki-vercel:#24292e;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e;--shiki-parchment-bg:#FDF6E3;--shiki-vercel-bg:#fff\" tabindex=\"0\"><code><span class=\"line\" data-line=\"1\" id=\"L1\"><span style=\"--shiki-light:#005CC5;--shiki-dark:#79B8FF;--shiki-parchment:#268BD2;--shiki-vercel:#005CC5\">this</span><span style=\"--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-parchment:#657B83;--shiki-vercel:#24292E\">.</span><span style=\"--shiki-light:#6F42C1;--shiki-dark:#B392F0;--shiki-parchment:#268BD2;--shiki-vercel:#6F42C1\">hydrate</span><span style=\"--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-parchment:#657B83;--shiki-vercel:#24292E\">();</span></span></code></pre>",
+        children: _jsx(_components.code, {
+          className: "language-ts",
+          "data-file": "src/gateway.ts",
+          "data-language": "ts",
+          "data-code": "this.hydrate();",
+          children: "this.hydrate();"
+        })
+      }), _jsx(Callout, {
+        type: "warning",
+        title: "宽限期不是超时",
+        children: _jsx(_components.p, {
+          children: "到期只是停止等待，不代表失败。"
+        })
+      })]
+    }), "\n", _jsx(_components.h2, {
+      id: "常见踩坑",
+      children: "常见踩坑"
+    }), "\n", _jsx(_components.p, {
+      children: "把宽限期当成超时时间。"
+    }), "\n", _jsxs("details", {
+      "data-layer": "deep",
+      children: [_jsx("summary", {
+        children: "兄弟方法清单"
+      }), _jsxs(_components.ul, {
+        children: ["\n", _jsx(_components.li, {
+          children: "一个条目"
+        }), "\n"]
+      })]
+    }), "\n", _jsxs("details", {
+      children: [_jsx("summary", {
+        children: "普通折叠"
+      }), _jsx(_components.h3, {
+        id: "折叠里的标题",
+        children: "折叠里的标题"
+      }), _jsx(_components.p, {
+        children: "正文。"
+      })]
+    }), "\n", _jsx(Callout, {
+      type: "warning",
+      children: _jsxs(_components.p, {
+        children: ["在 ", _jsx(_components.code, {
+          children: ".strict()"
+        }), " 的世界里，\"给 schema 加一个字段\"从来不是无害操作。"]
+      })
+    }), "\n", _jsx(Callout, {
+      type: "note",
+      children: _jsxs(_components.p, {
+        children: ["握手版本是兼容性开关，不是字段版本。新增可选字段", _jsx(_components.strong, {
+          children: "不递增协议握手版本号"
+        }), "。"]
+      })
+    }), "\n", _jsx(Callout, {
+      type: "warning",
+      title: "兼容边界",
+      children: _jsxs(_components.p, {
+        children: ["在 ", _jsx(_components.code, {
+          children: ".strict()"
+        }), " 的世界里，先协商能力位。"]
+      })
+    }), "\n", _jsx(Callout, {
+      type: "tip",
+      title: "独立首段标题",
+      children: _jsx(_components.p, {
+        children: "正文从第二段开始。"
+      })
+    }), "\n", _jsx(Callout, {
+      type: "important",
+      children: _jsx(_components.p, {
+        children: "契约的生死必须两端对称。"
+      })
+    })]
+  });
+}
+function MDXContent(props = {}) {
+  const {wrapper: MDXLayout} = props.components || ({});
+  return MDXLayout ? _jsx(MDXLayout, {
+    ...props,
+    children: _jsx(_createMdxContent, {
+      ...props
+    })
+  }) : _createMdxContent(props);
+}
+return {
+  toc,
+  default: MDXContent
+};
+function _missingMdxReference(id, component) {
+  throw new Error("Expected " + (component ? "component" : "object") + " `" + id + "` to be defined: you likely forgot to import, pass, or provide it.");
+}
+

@@ -1,0 +1,8 @@
+# 🔍 Code Symbol: `add` (function)
+- **File**: `src/calc.ts` (Lines 3–7)
+
+### Source Implementation
+
+```typescript
+return a + b;
+```

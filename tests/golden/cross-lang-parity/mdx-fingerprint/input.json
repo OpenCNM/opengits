@@ -1,0 +1,4 @@
+{
+  "op": "mdx-fingerprint",
+  "fixturePath": "services/worker-sidecar/testdata/mdx-fingerprint.golden.json"
+}

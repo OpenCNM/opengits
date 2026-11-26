@@ -1,0 +1,7 @@
+{
+  "ctxFlags": {},
+  "result": {
+    "header": "# 🔍 Code Symbol: `add` (function)\n",
+    "body": "- **File**: `src/calc.ts` (Lines 3–7)\n\n### Source Implementation\n\n```typescript\nreturn a + b;\n```\n"
+  }
+}

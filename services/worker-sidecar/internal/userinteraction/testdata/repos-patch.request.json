@@ -1,0 +1,15 @@
+{
+  "id": "repo-0001",
+  "gitSha": "abc123",
+  "hasUpstreamUpdate": false,
+  "upstreamEtag": "W/\"etag-1\"",
+  "touchUpstreamCheckedAt": true,
+  "isPublic": true,
+  "touchPublishedAt": true,
+  "touchRelayNotifiedAt": true,
+  "reviewStatus": "APPROVED",
+  "reviewAutoApproved": true,
+  "clearRejectionReason": true,
+  "touchReviewedAt": true,
+  "relayEnabled": true
+}

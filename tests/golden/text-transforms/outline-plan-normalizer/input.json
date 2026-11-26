@@ -1,0 +1,229 @@
+{
+  "op": "outline-plan-normalizer",
+  "planPurposeCases": [
+    {
+      "name": "chapter-0-missing-module-inherits",
+      "raw": {
+        "curriculumMode": "matrix",
+        "chapters": [
+          { "name": "第 1 章: 架构全景与环境准备", "summary": "全景与准备", "targetPaths": ["README.md"], "phase": "入门" },
+          { "name": "第 2 章: 源码结构与运行入口", "summary": "源码结构", "targetPaths": ["src"], "phase": "入门" }
+        ]
+      }
+    },
+    {
+      "name": "summary-overflow-and-missing-fallback",
+      "raw": {
+        "_repeatSummary": true,
+        "curriculumMode": "matrix",
+        "chapters": [
+          { "moduleTitle": "模块 1: 基础", "name": "第 1 章: 核心算法", "summaryRepeat": 300, "targetPaths": ["src/algo"], "phase": "进阶" },
+          { "moduleTitle": "模块 1: 基础", "name": "第 2 章: 扩展系统", "targetPaths": ["src/ext"], "phase": "进阶" }
+        ]
+      }
+    },
+    {
+      "name": "target-paths-resilience",
+      "raw": {
+        "curriculumMode": "matrix",
+        "chapters": [
+          { "moduleTitle": "模块 1: 基础", "name": "第 1 章: 单字符串路径", "summary": "测试单字符串", "targetPaths": "src/single", "phase": "入门" },
+          { "moduleTitle": "模块 1: 基础", "name": "第 2 章: 空路径", "summary": "测试空数组", "targetPaths": [], "phase": "入门" },
+          { "moduleTitle": "模块 1: 基础", "name": "第 3 章: 超 4 路径", "summary": "测试截断", "targetPaths": ["a", "b", "c", "d", "e", "f"], "phase": "入门" }
+        ]
+      }
+    },
+    {
+      "name": "max-chapters-clamping-18-to-14",
+      "raw": {
+        "_generateChapters": 18,
+        "curriculumMode": "matrix",
+        "chapters": []
+      }
+    },
+    {
+      "name": "envelope-unwrapping-and-aliases",
+      "raw": {
+        "data": {
+          "curriculumMode": "Matrix",
+          "chapters": [
+            { "moduleTitle": "模块 1: 全景", "title": "第 1 章: 入门总览", "desc": "核心职责说明", "paths": ["src/core"] }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fail-closed-on-error-garbage",
+      "raw": { "error": "LLM rate limit reached" }
+    },
+    {
+      "name": "fail-closed-on-empty-chapters",
+      "raw": { "chapters": [] }
+    }
+  ],
+  "cleanChapterNames": [
+    "第 1 章: 项目全景与训练入口 train.py",
+    "第 2 章: 分布式基础设施 utils.py",
+    "第 3 章: 偏好数据管线 preference_datasets.py",
+    "第 2 章：领域类型与配置模型 types.go",
+    "第 5 章：HTTP 协议请求引擎 request.go",
+    "第 1 章: 项目入口 (train.py)",
+    "第 1 章: train.py",
+    "Chapter 1: Training Entrypoint train.py",
+    "第 1 章: Node.js 异步运行时",
+    "第 1 章: Python 异步并发与 PyTorch 实战",
+    "第 1 章: 门面契约与域名匹配体系 (Domain、NewDomain 与 matcherset)",
+    "第 2 章: 网络领域模型: 地址、端口与多缓冲区 (Address、Port、multi_buffer)",
+    "第 3 章: 信号生命周期与序列化基础 (Done、Instance 与字符串工具)",
+    "第 4 章: 核心执行引擎: 命令框架与错误处理管线 (Command、errors)",
+    "Chapter 1: Interface & Facade: Routing and Domain Matching (Domain, NewDomain and matcherset)",
+    "Chapter 2: Core Engine: Command Framework and Errors (Command, errors)"
+  ],
+  "mapPurposeCases": [
+    {
+      "name": "strip-code-extensions",
+      "raw": {
+        "chapters": [
+          { "name": "第 1 章: 项目全景与训练入口 train.py", "summary": "训练入口", "files": ["train.py"], "phase": "入门" },
+          { "name": "第 2 章: 分布式基础设施 utils.py", "summary": "基础设施", "files": ["utils.py"], "phase": "进阶" },
+          { "name": "第 3 章: DPO 损失与 BasicTrainer 基础训练器", "summary": "损失计算", "files": ["trainers.py"], "phase": "实战" }
+        ]
+      }
+    },
+    {
+      "name": "strip-abstract-jargon-and-paren-symbols",
+      "raw": {
+        "chapters": [
+          { "name": "第 1 章: 门面契约与域名匹配体系 (Domain、NewDomain 与 matcherset)", "summary": "域名匹配体系解析", "files": ["common/router.go"], "phase": "入门" },
+          { "name": "第 2 章: 网络领域模型: 地址、端口与多缓冲区 (Address、Port、multi_buffer)", "summary": "地址与缓冲区机制", "files": ["common/net.go"], "phase": "入门" },
+          { "name": "第 3 章: 核心执行引擎: 命令框架与错误处理管线 (Command、errors)", "summary": "命令框架与调度管线", "files": ["app/dispatcher.go"], "phase": "进阶" }
+        ]
+      }
+    }
+  ],
+  "normalizeOutlinePlanCases": [
+    {
+      "name": "thematic-files-divert",
+      "raw": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          { "name": "第 1 章: 状态机与协议握手", "summary": "状态流转核心机制", "phase": "入门", "files": ["src/state-machine.ts", "src/protocol/handshake.go"] }
+        ]
+      }
+    },
+    {
+      "name": "thematic-files-divert-merge",
+      "raw": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "第 1 章: 状态机与协议握手",
+            "summary": "状态流转核心机制",
+            "phase": "入门",
+            "focusFiles": ["src/core/engine.ts"],
+            "files": ["src/core/engine.ts", "src/core/scheduler.ts"]
+          }
+        ]
+      }
+    },
+    {
+      "name": "thematic-readme-guard",
+      "raw": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          { "name": "missing", "summary": "s", "phase": "入门" },
+          { "name": "non-empty", "summary": "s", "phase": "入门", "focusFiles": ["src/auth/login.ts"] },
+          { "name": "blank-only", "summary": "s", "phase": "入门", "focusFiles": ["   ", ""] }
+        ]
+      }
+    },
+    {
+      "name": "thematic-targets-alias-win",
+      "raw": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          { "name": "targetPaths", "summary": "s", "phase": "入门", "targetPaths": ["src/a.ts"], "files": ["src/b.ts"] },
+          { "name": "paths", "summary": "s", "phase": "入门", "paths": ["src/a.ts"], "files": ["src/b.ts"] },
+          { "name": "target_paths", "summary": "s", "phase": "入门", "target_paths": ["src/a.ts"], "files": ["src/b.ts"] }
+        ]
+      }
+    },
+    {
+      "name": "thematic-module-title-neutral-all-phases",
+      "raw": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          { "name": "p1", "summary": "s", "phase": "入门" },
+          { "name": "p2", "summary": "s", "phase": "进阶" },
+          { "name": "p3", "summary": "s", "phase": "实战" }
+        ]
+      }
+    },
+    {
+      "name": "default-module-title-regression-absent-and-full-repo",
+      "raw": {
+        "chapters": [
+          { "name": "p1", "summary": "s", "phase": "入门" },
+          { "name": "p2", "summary": "s", "phase": "进阶" },
+          { "name": "p3", "summary": "s", "phase": "实战" }
+        ]
+      }
+    },
+    {
+      "name": "default-module-title-regression-explicit-full-repo",
+      "raw": {
+        "intentMode": "full_repo",
+        "chapters": [
+          { "name": "p1", "summary": "s", "phase": "入门" },
+          { "name": "p2", "summary": "s", "phase": "进阶" },
+          { "name": "p3", "summary": "s", "phase": "实战" }
+        ]
+      }
+    },
+    {
+      "name": "default-files-path-regression",
+      "raw": {
+        "chapters": [
+          { "name": "c1", "summary": "s", "phase": "入门", "files": ["a.ts", "b.ts", "c.ts", "d.ts", "e.ts", "f.ts"] },
+          { "name": "第 2 章: 无任何目标", "summary": "s", "phase": "入门", "files": [] }
+        ]
+      }
+    },
+    {
+      "name": "intent-mode-invalid-string",
+      "raw": { "intentMode": "thematic", "chapters": [{ "name": "第 1 章: 状态机与协议握手", "summary": "s", "phase": "入门", "targetPaths": ["src/a.ts"] }] }
+    },
+    {
+      "name": "intent-mode-trimmed-valid",
+      "raw": { "intentMode": "  thematic_slice  ", "chapters": [{ "name": "第 1 章: 状态机与协议握手", "summary": "s", "phase": "入门", "targetPaths": ["src/a.ts"] }] }
+    },
+    {
+      "name": "intent-mode-envelope-unwrap",
+      "raw": { "data": { "intentMode": "thematic_slice", "chapters": [{ "name": "第 1 章: 状态机与协议握手", "summary": "s", "phase": "入门", "files": ["src/x.ts"] }] } }
+    },
+    {
+      "name": "focus-files-cap-8-trim-dedup",
+      "raw": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "c1",
+            "summary": "s",
+            "phase": "入门",
+            "focusFiles": ["  src/a.ts  ", "src/a.ts", "", "   ", 42, "src/b.ts", "src/c.ts", "src/d.ts", "src/e.ts", "src/f.ts", "src/g.ts", "src/h.ts", "src/i.ts"]
+          }
+        ]
+      }
+    },
+    {
+      "name": "focus-files-snake-alias-and-single-string",
+      "raw": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          { "name": "snake", "summary": "s", "phase": "入门", "focus_files": ["src/only.ts"] },
+          { "name": "single", "summary": "s", "phase": "入门", "focusFiles": "src/single.ts" }
+        ]
+      }
+    }
+  ]
+}

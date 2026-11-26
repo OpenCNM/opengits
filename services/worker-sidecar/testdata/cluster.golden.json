@@ -1,0 +1,489 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "cases": [
+    {
+      "name": "stable-match-and-file-shift",
+      "oldClusters": [
+        {
+          "teachingOrder": 1,
+          "chapterNo": 1,
+          "title": "Core",
+          "summary": "core module",
+          "directories": [
+            "src/core"
+          ],
+          "granularity": "standard",
+          "files": [
+            "src/core/a.ts",
+            "src/core/b.ts"
+          ]
+        },
+        {
+          "teachingOrder": 2,
+          "chapterNo": 2,
+          "title": "Utils",
+          "summary": "utils",
+          "directories": [
+            "src/utils"
+          ],
+          "granularity": "standard",
+          "files": [
+            "src/utils/u1.ts"
+          ]
+        }
+      ],
+      "newTree": [
+        {
+          "path": "src",
+          "type": "tree"
+        },
+        {
+          "path": "src/core",
+          "type": "tree"
+        },
+        {
+          "path": "src/utils",
+          "type": "tree"
+        },
+        {
+          "path": "src/core/a.ts",
+          "type": "blob",
+          "size": 100
+        },
+        {
+          "path": "src/core/new.ts",
+          "type": "blob",
+          "size": 100
+        },
+        {
+          "path": "src/utils/u1.ts",
+          "type": "blob",
+          "size": 100
+        }
+      ],
+      "expected": {
+        "recomputed": [
+          {
+            "teachingOrder": 1,
+            "chapterNo": 1,
+            "title": "Core",
+            "summary": "core module",
+            "directories": [
+              "src/core"
+            ],
+            "granularity": "standard",
+            "files": [
+              "src/core/a.ts",
+              "src/core/new.ts"
+            ]
+          },
+          {
+            "teachingOrder": 2,
+            "chapterNo": 2,
+            "title": "Utils",
+            "summary": "utils",
+            "directories": [
+              "src/utils"
+            ],
+            "granularity": "standard",
+            "files": [
+              "src/utils/u1.ts"
+            ]
+          }
+        ],
+        "clusterDiff": {
+          "added": [
+            {
+              "teachingOrder": 1,
+              "chapterNo": 1,
+              "title": "Core",
+              "summary": "core module",
+              "directories": [
+                "src/core"
+              ],
+              "granularity": "standard",
+              "files": [
+                "src/core/a.ts",
+                "src/core/new.ts"
+              ]
+            }
+          ],
+          "removed": [
+            {
+              "teachingOrder": 1,
+              "title": "Core"
+            }
+          ],
+          "matched": [
+            {
+              "old": {
+                "teachingOrder": 2,
+                "chapterNo": 2,
+                "title": "Utils",
+                "summary": "utils",
+                "directories": [
+                  "src/utils"
+                ],
+                "granularity": "standard",
+                "files": [
+                  "src/utils/u1.ts"
+                ]
+              },
+              "neu": {
+                "teachingOrder": 2,
+                "chapterNo": 2,
+                "title": "Utils",
+                "summary": "utils",
+                "directories": [
+                  "src/utils"
+                ],
+                "granularity": "standard",
+                "files": [
+                  "src/utils/u1.ts"
+                ]
+              },
+              "similarity": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "module-removed",
+      "oldClusters": [
+        {
+          "teachingOrder": 1,
+          "chapterNo": 1,
+          "title": "Keep",
+          "summary": "",
+          "directories": [
+            "src/keep"
+          ],
+          "granularity": "standard",
+          "files": [
+            "src/keep/k.ts"
+          ]
+        },
+        {
+          "teachingOrder": 2,
+          "chapterNo": 2,
+          "title": "Gone",
+          "summary": "",
+          "directories": [
+            "src/gone"
+          ],
+          "granularity": "standard",
+          "files": [
+            "src/gone/g.ts"
+          ]
+        }
+      ],
+      "newTree": [
+        {
+          "path": "src",
+          "type": "tree"
+        },
+        {
+          "path": "src/keep",
+          "type": "tree"
+        },
+        {
+          "path": "src/keep/k.ts",
+          "type": "blob",
+          "size": 100
+        }
+      ],
+      "expected": {
+        "recomputed": [
+          {
+            "teachingOrder": 1,
+            "chapterNo": 1,
+            "title": "Keep",
+            "summary": "",
+            "directories": [
+              "src/keep"
+            ],
+            "granularity": "standard",
+            "files": [
+              "src/keep/k.ts"
+            ]
+          }
+        ],
+        "clusterDiff": {
+          "added": [],
+          "removed": [
+            {
+              "teachingOrder": 2,
+              "title": "Gone"
+            }
+          ],
+          "matched": [
+            {
+              "old": {
+                "teachingOrder": 1,
+                "chapterNo": 1,
+                "title": "Keep",
+                "summary": "",
+                "directories": [
+                  "src/keep"
+                ],
+                "granularity": "standard",
+                "files": [
+                  "src/keep/k.ts"
+                ]
+              },
+              "neu": {
+                "teachingOrder": 1,
+                "chapterNo": 1,
+                "title": "Keep",
+                "summary": "",
+                "directories": [
+                  "src/keep"
+                ],
+                "granularity": "standard",
+                "files": [
+                  "src/keep/k.ts"
+                ]
+              },
+              "similarity": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "module-added",
+      "oldClusters": [
+        {
+          "teachingOrder": 1,
+          "chapterNo": 1,
+          "title": "Old",
+          "summary": "",
+          "directories": [
+            "src/old"
+          ],
+          "granularity": "standard",
+          "files": [
+            "src/old/o.ts"
+          ]
+        }
+      ],
+      "newTree": [
+        {
+          "path": "src",
+          "type": "tree"
+        },
+        {
+          "path": "src/old",
+          "type": "tree"
+        },
+        {
+          "path": "src/fresh",
+          "type": "tree"
+        },
+        {
+          "path": "src/old/o.ts",
+          "type": "blob",
+          "size": 100
+        },
+        {
+          "path": "src/fresh/f1.ts",
+          "type": "blob",
+          "size": 100
+        },
+        {
+          "path": "src/fresh/f2.ts",
+          "type": "blob",
+          "size": 100
+        }
+      ],
+      "expected": {
+        "recomputed": [
+          {
+            "teachingOrder": 1,
+            "chapterNo": 1,
+            "title": "Old",
+            "summary": "",
+            "directories": [
+              "src/old"
+            ],
+            "granularity": "standard",
+            "files": [
+              "src/old/o.ts"
+            ]
+          }
+        ],
+        "clusterDiff": {
+          "added": [],
+          "removed": [],
+          "matched": [
+            {
+              "old": {
+                "teachingOrder": 1,
+                "chapterNo": 1,
+                "title": "Old",
+                "summary": "",
+                "directories": [
+                  "src/old"
+                ],
+                "granularity": "standard",
+                "files": [
+                  "src/old/o.ts"
+                ]
+              },
+              "neu": {
+                "teachingOrder": 1,
+                "chapterNo": 1,
+                "title": "Old",
+                "summary": "",
+                "directories": [
+                  "src/old"
+                ],
+                "granularity": "standard",
+                "files": [
+                  "src/old/o.ts"
+                ]
+              },
+              "similarity": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "directories-empty-infers-from-old-files",
+      "oldClusters": [
+        {
+          "teachingOrder": 1,
+          "chapterNo": 1,
+          "title": "Inferred",
+          "summary": "",
+          "directories": [],
+          "granularity": "standard",
+          "files": [
+            "lib/x.ts",
+            "lib/y.ts"
+          ]
+        }
+      ],
+      "newTree": [
+        {
+          "path": "lib",
+          "type": "tree"
+        },
+        {
+          "path": "lib/x.ts",
+          "type": "blob",
+          "size": 100
+        },
+        {
+          "path": "lib/y.ts",
+          "type": "blob",
+          "size": 100
+        },
+        {
+          "path": "lib/z.ts",
+          "type": "blob",
+          "size": 100
+        }
+      ],
+      "expected": {
+        "recomputed": [
+          {
+            "teachingOrder": 1,
+            "chapterNo": 1,
+            "title": "Inferred",
+            "summary": "",
+            "directories": [
+              "lib/"
+            ],
+            "granularity": "standard",
+            "files": [
+              "lib/x.ts",
+              "lib/y.ts",
+              "lib/z.ts"
+            ]
+          }
+        ],
+        "clusterDiff": {
+          "added": [],
+          "removed": [],
+          "matched": [
+            {
+              "old": {
+                "teachingOrder": 1,
+                "chapterNo": 1,
+                "title": "Inferred",
+                "summary": "",
+                "directories": [],
+                "granularity": "standard",
+                "files": [
+                  "lib/x.ts",
+                  "lib/y.ts"
+                ]
+              },
+              "neu": {
+                "teachingOrder": 1,
+                "chapterNo": 1,
+                "title": "Inferred",
+                "summary": "",
+                "directories": [
+                  "lib/"
+                ],
+                "granularity": "standard",
+                "files": [
+                  "lib/x.ts",
+                  "lib/y.ts",
+                  "lib/z.ts"
+                ]
+              },
+              "similarity": 0.6666666666666666
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "all-modules-vanished",
+      "oldClusters": [
+        {
+          "teachingOrder": 1,
+          "chapterNo": 1,
+          "title": "Ghost",
+          "summary": "",
+          "directories": [
+            "src/ghost"
+          ],
+          "granularity": "standard",
+          "files": [
+            "src/ghost/g.ts"
+          ]
+        }
+      ],
+      "newTree": [
+        {
+          "path": "docs",
+          "type": "tree"
+        },
+        {
+          "path": "docs/readme.md",
+          "type": "blob",
+          "size": 100
+        }
+      ],
+      "expected": {
+        "recomputed": [],
+        "clusterDiff": {
+          "added": [],
+          "removed": [
+            {
+              "teachingOrder": 1,
+              "title": "Ghost"
+            }
+          ],
+          "matched": []
+        }
+      }
+    }
+  ]
+}

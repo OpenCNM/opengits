@@ -1,0 +1,1039 @@
+{
+  "cases": [
+    {
+      "name": "empty-chapters-zero-result",
+      "input": {
+        "chapters": [],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/intro",
+            "duration": 5000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 0,
+        "chapterScores": [],
+        "totalChapters": 0,
+        "effectivelyRead": 0,
+        "summary": {
+          "avgScore": 0,
+          "maxScore": 0,
+          "minScore": 0
+        }
+      }
+    },
+    {
+      "name": "no-events-all-zero-scores",
+      "input": {
+        "chapters": [
+          {
+            "path": "a.md",
+            "wordCount": 600,
+            "codeBlockCount": 2,
+            "headingCount": 5,
+            "pageUrl": "/docs/o/r/a"
+          },
+          {
+            "path": "b.md",
+            "wordCount": 900,
+            "codeBlockCount": 4,
+            "headingCount": 8,
+            "pageUrl": "/docs/o/r/b"
+          }
+        ],
+        "events": [],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 0,
+        "chapterScores": [
+          {
+            "path": "a.md",
+            "score": 0,
+            "breakdown": {
+              "scrollProgress": 0,
+              "timeProgress": 0
+            },
+            "contentWeight": 0.3883495145631068,
+            "visitCount": 0,
+            "totalDwellMs": 0
+          },
+          {
+            "path": "b.md",
+            "score": 0,
+            "breakdown": {
+              "scrollProgress": 0,
+              "timeProgress": 0
+            },
+            "contentWeight": 0.6116504854368932,
+            "visitCount": 0,
+            "totalDwellMs": 0
+          }
+        ],
+        "totalChapters": 2,
+        "effectivelyRead": 0,
+        "summary": {
+          "avgScore": 0,
+          "maxScore": 0,
+          "minScore": 0
+        }
+      }
+    },
+    {
+      "name": "short-doc-visit-instant-complete",
+      "input": {
+        "chapters": [
+          {
+            "path": "tiny.md",
+            "wordCount": 100,
+            "codeBlockCount": 0,
+            "headingCount": 3,
+            "pageUrl": "/docs/o/r/tiny"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/tiny",
+            "duration": 5000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          },
+          {
+            "eventType": "SECTION_FOCUS",
+            "pageUrl": "/docs/o/r/tiny",
+            "duration": 8000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 100,
+        "chapterScores": [
+          {
+            "path": "tiny.md",
+            "score": 100,
+            "breakdown": {
+              "scrollProgress": 100,
+              "timeProgress": 65
+            },
+            "contentWeight": 1,
+            "visitCount": 1,
+            "totalDwellMs": 13000
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 1,
+        "summary": {
+          "avgScore": 100,
+          "maxScore": 100,
+          "minScore": 100
+        }
+      }
+    },
+    {
+      "name": "short-doc-by-single-heading",
+      "input": {
+        "chapters": [
+          {
+            "path": "flat.md",
+            "wordCount": 800,
+            "codeBlockCount": 2,
+            "headingCount": 1,
+            "pageUrl": "/docs/o/r/flat"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/flat",
+            "duration": 1000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 100,
+        "chapterScores": [
+          {
+            "path": "flat.md",
+            "score": 100,
+            "breakdown": {
+              "scrollProgress": 100,
+              "timeProgress": 1
+            },
+            "contentWeight": 1,
+            "visitCount": 1,
+            "totalDwellMs": 1000
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 1,
+        "summary": {
+          "avgScore": 100,
+          "maxScore": 100,
+          "minScore": 100
+        }
+      }
+    },
+    {
+      "name": "short-doc-without-pageview-stays-zero",
+      "input": {
+        "chapters": [
+          {
+            "path": "tiny.md",
+            "wordCount": 80,
+            "codeBlockCount": 0,
+            "headingCount": 2,
+            "pageUrl": "/docs/o/r/tiny"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "SECTION_FOCUS",
+            "pageUrl": "/docs/o/r/tiny",
+            "duration": 12000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 0,
+        "chapterScores": [
+          {
+            "path": "tiny.md",
+            "score": 0,
+            "breakdown": {
+              "scrollProgress": 100,
+              "timeProgress": 75
+            },
+            "contentWeight": 1,
+            "visitCount": 0,
+            "totalDwellMs": 12000
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 0,
+        "summary": {
+          "avgScore": 0,
+          "maxScore": 0,
+          "minScore": 0
+        }
+      }
+    },
+    {
+      "name": "scroll-to-bottom-complete",
+      "input": {
+        "chapters": [
+          {
+            "path": "guide.md",
+            "wordCount": 600,
+            "codeBlockCount": 3,
+            "headingCount": 5,
+            "pageUrl": "/docs/o/r/guide"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/guide",
+            "duration": 20000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": {
+              "scrollPercent": 30
+            }
+          },
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/guide",
+            "duration": 15000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": {
+              "scrollPercent": 95
+            }
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 100,
+        "chapterScores": [
+          {
+            "path": "guide.md",
+            "score": 100,
+            "breakdown": {
+              "scrollProgress": 95,
+              "timeProgress": 29
+            },
+            "contentWeight": 1,
+            "visitCount": 2,
+            "totalDwellMs": 35000
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 1,
+        "summary": {
+          "avgScore": 100,
+          "maxScore": 100,
+          "minScore": 100
+        }
+      }
+    },
+    {
+      "name": "time-progress-partial-fill",
+      "input": {
+        "chapters": [
+          {
+            "path": "guide.md",
+            "wordCount": 300,
+            "codeBlockCount": 1,
+            "headingCount": 4,
+            "pageUrl": "/docs/o/r/guide"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/guide",
+            "duration": 30000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 50,
+        "chapterScores": [
+          {
+            "path": "guide.md",
+            "score": 50,
+            "breakdown": {
+              "scrollProgress": 0,
+              "timeProgress": 50
+            },
+            "contentWeight": 1,
+            "visitCount": 1,
+            "totalDwellMs": 30000
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 0,
+        "summary": {
+          "avgScore": 50,
+          "maxScore": 50,
+          "minScore": 50
+        }
+      }
+    },
+    {
+      "name": "scroll-vs-time-takes-max-fractional-scroll",
+      "input": {
+        "chapters": [
+          {
+            "path": "guide.md",
+            "wordCount": 300,
+            "codeBlockCount": 1,
+            "headingCount": 4,
+            "pageUrl": "/docs/o/r/guide"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/guide",
+            "duration": 30000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": {
+              "scrollPercent": 42.5
+            }
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 50,
+        "chapterScores": [
+          {
+            "path": "guide.md",
+            "score": 50,
+            "breakdown": {
+              "scrollProgress": 42.5,
+              "timeProgress": 50
+            },
+            "contentWeight": 1,
+            "visitCount": 1,
+            "totalDwellMs": 30000
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 0,
+        "summary": {
+          "avgScore": 50,
+          "maxScore": 50,
+          "minScore": 50
+        }
+      }
+    },
+    {
+      "name": "url-normalization-trailing-slash-and-case",
+      "input": {
+        "chapters": [
+          {
+            "path": "intro.md",
+            "wordCount": 500,
+            "codeBlockCount": 2,
+            "headingCount": 3,
+            "pageUrl": "/docs/o/r/intro"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/Docs/O/R/Intro/",
+            "duration": 25000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": {
+              "scrollPercent": 60
+            }
+          },
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/other-page",
+            "duration": 9000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": {
+              "scrollPercent": 99
+            }
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 60,
+        "chapterScores": [
+          {
+            "path": "intro.md",
+            "score": 60,
+            "breakdown": {
+              "scrollProgress": 60,
+              "timeProgress": 25
+            },
+            "contentWeight": 1,
+            "visitCount": 1,
+            "totalDwellMs": 25000
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 1,
+        "summary": {
+          "avgScore": 60,
+          "maxScore": 60,
+          "minScore": 60
+        }
+      }
+    },
+    {
+      "name": "non-numeric-metadata-and-null-duration-ignored",
+      "input": {
+        "chapters": [
+          {
+            "path": "guide.md",
+            "wordCount": 500,
+            "codeBlockCount": 2,
+            "headingCount": 3,
+            "pageUrl": "/docs/o/r/guide"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/guide",
+            "duration": null,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": {
+              "scrollPercent": "85"
+            }
+          },
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/guide",
+            "duration": null,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 0,
+        "chapterScores": [
+          {
+            "path": "guide.md",
+            "score": 0,
+            "breakdown": {
+              "scrollProgress": 0,
+              "timeProgress": 0
+            },
+            "contentWeight": 1,
+            "visitCount": 2,
+            "totalDwellMs": 0
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 0,
+        "summary": {
+          "avgScore": 0,
+          "maxScore": 0,
+          "minScore": 0
+        }
+      }
+    },
+    {
+      "name": "code-block-weight-dominance",
+      "input": {
+        "chapters": [
+          {
+            "path": "prose.md",
+            "wordCount": 1000,
+            "codeBlockCount": 0,
+            "headingCount": 10,
+            "pageUrl": "/docs/o/r/prose"
+          },
+          {
+            "path": "code.md",
+            "wordCount": 200,
+            "codeBlockCount": 20,
+            "headingCount": 5,
+            "pageUrl": "/docs/o/r/code"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/prose",
+            "duration": 120000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": {
+              "scrollPercent": 100
+            }
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 48,
+        "chapterScores": [
+          {
+            "path": "prose.md",
+            "score": 100,
+            "breakdown": {
+              "scrollProgress": 100,
+              "timeProgress": 60
+            },
+            "contentWeight": 0.48,
+            "visitCount": 1,
+            "totalDwellMs": 120000
+          },
+          {
+            "path": "code.md",
+            "score": 0,
+            "breakdown": {
+              "scrollProgress": 0,
+              "timeProgress": 0
+            },
+            "contentWeight": 0.52,
+            "visitCount": 0,
+            "totalDwellMs": 0
+          }
+        ],
+        "totalChapters": 2,
+        "effectivelyRead": 1,
+        "summary": {
+          "avgScore": 50,
+          "maxScore": 100,
+          "minScore": 0
+        }
+      }
+    },
+    {
+      "name": "all-zero-weights-equal-fallback",
+      "input": {
+        "chapters": [
+          {
+            "path": "a.md",
+            "wordCount": 0,
+            "codeBlockCount": 0,
+            "headingCount": 0,
+            "pageUrl": "/docs/o/r/a"
+          },
+          {
+            "path": "b.md",
+            "wordCount": 0,
+            "codeBlockCount": 0,
+            "headingCount": 0,
+            "pageUrl": "/docs/o/r/b"
+          },
+          {
+            "path": "c.md",
+            "wordCount": 0,
+            "codeBlockCount": 0,
+            "headingCount": 0,
+            "pageUrl": "/docs/o/r/c"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/b",
+            "duration": 3000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 300,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 60
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 33,
+        "chapterScores": [
+          {
+            "path": "a.md",
+            "score": 0,
+            "breakdown": {
+              "scrollProgress": 100,
+              "timeProgress": 0
+            },
+            "contentWeight": 0.3333333333333333,
+            "visitCount": 0,
+            "totalDwellMs": 0
+          },
+          {
+            "path": "b.md",
+            "score": 100,
+            "breakdown": {
+              "scrollProgress": 100,
+              "timeProgress": 30
+            },
+            "contentWeight": 0.3333333333333333,
+            "visitCount": 1,
+            "totalDwellMs": 3000
+          },
+          {
+            "path": "c.md",
+            "score": 0,
+            "breakdown": {
+              "scrollProgress": 100,
+              "timeProgress": 0
+            },
+            "contentWeight": 0.3333333333333333,
+            "visitCount": 0,
+            "totalDwellMs": 0
+          }
+        ],
+        "totalChapters": 3,
+        "effectivelyRead": 1,
+        "summary": {
+          "avgScore": 33,
+          "maxScore": 100,
+          "minScore": 0
+        }
+      }
+    },
+    {
+      "name": "config-override-slow-reader-high-bar",
+      "input": {
+        "chapters": [
+          {
+            "path": "guide.md",
+            "wordCount": 600,
+            "codeBlockCount": 2,
+            "headingCount": 4,
+            "pageUrl": "/docs/o/r/guide"
+          }
+        ],
+        "events": [
+          {
+            "eventType": "PAGE_VIEW",
+            "pageUrl": "/docs/o/r/guide",
+            "duration": 120000,
+            "createdAt": "2026-09-01T10:00:00.000Z",
+            "metadata": null
+          }
+        ],
+        "config": {
+          "weights": {
+            "sectionCoverage": 0.5,
+            "timeAdequacy": 0.5,
+            "skipPenalty": 0,
+            "revisitBonus": 0
+          },
+          "thresholds": {
+            "sectionFocusMs": 10000,
+            "contentSkipMs": 1000,
+            "revisitWindowMs": 86400000,
+            "readingSpeedWpm": 150,
+            "minReadTimeMs": 10000,
+            "effectivelyReadScore": 80
+          },
+          "contentWeights": {
+            "wordWeight": 1,
+            "codeBlockWeight": 50,
+            "headingWeight": 20
+          },
+          "eventTypes": {
+            "pageView": "PAGE_VIEW",
+            "sectionFocus": "SECTION_FOCUS",
+            "contentSkip": "CONTENT_SKIP",
+            "codeCopy": "CODE_COPY"
+          }
+        }
+      },
+      "expected": {
+        "overallProgress": 50,
+        "chapterScores": [
+          {
+            "path": "guide.md",
+            "score": 50,
+            "breakdown": {
+              "scrollProgress": 0,
+              "timeProgress": 50
+            },
+            "contentWeight": 1,
+            "visitCount": 1,
+            "totalDwellMs": 120000
+          }
+        ],
+        "totalChapters": 1,
+        "effectivelyRead": 0,
+        "summary": {
+          "avgScore": 50,
+          "maxScore": 50,
+          "minScore": 50
+        }
+      }
+    }
+  ]
+}

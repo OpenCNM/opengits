@@ -1,0 +1,121 @@
+=== META ===
+{
+  "toc": [],
+  "frontmatter": {},
+  "deepDiveCount": 0
+}
+=== COMPILED ===
+"use strict";
+const {Fragment: _Fragment, jsx: _jsx, jsxs: _jsxs} = arguments[0];
+let toc = [];
+function _createMdxContent(props) {
+  const _components = {
+    code: "code",
+    img: "img",
+    p: "p",
+    pre: "pre",
+    tbody: "tbody",
+    tr: "tr",
+    ...props.components
+  };
+  return _jsxs(_Fragment, {
+    children: [_jsx(_components.pre, {
+      "data-code": "# Z Code 通信协议分层\n\n```text\n第 3 层\n```",
+      "data-file": "docs/architecture/communication-protocol-layers.md",
+      "data-language": "markdown",
+      "data-highlighted-html": "<pre class=\"shiki shiki-themes github-light github-dark solarized-light github-light\" style=\"--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-parchment:#657B83;--shiki-vercel:#24292e;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e;--shiki-parchment-bg:#FDF6E3;--shiki-vercel-bg:#fff\" tabindex=\"0\"><code><span class=\"line\" data-line=\"1\" id=\"L1\"><span style=\"--shiki-light:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold;--shiki-parchment:#268BD2;--shiki-parchment-font-weight:bold;--shiki-vercel:#005CC5;--shiki-vercel-font-weight:bold\"># Z Code 通信协议分层</span></span>\n<span class=\"line\" data-line=\"2\" id=\"L2\"></span>\n<span class=\"line\" data-line=\"3\" id=\"L3\"><span style=\"--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-parchment:#657B83;--shiki-vercel:#24292E\">```text</span></span>\n<span class=\"line\" data-line=\"4\" id=\"L4\"><span style=\"--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-parchment:#657B83;--shiki-vercel:#24292E\">第 3 层</span></span>\n<span class=\"line\" data-line=\"5\" id=\"L5\"><span style=\"--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-parchment:#657B83;--shiki-vercel:#24292E\">```</span></span></code></pre>",
+      children: _jsx(_components.code, {
+        className: "language-markdown",
+        "data-file": "docs/architecture/communication-protocol-layers.md",
+        "data-language": "markdown",
+        "data-code": "# Z Code 通信协议分层\n\n```text\n第 3 层\n```",
+        children: "# Z Code 通信协议分层\n\n```text\n第 3 层\n```"
+      })
+    }), "\n", _jsx(_components.pre, {
+      "data-code": "def get_current_time():\n    return 42",
+      "data-file": "README.md",
+      "data-language": "python",
+      "data-highlighted-html": "<pre class=\"shiki shiki-themes github-light github-dark solarized-light github-light\" style=\"--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-parchment:#657B83;--shiki-vercel:#24292e;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e;--shiki-parchment-bg:#FDF6E3;--shiki-vercel-bg:#fff\" tabindex=\"0\"><code><span class=\"line\" data-line=\"1\" id=\"L1\"><span style=\"--shiki-light:#D73A49;--shiki-light-font-weight:inherit;--shiki-dark:#F97583;--shiki-dark-font-weight:inherit;--shiki-parchment:#586E75;--shiki-parchment-font-weight:bold;--shiki-vercel:#D73A49;--shiki-vercel-font-weight:inherit\">def</span><span style=\"--shiki-light:#6F42C1;--shiki-dark:#B392F0;--shiki-parchment:#268BD2;--shiki-vercel:#6F42C1\"> get_current_time</span><span style=\"--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-parchment:#657B83;--shiki-vercel:#24292E\">():</span></span>\n<span class=\"line\" data-line=\"2\" id=\"L2\"><span style=\"--shiki-light:#D73A49;--shiki-dark:#F97583;--shiki-parchment:#859900;--shiki-vercel:#D73A49\">    return</span><span style=\"--shiki-light:#005CC5;--shiki-dark:#79B8FF;--shiki-parchment:#D33682;--shiki-vercel:#005CC5\"> 42</span></span></code></pre>",
+      children: _jsx(_components.code, {
+        className: "language-python",
+        "data-file": "README.md",
+        "data-language": "python",
+        "data-code": "def get_current_time():\n    return 42",
+        children: "def get_current_time():\n    return 42"
+      })
+    }), "\n", _jsx("p", {
+      align: "center",
+      children: "The open source coding agent in your IDE, terminal, & desktop."
+    }), "\n", _jsxs("div", {
+      align: "center",
+      children: [_jsx(_components.p, {
+        children: "段落1"
+      }), _jsx(_components.p, {
+        children: "段落2"
+      })]
+    }), "\n", _jsx("div", {
+      align: "center",
+      children: _jsx("h1", {
+        align: "center",
+        children: "Title"
+      })
+    }), "\n", _jsx("table", {
+      children: _jsx("tbody", {
+        children: _jsxs(_components.tr, {
+          children: [_jsx("td", {
+            align: "center",
+            children: _jsx("a", {
+              href: "https://cline.bot",
+              children: "Docs"
+            })
+          }), _jsx("td", {
+            align: "center",
+            children: _jsx("a", {
+              href: "https://discord.gg",
+              children: "Discord"
+            })
+          })]
+        })
+      })
+    }), "\n", _jsx("table", {
+      children: _jsx(_components.tbody, {
+        children: _jsx("tr", {
+          children: _jsx("td", {
+            children: "CLI Tool"
+          })
+        })
+      })
+    }), "\n", _jsx("p", {
+      align: "center",
+      children: _jsx(_components.img, {
+        src: "assets/icons/icon.png",
+        width: "80",
+        alt: "Cline"
+      })
+    }), "\n", _jsx(_components.pre, {
+      "data-code": "cline config",
+      "data-language": "bash",
+      "data-highlighted-html": "<pre class=\"shiki shiki-themes github-light github-dark solarized-light github-light\" style=\"--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-parchment:#657B83;--shiki-vercel:#24292e;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e;--shiki-parchment-bg:#FDF6E3;--shiki-vercel-bg:#fff\" tabindex=\"0\"><code><span class=\"line\" data-line=\"1\" id=\"L1\"><span style=\"--shiki-light:#6F42C1;--shiki-dark:#B392F0;--shiki-parchment:#268BD2;--shiki-vercel:#6F42C1\">cline</span><span style=\"--shiki-light:#032F62;--shiki-dark:#9ECBFF;--shiki-parchment:#2AA198;--shiki-vercel:#032F62\"> config</span></span></code></pre>",
+      children: _jsx(_components.code, {
+        className: "language-bash",
+        "data-language": "bash",
+        "data-code": "cline config",
+        children: "cline config"
+      })
+    })]
+  });
+}
+function MDXContent(props = {}) {
+  const {wrapper: MDXLayout} = props.components || ({});
+  return MDXLayout ? _jsx(MDXLayout, {
+    ...props,
+    children: _jsx(_createMdxContent, {
+      ...props
+    })
+  }) : _createMdxContent(props);
+}
+return {
+  toc,
+  default: MDXContent
+};
+

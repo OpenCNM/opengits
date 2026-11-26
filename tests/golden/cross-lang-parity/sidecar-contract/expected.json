@@ -1,0 +1,62 @@
+{
+  "goldenDir": "services/worker-sidecar/internal/userinteraction/testdata",
+  "courseProjection": {
+    "state": "PARTIAL_READY",
+    "total": 4,
+    "processed": 1,
+    "readyCount": 1,
+    "runningCount": 1,
+    "queuedCount": 1,
+    "failedCount": 1,
+    "progressPct": 25,
+    "isCompleted": false
+  },
+  "dockFacts": {
+    "dockStatus": "PROCESSING",
+    "completedChapters": 1,
+    "totalChapters": 4,
+    "activeChapterTitle": "Engine",
+    "activeDocPath": "docs/engine.md"
+  },
+  "versionShapes": [
+    {
+      "id": "cv-0001",
+      "visibility": "PUBLIC",
+      "source": "RELAY",
+      "isCanonical": true,
+      "isContentValid": true,
+      "hasInlineContent": true
+    },
+    {
+      "id": "cv-0002",
+      "visibility": "PRIVATE",
+      "source": "RETRANSLATE",
+      "isCanonical": false,
+      "isContentValid": false,
+      "hasInlineContent": false
+    }
+  ],
+  "readingProgress": {
+    "chapterScores": {
+      "docs/engine.md": 100,
+      "docs/intro.md": 65
+    },
+    "overallProgress": 82.5,
+    "viewedCount": 2
+  },
+  "patchRequestKeys": [
+    "clearRejectionReason",
+    "gitSha",
+    "hasUpstreamUpdate",
+    "id",
+    "isPublic",
+    "relayEnabled",
+    "reviewAutoApproved",
+    "reviewStatus",
+    "touchPublishedAt",
+    "touchRelayNotifiedAt",
+    "touchReviewedAt",
+    "touchUpstreamCheckedAt",
+    "upstreamEtag"
+  ]
+}

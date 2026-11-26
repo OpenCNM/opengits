@@ -1,0 +1,108 @@
+{
+  "ensureQuoted": [
+    {
+      "name": "box-colons-and-parens",
+      "output": "flowchart LR\n  client[\"Client: Browser (Chrome)\"] --> gateway[\"API: Gateway\"]\n  gateway --> service[\"Auth Service (v2)\"]"
+    },
+    {
+      "name": "cylinder-and-stadium",
+      "output": "flowchart TD\n  db[(\"Postgres: primary (5432)\")]\n  api([\"REST Endpoint: /api/v1\"])"
+    },
+    {
+      "name": "double-circle-single-and-multi",
+      "output": "flowchart LR\n  node(((\"Double Circle: test\")))\n  node1(((\"Double 1: foo\"))) --> node2(((\"Double 2: bar\")))"
+    },
+    {
+      "name": "nested-parens-and-brackets",
+      "output": "flowchart LR\n  client(\"Client (Web Browser): v1\") --> server(\"API Server (Express): v2\")\n  box[\"Box [Nested Tag]: v1\"] --> next[\"Simple: Node\"]"
+    },
+    {
+      "name": "mixed-shapes-same-line",
+      "output": "flowchart LR\n  A[\"Client: Web\"] --> B(\"Server: API\") --> C((\"DB: SQL\"))"
+    },
+    {
+      "name": "subroutine-hexagon-circle-rhombus",
+      "output": "flowchart LR\n  worker[[\"Worker: Job Queue\"]]\n  cond{{\"Condition: count > 0\"}}\n  circ((\"Node: Start (001)\"))\n  dec{\"Decision: Is Valid?\"}"
+    },
+    {
+      "name": "subgraph-and-edge-labels",
+      "output": "flowchart TD\nsubgraph Core [\"Core Engine: Parser (v1)\"]\n  A -->|\"Payload: JSON (v1)\"| B\nend"
+    },
+    {
+      "name": "already-quoted-and-simple-untouched",
+      "output": "flowchart LR\n  A[\"Already: Quoted (Clean)\"] --> B[(\"Already: DB\")] --> C[Simple]"
+    },
+    {
+      "name": "comments-and-keywords-intact",
+      "output": "%% This is a comment: note (test)\nflowchart LR\n  classDef default fill:none\n  style A stroke:#333\n  direction TB\n  A --> B\n  end"
+    },
+    {
+      "name": "empty",
+      "output": ""
+    },
+    {
+      "name": "null",
+      "output": ""
+    }
+  ],
+  "sanitized": [
+    {
+      "name": "fenced-graph-td-with-preamble",
+      "output": "graph TD\n  Entry[\"System Entry\"] --> Core[\"Core Engine\"]"
+    },
+    {
+      "name": "flowchart-lr-and-no-dir",
+      "output": "flowchart LR\n  A --> B"
+    },
+    {
+      "name": "graph-no-dir",
+      "output": "graph\n  A[\"Start\"] --> B[\"End\"]"
+    },
+    {
+      "name": "strip-think-and-thought",
+      "output": "graph TD\n  A[Start] --> B[End]"
+    },
+    {
+      "name": "special-chars-nested-cjk-and-spaces",
+      "output": "graph TD\n  サーバー[Port: 8080 (HTTP) & TLS] --> クライアント(Hello (Nested 1) and (Nested 2))\n  A [Port: 8080] --> B[\"foo (bar) \\\"baz\\\"\"]"
+    },
+    {
+      "name": "sequence-class-state-er-mindmap",
+      "output": "sequenceDiagram\n  Alice->>Bob: Hello"
+    },
+    {
+      "name": "state-diagram-v2",
+      "output": "stateDiagram-v2\n  [*] --> Still"
+    },
+    {
+      "name": "er-diagram",
+      "output": "erDiagram\n  USER ||--o{ ORDER : places"
+    },
+    {
+      "name": "mindmap",
+      "output": "mindmap\n  root((Root))"
+    }
+  ],
+  "xss": [
+    {
+      "name": "self-closing-script",
+      "output": "A[\""
+    },
+    {
+      "name": "paired-script",
+      "output": "B[\"Safe\"]"
+    },
+    {
+      "name": "iframe-object-embed",
+      "output": "A[\""
+    },
+    {
+      "name": "atypical-event-handlers",
+      "output": "A[\"<svg/>Label\"] B[\"<button >Click</button>\"]"
+    },
+    {
+      "name": "javascript-vbscript-data-protocols",
+      "output": "A[\"<a href=\\\"\\\">Click</a>\"] B[\"<a href=\\\"\\\">Click</a>\"] C[\"<a href=\\\"\\\">Click</a>\"] D[\"<img src=x >\"]"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "ctxFlags": {
+    "fallback": true,
+    "requestedEdition": "ed_deep",
+    "edition": "ed_lite",
+    "editionLabel": "速查手册版"
+  },
+  "result": {
+    "preamble": "📍 Graph Position: …\n\n",
+    "header": "# Ch1\nSource Path: ch01.md\n\n",
+    "body": "body\n",
+    "footer": "\n(Use read …)"
+  }
+}

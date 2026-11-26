@@ -1,0 +1,54 @@
+{
+  "op": "code-anchor",
+  "parseLineAnchor": [
+    "#L15",
+    "#L15-L25",
+    "#L15-25",
+    "#L25-L15",
+    "#heading-1",
+    "",
+    null
+  ],
+  "formatLineAnchor": [
+    { "startLine": 15 },
+    { "startLine": 15, "endLine": 25 },
+    { "startLine": 15, "endLine": 15 },
+    { "startLine": 25, "endLine": 15 }
+  ],
+  "isLineInRange": [
+    { "line": 9, "range": { "startLine": 10, "endLine": 20 } },
+    { "line": 10, "range": { "startLine": 10, "endLine": 20 } },
+    { "line": 15, "range": { "startLine": 10, "endLine": 20 } },
+    { "line": 20, "range": { "startLine": 10, "endLine": 20 } },
+    { "line": 21, "range": { "startLine": 10, "endLine": 20 } }
+  ],
+  "parseCodeAnchor": [
+    "#code:src/lib/auth.ts:L20-L45",
+    "#code:src/lib/auth.ts:L20",
+    "#code:src/lib/auth.ts:20-45",
+    "#code:packages/core/src/index.ts",
+    "#code:./src/utils/math.ts:L5-L10",
+    "#L12-L18",
+    "#heading-summary",
+    null
+  ],
+  "formatCodeAnchor": [
+    { "filePath": "src/lib/auth.ts", "startLine": 20, "endLine": 45 },
+    { "filePath": "src/lib/auth.ts", "startLine": 20 },
+    { "startLine": 15, "endLine": 30 }
+  ],
+  "isCodeAnchorFileMatch": [
+    { "target": "__undefined__", "block": "__undefined__" },
+    { "target": null, "block": "src/auth.ts" },
+    { "target": "", "block": "src/auth.ts" },
+    { "target": "src/auth.ts", "block": "__undefined__" },
+    { "target": "src/auth.ts", "block": null },
+    { "target": "src/auth.ts", "block": "" },
+    { "target": "src/auth.ts", "block": "src/auth.ts" },
+    { "target": "src/auth.ts", "block": "./src/auth.ts" },
+    { "target": "auth.ts", "block": "src/auth.ts" },
+    { "target": "src/auth.ts", "block": "auth.ts" },
+    { "target": "src/auth.ts", "block": "src/user.ts" },
+    { "target": "src/server.ts", "block": "src/client.ts" }
+  ]
+}

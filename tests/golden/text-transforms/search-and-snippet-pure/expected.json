@@ -1,0 +1,259 @@
+{
+  "dissectCases": [
+    {
+      "query": "vllm",
+      "result": {
+        "raw": "vllm",
+        "isUrl": false,
+        "cleanQuery": "vllm"
+      }
+    },
+    {
+      "query": "karpathy/llm.c",
+      "result": {
+        "raw": "karpathy/llm.c",
+        "isUrl": false,
+        "cleanQuery": "karpathy/llm.c",
+        "candidateOwner": "karpathy",
+        "candidateRepo": "llm.c"
+      }
+    },
+    {
+      "query": "https://github.com/vllm-project/vllm",
+      "result": {
+        "raw": "https://github.com/vllm-project/vllm",
+        "isUrl": true,
+        "cleanQuery": "vllm-project/vllm",
+        "candidateOwner": "vllm-project",
+        "candidateRepo": "vllm",
+        "hostname": "github.com"
+      }
+    },
+    {
+      "query": "https://docs.cilium.io/en/stable/",
+      "result": {
+        "raw": "https://docs.cilium.io/en/stable/",
+        "isUrl": true,
+        "cleanQuery": "en stable",
+        "candidateRepo": "en",
+        "hostname": "docs.cilium.io"
+      }
+    }
+  ],
+  "smartMatchCases": [
+    {
+      "name": "github-url-exact",
+      "matchedIds": [
+        "repo-1"
+      ]
+    },
+    {
+      "name": "github-webdoc-exact",
+      "matchedIds": [
+        "repo-4"
+      ]
+    },
+    {
+      "name": "unrelated-github-url-no-leak",
+      "matchedIds": false
+    },
+    {
+      "name": "webdoc-hostname",
+      "matchedIds": [
+        "repo-2"
+      ]
+    },
+    {
+      "name": "source-github",
+      "matchedIds": [
+        "repo-1",
+        "repo-3"
+      ]
+    },
+    {
+      "name": "source-webdoc",
+      "matchedIds": [
+        "repo-2",
+        "repo-4"
+      ]
+    },
+    {
+      "name": "ai-github",
+      "matchedIds": [
+        "repo-1",
+        "repo-3"
+      ]
+    },
+    {
+      "name": "ai-webdoc-empty",
+      "matchedIds": []
+    },
+    {
+      "name": "systems-webdoc",
+      "matchedIds": [
+        "repo-2"
+      ]
+    },
+    {
+      "name": "cloud-webdoc",
+      "matchedIds": [
+        "repo-4"
+      ]
+    },
+    {
+      "name": "hashtag-cuda",
+      "matchedIds": true
+    },
+    {
+      "name": "chinese-category-ai",
+      "matchedIds": true
+    },
+    {
+      "name": "fail-closed-webdoc-url-no-fuzz",
+      "matchedIds": false
+    },
+    {
+      "name": "allowed-prefixes-coss-ui-hit",
+      "matchedIds": true
+    },
+    {
+      "name": "allowed-prefixes-coss-ai-miss",
+      "matchedIds": false
+    },
+    {
+      "name": "github-org-url-no-fuzz",
+      "matchedIds": []
+    },
+    {
+      "name": "github-org-url-exact",
+      "matchedIds": [
+        "repo-1"
+      ]
+    }
+  ],
+  "sourceTypeCounts": {
+    "all": 4,
+    "github": 2,
+    "webdoc": 2
+  },
+  "snippetCases": [
+    {
+      "name": "internal-horizontal-rules-preserved",
+      "snippet": "...Section Two with target keyword authorization and permissions Section Three Conclusion"
+    },
+    {
+      "name": "frontmatter-stripped-no-query",
+      "snippet": "Welcome to our system documentation. Here is information about authentication."
+    },
+    {
+      "name": "frontmatter-stripped-with-query",
+      "snippet": ".... Here is information about authentication."
+    },
+    {
+      "name": "backtick-and-tilde-fences-stripped",
+      "snippet": "...tion to the API. Follow the deployment checklist for authentication setup."
+    },
+    {
+      "name": "centered-ellipses",
+      "snippet": "...AAAAAAAAAAAAAAAAAAAAAAAAAAA keyword BBBBBBBBBBBBBBBBBBBBBBBB..."
+    },
+    {
+      "name": "snake-case-and-colons",
+      "snippet": "Welcome. Call get_user_profile(user_id) to fetch the details. Note: tokens expire in 1 hour."
+    }
+  ],
+  "titleCases": [
+    {
+      "name": "explicit-h1",
+      "resolved": "Getting Started"
+    },
+    {
+      "name": "explicit-h3",
+      "resolved": "Installation Guide"
+    },
+    {
+      "name": "ignore-python-fence-comment",
+      "resolved": "Actual Document Title"
+    },
+    {
+      "name": "ignore-tilde-bash-comment",
+      "resolved": "Production Deployment Guide"
+    },
+    {
+      "name": "ignore-yaml-comment",
+      "resolved": "Real Section Title"
+    },
+    {
+      "name": "derive-from-mdx-path",
+      "resolved": "User account settings"
+    },
+    {
+      "name": "derive-from-md-path",
+      "resolved": "Api reference"
+    },
+    {
+      "name": "derive-from-markdown-path",
+      "resolved": "Intro"
+    },
+    {
+      "name": "empty-fallback",
+      "resolved": "未命名文档"
+    }
+  ],
+  "rerankCases": [
+    {
+      "name": "exact-phrase-in-heading-beats-content",
+      "rankedPaths": [
+        "docs/a-target.md",
+        "docs/z-overview.md"
+      ]
+    },
+    {
+      "name": "keyword-in-heading-beats-plain",
+      "rankedPaths": [
+        "docs/y.md",
+        "docs/x.md"
+      ]
+    },
+    {
+      "name": "tiebreak-path-lexicographic",
+      "rankedPaths": [
+        "docs/a.md",
+        "docs/b.md",
+        "docs/c.md"
+      ]
+    },
+    {
+      "name": "blank-query-passthrough",
+      "rankedPaths": [
+        "b.md",
+        "a.md"
+      ]
+    },
+    {
+      "name": "snippet-fallback-when-content-empty",
+      "rankedPaths": [
+        "docs/z.md",
+        "docs/a.md"
+      ]
+    }
+  ],
+  "locatorSnippetCases": [
+    {
+      "name": "longest-hit-centered",
+      "snippet": "...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxabcdefgyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy..."
+    },
+    {
+      "name": "no-hit-from-start",
+      "snippet": "plain start text"
+    },
+    {
+      "name": "whitespace-collapsed",
+      "snippet": "a b c keyword"
+    },
+    {
+      "name": "empty-content",
+      "snippet": ""
+    }
+  ]
+}

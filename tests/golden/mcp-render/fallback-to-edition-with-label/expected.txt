@@ -1,0 +1,7 @@
+⚠ Edition fallback: requested "v16" was not found; results below come from edition "深度剖析版". Use list_resources to discover available editions.
+
+# 📄 Source File: `a.go` [sha]
+
+```go
+package x
+```

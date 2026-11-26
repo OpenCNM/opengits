@@ -1,0 +1,57 @@
+{
+  "courseMaps": [
+    {
+      "name": "code-clusters-basic",
+      "output": "🗺️ Course Map — 2 章 / 3 文件（按教学顺序）\n\n```mermaid\nflowchart TD\n  Ch01[\"1. 起步与环境（2 文件）\"]\n  Ch01 --> Ch02\n  Ch02[\"2. 核心调度 ''Engine''（1 文件）\"]\n```\n\n章节清单（可对任一章用 read / explore_concept 深入）：\n- 1. 起步与环境 — 2 文件\n- 2. 核心调度 \"Engine\" — 1 文件\n"
+    },
+    {
+      "name": "code-clusters-cognitive-dag",
+      "output": "🗺️ Course Map — 2 章 / 2 文件（按教学顺序）\n\n```mermaid\nflowchart TD\n  subgraph Phase_Foundation[\"🌱 基础层 (Foundation)\"]\n    Ch01[\"1. 基础核心（1 文件）\"]\n  end\n  subgraph Phase_Interface[\"🔌 接口层 (Interface & Delivery)\"]\n    Ch02[\"2. 流水线调度（1 文件）\"]\n  end\n  Ch01 --> Ch02\n```\n\n章节清单（可对任一章用 read / explore_concept 深入）：\n- 1. 基础核心 — 1 文件\n- 2. 流水线调度 — 1 文件\n"
+    },
+    {
+      "name": "navtree-fallback",
+      "output": "🗺️ Course Map（文档大纲兜底，2 篇）\n\n1. 入门指南 [Path: docs/intro.md]\n2. 进阶主题 [Path: docs/advanced.md]\n"
+    },
+    {
+      "name": "empty-repo",
+      "output": "🗺️ Course Map：该仓库无 codeClusters（非代码教学仓），且 navTree 为空，无法生成课程图。可用 outline 查看文档清单。"
+    }
+  ],
+  "keywords": [
+    {
+      "input": "我要用 Next.js 和 Rust 搭建一个 Web 应用，with async/await",
+      "keywords": [
+        "我要用",
+        "next",
+        "js",
+        "rust",
+        "搭建一个",
+        "web",
+        "async",
+        "await"
+      ]
+    }
+  ],
+  "crossRepoConcepts": [
+    {
+      "name": "global-and-single-repo-hits",
+      "output": "🔍 跨仓概念检索 \"响应式\"（3 命中 / 1 全局概念 / 1 单仓）\n\n🌐 跨仓归并概念（同义，多仓讲解）：\n- **响应式系统**（别名: Reactivity、Signals） — 覆盖 2 仓:\n  • vuejs/core: 响应式数据绑定 [Address: docs/reactivity.md#reactivity]\n  • solidjs/solid: Signals 响应式 [Address: docs/signals.md#signals]\n\n📚 单仓概念（未跨仓归并，仅出现在一个仓或尚未对齐）：\n- vuejs/core: 独有架构设计 (workflow)\n\n(对任一命中调用 explore_concept(action='details', concept=..., repository=...) 深入，read(target=Address, repository=...) 精读原文)"
+    },
+    {
+      "name": "no-hits",
+      "output": "🔍 跨仓概念检索 \"未知概念\"：书架内无匹配概念。可尝试 list_resources 查看可用教程，或用 search(mode='concept') 做全文检索。"
+    }
+  ],
+  "recommendTutorial": [
+    {
+      "query": "React 核心",
+      "output": "🎓 教程推荐（按概念覆盖度排序，项目描述: \"React 核心\"）\n\n### 1. facebook/react（覆盖分 80%，命中 1/10 概念）\n覆盖概念:\n- Fiber 架构 (architecture) [Address: fiber.md#fiber]\n\n(对推荐教程调用 explore_concept(action='course_map') 看结构，read(target=Address, repository=...) 精读覆盖概念)"
+    }
+  ],
+  "skillCoverage": [
+    {
+      "skill": "系统设计",
+      "output": "📊 技能覆盖「系统设计」（2 仓覆盖）\n\n- org2/deep-repo: 高级抽象 (architecture) — 深度: 5 个前置概念 [Address: deep.md#2]\n- org1/basic-repo: 基础概念 (principle) — 深度: 入门级（无前置） [Address: basic.md#1]\n\n(对覆盖仓调用 explore_concept(action='path') 看完整前置链，read(target=Address, repository=...) 精读)"
+    }
+  ]
+}

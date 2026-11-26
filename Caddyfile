@@ -1,0 +1,83 @@
+# OpenGits 前置智能反代网关（双独立容器分流与全站 HTTPS 接入）
+
+(proxy_rules) {
+	# ── 内部端点：仅 docker 内网（WEB_INTERNAL_URL）可达，公网一律 404 不暴露存在性 ──
+	handle /api/internal* {
+		respond 404
+	}
+
+	# ── 全站 SSE 实时长连接广播网关（Milestone 2：Go 原生化）──
+	# 持久长连接独占卸载至 Go worker-sidecar (:8082)，零并发堆栈挤压（Fail-Closed 架构）
+	handle /api/ingest-jobs/*/events {
+		reverse_proxy worker-go:8082 {
+			flush_interval -1
+		}
+	}
+	# MCP 在线客户端：流式分流至 Go SSE 网关（Go mux 仅注册 /stream）；
+	# 非流式回落路径必须放行回 Web 容器——Go 无此路由，转发即 404
+	handle /api/mcp/active-clients/stream {
+		reverse_proxy worker-go:8082 {
+			flush_interval -1
+		}
+	}
+	handle /api/mcp/active-clients {
+		reverse_proxy web:3000
+	}
+	handle /api/notifications/stream {
+		reverse_proxy worker-go:8082 {
+			flush_interval -1
+		}
+	}
+	handle /api/ingest/*/*/events {
+		reverse_proxy worker-go:8082 {
+			flush_interval -1
+		}
+	}
+
+	# ── MCP 浏览器管理端点（Tokens/书架/查询日志等 UI REST 接口 -> 直达 Web 容器 3000）──
+	handle /api/mcp/tokens* {
+		reverse_proxy web:3000
+	}
+	handle /api/mcp/bookshelf* {
+		reverse_proxy web:3000
+	}
+	handle /api/mcp/query-logs* {
+		reverse_proxy web:3000
+	}
+	handle /api/mcp/open-docs* {
+		reverse_proxy web:3000
+	}
+	handle /api/mcp/hub/bundles* {
+		reverse_proxy web:3000
+	}
+	handle /api/mcp/hub/promotions* {
+		reverse_proxy web:3000
+	}
+
+	# ── MCP 机器流量网关（100% 纯 Go 原生接管：Zero-Node Machine Traffic）──
+	# 单仓/多仓 Hub/Bundle 路由、GET 发现面、Prompts 协议能力与全部 8 大原生工具 100% 由 mcp-go (:8081) 原生终结
+	handle /api/mcp* {
+		reverse_proxy mcp-go:8081 {
+			flush_interval -1
+		}
+	}
+
+	# ── 客户端用户流量 -> 独立转发至 Web 容器 (3000) ──
+	handle /* {
+		reverse_proxy web:3000 {
+			flush_interval -1
+		}
+	}
+}
+
+# ── 生产域名：Cloudflare Proxy (Full SSL) 架构，源站签发 internal TLS，公网边缘由 Cloudflare 托管 Universal SSL ──
+opengits.com, www.opengits.com {
+	tls internal
+	encode gzip
+	import proxy_rules
+}
+
+# ── 宿主机 IP 与本机回环访问（平滑调试与运维探针兼容）──
+http://198.12.119.11, http://localhost, :80 {
+	import proxy_rules
+}

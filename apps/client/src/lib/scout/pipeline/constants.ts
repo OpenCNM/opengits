@@ -1,0 +1,6 @@
+export const SCOUT_RATE_LIMIT_PER_MINUTE = 10;
+export const SCOUT_RATE_LIMIT_WINDOW_MS = 60_000;
+
+export const ESTIMATED_TOKENS_PER_BYTE = 0.3;
+
+export const TOP_DIR_MIN_MARKDOWN_COUNT = 3;

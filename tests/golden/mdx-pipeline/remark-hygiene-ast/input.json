@@ -1,0 +1,56 @@
+{
+  "op": "remark-hygiene-ast",
+  "gfmAlerts": [
+    { "name": "note", "md": "> [!NOTE] Title\n> body" },
+    { "name": "tip", "md": "> [!TIP] Title\n> body" },
+    { "name": "important", "md": "> [!IMPORTANT] Title\n> body" },
+    { "name": "warning", "md": "> [!WARNING] Title\n> body" },
+    { "name": "caution-maps-to-danger", "md": "> [!CAUTION] Title\n> body" },
+    { "name": "lowercase-multiline", "md": "> [!note] T\n> first\n> second" },
+    { "name": "inline-no-title", "md": "> [!IMPORTANT] “Design Decision”" },
+    { "name": "leading-quote-inline", "md": "> “[!IMPORTANT] Design Decision: 输入适配层”" },
+    { "name": "leading-quote-multiline", "md": "> “[!IMPORTANT] 设计决策\n> 输入适配层”" },
+    { "name": "balanced-inner-quotes", "md": "> “[!IMPORTANT] 标题\n>\n> 正文“引文”" },
+    { "name": "closed-header-balanced-body", "md": "> “[!IMPORTANT] 标题”\n>\n> 正文“引文”" },
+    { "name": "nested-outer-close", "md": "> “[!IMPORTANT] 标题\n>\n> 正文“引文”结束”" },
+    { "name": "multi-para-outer-close", "md": "> “[!IMPORTANT] 标题\n>\n> 第一段\n>\n> 续完”" },
+    { "name": "inline-code-quote-ignored", "md": "> “[!NOTE] 标题\n>\n> 检查 `a”` 后闭合”" },
+    { "name": "balanced-ascii-quotes", "md": "> \"[!NOTE] Title\n>\n> He said \"ok\"" },
+    { "name": "unbalanced-ascii-quotes", "md": "> \"[!NOTE] Title\n>\n> Body\"" },
+    { "name": "marker-only-no-title", "md": "> [!WARNING]\n> body only" },
+    { "name": "multi-paragraph-body", "md": "> [!NOTE] T\n> p1\n>\n> p2" },
+    { "name": "normal-blockquote-untouched", "md": "> just a quote" },
+    { "name": "unknown-marker-untouched", "md": "> [!CUSTOM] x" },
+    { "name": "fenced-code-immune", "md": "```\n[!NOTE] inside code\n```" }
+  ],
+  "gfmAlertsPlain": [
+    { "name": "important-with-title", "md": "> [!IMPORTANT] 设计决策\n> 正文" },
+    { "name": "inline-code-not-chopped", "md": "> [!WARNING] 在 `.strict()` 的世界里" }
+  ],
+  "stripLeadingTitle": [
+    { "name": "strip-first-h1-keep-rest", "md": "# Chapter Title\n\n## A\n\n# Later" },
+    { "name": "h2-first-untouched", "md": "## Start\n\n# Deep" },
+    { "name": "fence-first-untouched", "md": "```\ncode\n```\n\n# Title" }
+  ],
+  "normalizeTitle": [
+    "第 2 章: 数据预处理",
+    "第2章:数据预处理",
+    "# **Hello** World",
+    "“引用标题”",
+    null,
+    ""
+  ],
+  "safeBraces": [
+    {
+      "name": "expressions-to-text-identifier-to-dynamicvar-and-strip-comments",
+      "expressions": [
+        "user.name",
+        "foo()",
+        "a ? b : c",
+        "this",
+        "API_KEY",
+        "/* internal note */"
+      ]
+    }
+  ]
+}

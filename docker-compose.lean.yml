@@ -1,0 +1,22 @@
+# ─────────────────────────────────────────────────────────────
+# OpenGits - 极简保供跑批覆盖档 (Lean Batch Transcription Topology)
+#
+# 适用场景：
+# - 4C8G / 4C4G 云主机突发大批量大模型转录（如临期订阅全速跑批）；
+# - 彻底剥离 Langfuse、GlitchTip 等重型伴生监控容器，立省 2GB+ 物理内存；
+# - 全量物理算力与内存倾斜给 PostgreSQL (db)、Go Sidecar (sidecar-go) 与 Web。
+#
+# 启动命令：
+#   docker compose -f docker-compose.yml -f docker-compose.lean.yml up -d
+# 恢复全功能观测性启动：
+#   docker compose --profile ops up -d
+# ─────────────────────────────────────────────────────────────
+
+services:
+  langfuse:
+    entrypoint: ["echo", "Langfuse disabled in lean mode"]
+    restart: "no"
+
+  glitchtip:
+    entrypoint: ["echo", "GlitchTip disabled in lean mode"]
+    restart: "no"

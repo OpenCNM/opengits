@@ -1,0 +1,152 @@
+{
+  "isMarkdownCodeBlockCases": [
+    {
+      "lang": "markdown",
+      "filePath": null,
+      "result": true
+    },
+    {
+      "lang": "md",
+      "filePath": null,
+      "result": true
+    },
+    {
+      "lang": "mdx",
+      "filePath": null,
+      "result": true
+    },
+    {
+      "lang": "language-markdown",
+      "filePath": null,
+      "result": true
+    },
+    {
+      "lang": "text",
+      "filePath": "docs/communication-protocol-layers.md",
+      "result": true
+    },
+    {
+      "lang": "",
+      "filePath": "README.MD",
+      "result": true
+    },
+    {
+      "lang": "ts",
+      "filePath": "docs/communication-protocol-layers.md",
+      "result": false
+    },
+    {
+      "lang": "python",
+      "filePath": "README.md",
+      "result": false
+    },
+    {
+      "lang": "ts",
+      "filePath": "src/index.ts",
+      "result": false
+    }
+  ],
+  "splitOmissionCases": [
+    {
+      "name": "html-omission-comment",
+      "result": {
+        "markdown": "# Z Code 通信协议分层\n\n> 说明文本",
+        "omissionNotice": "23 lines omitted for pedagogy (L5-L60)"
+      }
+    },
+    {
+      "name": "legacy-double-slash-omission",
+      "result": {
+        "markdown": "## 第 2 层：信封",
+        "omissionNotice": "23 lines of defensive/internal logic omitted for pedagogy (L5-L60)"
+      }
+    },
+    {
+      "name": "no-omission-untouched",
+      "result": {
+        "markdown": "# Heading\n\nSome content",
+        "omissionNotice": null
+      }
+    }
+  ],
+  "extractMetaCases": [
+    {
+      "meta": "// docs/architecture/communication-protocol-layers.md",
+      "result": {
+        "filePath": "docs/architecture/communication-protocol-layers.md",
+        "hasSymbolAnchor": false
+      }
+    },
+    {
+      "meta": "docs/README.md#get_current_time",
+      "result": {
+        "filePath": "docs/README.md",
+        "hasSymbolAnchor": true
+      }
+    },
+    {
+      "meta": "file=\"docs/a.md\" (L1-L10)",
+      "result": {
+        "filePath": "docs/a.md",
+        "hasSymbolAnchor": false
+      }
+    },
+    {
+      "meta": "// [File 2]",
+      "result": {
+        "filePath": null,
+        "hasSymbolAnchor": false
+      }
+    },
+    {
+      "meta": null,
+      "result": {
+        "filePath": null,
+        "hasSymbolAnchor": false
+      }
+    },
+    {
+      "meta": "",
+      "result": {
+        "filePath": null,
+        "hasSymbolAnchor": false
+      }
+    }
+  ],
+  "isMarkdownPathCases": [
+    {
+      "filePath": "docs/communication-protocol-layers.md",
+      "result": true
+    },
+    {
+      "filePath": "src/index.ts",
+      "result": false
+    },
+    {
+      "filePath": "README.MD",
+      "result": true
+    },
+    {
+      "filePath": null,
+      "result": false
+    }
+  ],
+  "tocCases": [
+    {
+      "name": "vnode-and-null-filtering",
+      "stringifyFirst": "Hello World",
+      "sanitized": [
+        {
+          "depth": 2,
+          "url": "#intro",
+          "title": "Hello World"
+        },
+        {
+          "depth": 3,
+          "url": "#step-1",
+          "title": "步骤一"
+        }
+      ]
+    }
+  ]
+}

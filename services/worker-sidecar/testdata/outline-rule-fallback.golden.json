@@ -1,0 +1,830 @@
+[
+  {
+    "name": "hybrid-repo-chinese",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "zh-CN",
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/intro.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/quickstart.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/concepts.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/setup.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/advanced_1.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/advanced_2.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/index.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/config.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/engine.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/parser.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/compiler.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "name": "第 1 章：快速上手与核心概念",
+        "summary": "系统起步与核心基础介绍",
+        "files": [
+          {
+            "path": "README.md",
+            "shortTitle": "README"
+          },
+          {
+            "path": "docs/intro.md",
+            "shortTitle": "intro"
+          },
+          {
+            "path": "docs/quickstart.md",
+            "shortTitle": "quickstart"
+          },
+          {
+            "path": "docs/advanced_1.md",
+            "shortTitle": "advanced 1"
+          }
+        ]
+      },
+      {
+        "name": "第 2 章：深入指南与实践",
+        "summary": "详细操作指南与进阶功能",
+        "files": [
+          {
+            "path": "docs/advanced_2.md",
+            "shortTitle": "advanced 2"
+          },
+          {
+            "path": "docs/concepts.md",
+            "shortTitle": "concepts"
+          },
+          {
+            "path": "docs/setup.md",
+            "shortTitle": "setup"
+          }
+        ]
+      },
+      {
+        "name": "第 3 章：核心架构与启动入口",
+        "summary": "程序启动入口与全局配置实现",
+        "files": [
+          {
+            "path": "src/index.ts",
+            "shortTitle": "index"
+          },
+          {
+            "path": "src/config.ts",
+            "shortTitle": "config"
+          }
+        ]
+      },
+      {
+        "name": "第 4 章：核心业务逻辑与实现",
+        "summary": "核心业务模块流转与数据处理",
+        "files": [
+          {
+            "path": "src/compiler.ts",
+            "shortTitle": "compiler"
+          },
+          {
+            "path": "src/engine.ts",
+            "shortTitle": "engine"
+          },
+          {
+            "path": "src/parser.ts",
+            "shortTitle": "parser"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "doc-heavy-english-chunking",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "en",
+      "nodes": [
+        {
+          "path": "docs/chapter_1.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_2.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_3.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_4.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_5.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_6.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_7.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_8.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_9.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_10.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_11.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_12.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_13.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_14.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/chapter_15.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "name": "Chapter 1: Quickstart & Core Concepts",
+        "summary": "Getting started and core concepts",
+        "files": [
+          {
+            "path": "README.md",
+            "shortTitle": "README"
+          },
+          {
+            "path": "docs/chapter_1.md",
+            "shortTitle": "chapter 1"
+          },
+          {
+            "path": "docs/chapter_10.md",
+            "shortTitle": "chapter 10"
+          },
+          {
+            "path": "docs/chapter_11.md",
+            "shortTitle": "chapter 11"
+          }
+        ]
+      },
+      {
+        "name": "Chapter 2: In-Depth Guides (Part 1)",
+        "summary": "Detailed guides and advanced features",
+        "files": [
+          {
+            "path": "docs/chapter_12.md",
+            "shortTitle": "chapter 12"
+          },
+          {
+            "path": "docs/chapter_13.md",
+            "shortTitle": "chapter 13"
+          },
+          {
+            "path": "docs/chapter_14.md",
+            "shortTitle": "chapter 14"
+          },
+          {
+            "path": "docs/chapter_15.md",
+            "shortTitle": "chapter 15"
+          },
+          {
+            "path": "docs/chapter_2.md",
+            "shortTitle": "chapter 2"
+          },
+          {
+            "path": "docs/chapter_3.md",
+            "shortTitle": "chapter 3"
+          },
+          {
+            "path": "docs/chapter_4.md",
+            "shortTitle": "chapter 4"
+          },
+          {
+            "path": "docs/chapter_5.md",
+            "shortTitle": "chapter 5"
+          }
+        ]
+      },
+      {
+        "name": "Chapter 3: In-Depth Guides (Part 2)",
+        "summary": "Detailed guides and advanced features",
+        "files": [
+          {
+            "path": "docs/chapter_6.md",
+            "shortTitle": "chapter 6"
+          },
+          {
+            "path": "docs/chapter_7.md",
+            "shortTitle": "chapter 7"
+          },
+          {
+            "path": "docs/chapter_8.md",
+            "shortTitle": "chapter 8"
+          },
+          {
+            "path": "docs/chapter_9.md",
+            "shortTitle": "chapter 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "code-heavy-japanese-chunking",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "ja",
+      "nodes": [
+        {
+          "path": "src/module_1.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_2.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_3.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_4.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_5.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_6.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_7.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_8.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_9.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_10.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_11.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_12.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_13.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_14.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_15.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_16.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_17.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_18.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_19.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/module_20.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/main.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/config.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "name": "第 1 章：コアアーキテクチャとエントリ",
+        "summary": "プログラムのエントリポイントとグローバル設定の実装",
+        "files": [
+          {
+            "path": "src/main.ts",
+            "shortTitle": "main"
+          },
+          {
+            "path": "src/config.ts",
+            "shortTitle": "config"
+          }
+        ]
+      },
+      {
+        "name": "第 2 章：コアビジネスロジックと実装 (第 1 節)",
+        "summary": "コアビジネスモジュールのフローとデータ処理",
+        "files": [
+          {
+            "path": "src/module_1.ts",
+            "shortTitle": "module 1"
+          },
+          {
+            "path": "src/module_10.ts",
+            "shortTitle": "module 10"
+          },
+          {
+            "path": "src/module_11.ts",
+            "shortTitle": "module 11"
+          },
+          {
+            "path": "src/module_12.ts",
+            "shortTitle": "module 12"
+          },
+          {
+            "path": "src/module_13.ts",
+            "shortTitle": "module 13"
+          },
+          {
+            "path": "src/module_14.ts",
+            "shortTitle": "module 14"
+          },
+          {
+            "path": "src/module_15.ts",
+            "shortTitle": "module 15"
+          },
+          {
+            "path": "src/module_16.ts",
+            "shortTitle": "module 16"
+          }
+        ]
+      },
+      {
+        "name": "第 3 章：コアビジネスロジックと実装 (第 2 節)",
+        "summary": "コアビジネスモジュールのフローとデータ処理",
+        "files": [
+          {
+            "path": "src/module_17.ts",
+            "shortTitle": "module 17"
+          },
+          {
+            "path": "src/module_18.ts",
+            "shortTitle": "module 18"
+          },
+          {
+            "path": "src/module_19.ts",
+            "shortTitle": "module 19"
+          },
+          {
+            "path": "src/module_2.ts",
+            "shortTitle": "module 2"
+          },
+          {
+            "path": "src/module_20.ts",
+            "shortTitle": "module 20"
+          },
+          {
+            "path": "src/module_3.ts",
+            "shortTitle": "module 3"
+          },
+          {
+            "path": "src/module_4.ts",
+            "shortTitle": "module 4"
+          },
+          {
+            "path": "src/module_5.ts",
+            "shortTitle": "module 5"
+          }
+        ]
+      },
+      {
+        "name": "第 4 章：コアビジネスロジックと実装 (第 3 節)",
+        "summary": "コアビジネスモジュールのフローとデータ処理",
+        "files": [
+          {
+            "path": "src/module_6.ts",
+            "shortTitle": "module 6"
+          },
+          {
+            "path": "src/module_7.ts",
+            "shortTitle": "module 7"
+          },
+          {
+            "path": "src/module_8.ts",
+            "shortTitle": "module 8"
+          },
+          {
+            "path": "src/module_9.ts",
+            "shortTitle": "module 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "doc-and-code-japanese-chunking",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "ja",
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "docs/guide.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/main.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        },
+        {
+          "path": "src/config.ts",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "name": "第 1 章：クイックスタートと基本概念",
+        "summary": "システムの導入と主要な基礎知識",
+        "files": [
+          {
+            "path": "README.md",
+            "shortTitle": "README"
+          },
+          {
+            "path": "docs/guide.md",
+            "shortTitle": "guide"
+          }
+        ]
+      },
+      {
+        "name": "第 2 章：コアアーキテクチャとエントリ",
+        "summary": "プログラムのエントリポイントとグローバル設定の実装",
+        "files": [
+          {
+            "path": "src/main.ts",
+            "shortTitle": "main"
+          },
+          {
+            "path": "src/config.ts",
+            "shortTitle": "config"
+          }
+        ]
+      },
+      {
+        "name": "第 3 章：コアビジネスロジックと実装",
+        "summary": "コアビジネスモジュールのフローとデータ処理",
+        "files": [
+          {
+            "path": "src/main.ts",
+            "shortTitle": "main"
+          },
+          {
+            "path": "src/config.ts",
+            "shortTitle": "config"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "empty-repo-english",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "en",
+      "nodes": []
+    },
+    "expected": [
+      {
+        "name": "Chapter 1: Core Project",
+        "summary": "Empty repository or no valid files detected",
+        "files": []
+      }
+    ]
+  },
+  {
+    "name": "readme-only-repo-chinese",
+    "input": {
+      "prefix": "",
+      "targetLanguage": "zh-CN",
+      "nodes": [
+        {
+          "path": "README.md",
+          "type": "blob",
+          "size": 100,
+          "sha": "mock-sha",
+          "mode": "100644",
+          "url": "https://api.github.com/mock"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "name": "第 1 章：快速上手与核心概念",
+        "summary": "系统起步与核心基础介绍",
+        "files": [
+          {
+            "path": "README.md",
+            "shortTitle": "README"
+          }
+        ]
+      }
+    ]
+  }
+]

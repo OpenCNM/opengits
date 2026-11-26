@@ -1,0 +1,376 @@
+{
+  "quizzes_and_takeaways": [
+    {
+      "name": "inject_quizzes_into_reflection_node",
+      "input": {
+        "docPath": "docs/chapter1.md",
+        "concepts": [
+          {
+            "conceptName": "Architecture Overview",
+            "slug": "arch-overview",
+            "category": "architecture",
+            "principlesText": "System design principles",
+            "sopSteps": [],
+            "summary": "Overview",
+            "subTopics": [],
+            "tags": []
+          },
+          {
+            "conceptName": "Chapter Reflection",
+            "slug": "chapter-reflection",
+            "category": "reflection",
+            "principlesText": "Self reflection",
+            "authorReflections": "Initial thoughts",
+            "sopSteps": [],
+            "summary": "Reflections",
+            "subTopics": [],
+            "tags": []
+          }
+        ],
+        "quizzes": [
+          {
+            "question": "What is idempotency?",
+            "options": [
+              "Repeatable execution without side-effect",
+              "Speed optimization"
+            ],
+            "correctIndex": 0,
+            "explanation": "Idempotency ensures safe retries."
+          }
+        ],
+        "takeaways": [
+          "Idempotency is critical for distributed queues."
+        ]
+      },
+      "expected": [
+        {
+          "conceptName": "Architecture Overview",
+          "slug": "arch-overview",
+          "category": "architecture",
+          "principlesText": "System design principles",
+          "sopSteps": [],
+          "summary": "Overview",
+          "subTopics": [],
+          "tags": [],
+          "authorReflections": "【核心要点】\n- Idempotency is critical for distributed queues."
+        },
+        {
+          "conceptName": "Chapter Reflection",
+          "slug": "chapter-reflection",
+          "category": "reflection",
+          "principlesText": "Self reflection",
+          "authorReflections": "Initial thoughts\n\n【测验 1】What is idempotency?\n选项: Repeatable execution without side-effect | Speed optimization\n解析: Idempotency ensures safe retries.",
+          "sopSteps": [],
+          "summary": "Reflections",
+          "subTopics": [],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "synthesize_quiz_node_when_no_concepts",
+      "input": {
+        "docPath": "tutorials/getting-started.md",
+        "concepts": [],
+        "quizzes": [
+          {
+            "question": "Which HTTP status code is Bad Request?",
+            "options": [
+              "200",
+              "400",
+              "500"
+            ],
+            "correctIndex": 1
+          }
+        ],
+        "takeaways": [
+          "HTTP status codes convey semantic results."
+        ]
+      },
+      "expected": [
+        {
+          "conceptName": "随堂自测",
+          "slug": "tutorials-getting-started-md-随堂自测",
+          "category": "reflection",
+          "principlesText": "【测验 1】Which HTTP status code is Bad Request?\n选项: 200 | 400 | 500\n解析: 答案序号: 1",
+          "authorReflections": "【核心要点】\n- HTTP status codes convey semantic results.\n\n【测验 1】Which HTTP status code is Bad Request?\n选项: 200 | 400 | 500\n解析: 答案序号: 1",
+          "sopSteps": [],
+          "summary": "伴生随堂自测与概念辨析",
+          "subTopics": [
+            "reflection"
+          ],
+          "tags": [
+            "quiz",
+            "reflection"
+          ],
+          "sourceHeading": "随堂自测",
+          "anchorText": "随堂自测"
+        }
+      ]
+    },
+    {
+      "name": "takeaways_only_synthesizes_principle_node",
+      "input": {
+        "docPath": "guide/takeaways.md",
+        "concepts": [],
+        "quizzes": [],
+        "takeaways": [
+          "First point",
+          "Second point"
+        ]
+      },
+      "expected": [
+        {
+          "conceptName": "核心要点",
+          "slug": "guide-takeaways-md-核心要点",
+          "category": "principle",
+          "principlesText": "【核心要点】\n- First point\n- Second point",
+          "authorReflections": "【核心要点】\n- First point\n- Second point",
+          "sopSteps": [],
+          "summary": "First point Second point",
+          "subTopics": [
+            "takeaways"
+          ],
+          "tags": [
+            "takeaways",
+            "principle"
+          ],
+          "sourceHeading": "核心要点",
+          "anchorText": "核心要点"
+        }
+      ]
+    }
+  ],
+  "summary_precedence": [
+    {
+      "name": "manifest_summary_has_highest_precedence",
+      "input": {
+        "manifestSummary": "Manifest summary from frontmatter",
+        "blueprint": {
+          "summary": "Blueprint summary",
+          "isFallback": false
+        },
+        "takeaways": [
+          "Takeaway 1",
+          "Takeaway 2"
+        ],
+        "repoProfile": null
+      },
+      "expected": "Manifest summary from frontmatter"
+    },
+    {
+      "name": "real_ai_blueprint_second_precedence",
+      "input": {
+        "manifestSummary": "",
+        "blueprint": {
+          "summary": "Real AI blueprint summary",
+          "isFallback": false
+        },
+        "takeaways": [
+          "Takeaway 1",
+          "Takeaway 2"
+        ],
+        "repoProfile": null
+      },
+      "expected": "Real AI blueprint summary"
+    },
+    {
+      "name": "takeaways_third_precedence",
+      "input": {
+        "manifestSummary": "",
+        "takeaways": [
+          "Takeaway Alpha",
+          "Takeaway Beta"
+        ],
+        "repoProfile": null
+      },
+      "expected": "Takeaway Alpha Takeaway Beta"
+    },
+    {
+      "name": "fallback_blueprint_when_ai_enhance_disabled",
+      "input": {
+        "manifestSummary": "",
+        "blueprint": {
+          "summary": "Fallback summary",
+          "isFallback": true
+        },
+        "takeaways": [],
+        "repoProfile": {
+          "enableAiEnhance": false
+        }
+      },
+      "expected": "Fallback summary"
+    },
+    {
+      "name": "none_provided",
+      "input": {
+        "manifestSummary": "",
+        "takeaways": [],
+        "repoProfile": null
+      },
+      "expected": null
+    }
+  ],
+  "chunks": [
+    {
+      "id": "chunk-1",
+      "heading": "01_System Overview",
+      "headingPath": "docs/guide.md#01_System Overview",
+      "content": "Detailed discussion of system architecture and components."
+    },
+    {
+      "id": "chunk-2",
+      "heading": "General",
+      "headingPath": "docs/guide.md#General",
+      "content": "Preamble text before any headings. Contains introductory anchors."
+    },
+    {
+      "id": "chunk-3",
+      "heading": "Module > Event Loop (Part 1)",
+      "headingPath": "docs/guide.md#Module > Event Loop",
+      "content": "Event loop execution model in Node.js runtime environment."
+    },
+    {
+      "id": "chunk-4",
+      "heading": "Concurrency",
+      "headingPath": "docs/guide.md#Concurrency",
+      "content": "Goroutines and channels make concurrency straightforward."
+    }
+  ],
+  "anchor_disambiguation": [
+    {
+      "conceptName": "System Overview",
+      "sourceHeading": "01_System Overview",
+      "anchorText": null,
+      "principlesText": "",
+      "summary": "High level system overview",
+      "expected": {
+        "chunkId": "chunk-1",
+        "headingPath": "docs/guide.md#01_System Overview",
+        "principlesText": "Detailed discussion of system architecture and components."
+      }
+    },
+    {
+      "conceptName": "Event Loop",
+      "sourceHeading": null,
+      "anchorText": null,
+      "principlesText": "",
+      "summary": "Node event loop",
+      "expected": {
+        "chunkId": "chunk-3",
+        "headingPath": "docs/guide.md#Module > Event Loop",
+        "principlesText": "Event loop execution model in Node.js runtime environment."
+      }
+    },
+    {
+      "conceptName": "Preamble",
+      "sourceHeading": null,
+      "anchorText": "Preamble text before any headings",
+      "principlesText": "Preamble summary",
+      "summary": "Preamble summary",
+      "expected": {
+        "chunkId": "chunk-2",
+        "headingPath": "docs/guide.md#General",
+        "principlesText": "Preamble text before any headings. Contains introductory anchors."
+      }
+    },
+    {
+      "conceptName": "Goroutines",
+      "sourceHeading": null,
+      "anchorText": null,
+      "principlesText": "Existing principles preserved",
+      "summary": "Goroutines summary",
+      "expected": {
+        "chunkId": "chunk-4",
+        "headingPath": "docs/guide.md#Concurrency",
+        "principlesText": "Existing principles preserved"
+      }
+    },
+    {
+      "conceptName": "Unmatched Concept",
+      "sourceHeading": null,
+      "anchorText": null,
+      "principlesText": "",
+      "summary": "Fallback summary for unmatched",
+      "expected": {
+        "chunkId": null,
+        "headingPath": null,
+        "principlesText": "Fallback summary for unmatched"
+      }
+    }
+  ],
+  "edges": {
+    "cooccurrence_input": [
+      {
+        "id": "c-node-1",
+        "chunkId": "chk-1"
+      },
+      {
+        "id": "c-node-2",
+        "chunkId": "chk-1"
+      },
+      {
+        "id": "c-node-3",
+        "chunkId": "chk-2"
+      },
+      {
+        "id": "c-node-4",
+        "chunkId": "chk-2"
+      }
+    ],
+    "cooccurrence_expected": [
+      {
+        "sourceId": "c-node-1",
+        "targetId": "c-node-2",
+        "type": "related",
+        "weight": 1,
+        "source": "cooccurrence",
+        "meta": {
+          "chunkId": "chk-1"
+        }
+      },
+      {
+        "sourceId": "c-node-3",
+        "targetId": "c-node-4",
+        "type": "related",
+        "weight": 1,
+        "source": "cooccurrence",
+        "meta": {
+          "chunkId": "chk-2"
+        }
+      }
+    ],
+    "curriculum_input": [
+      [
+        "doc1-c1",
+        "doc1-c2"
+      ],
+      [
+        "doc2-c1",
+        "doc2-c2"
+      ]
+    ],
+    "curriculum_expected": [
+      {
+        "sourceId": "doc1-c1",
+        "targetId": "doc2-c1",
+        "type": "successor",
+        "weight": 0.3,
+        "source": "curriculum_order",
+        "meta": {
+          "docGap": 1
+        }
+      },
+      {
+        "sourceId": "doc1-c1",
+        "targetId": "doc2-c2",
+        "type": "successor",
+        "weight": 0.3,
+        "source": "curriculum_order",
+        "meta": {
+          "docGap": 1
+        }
+      }
+    ]
+  }
+}

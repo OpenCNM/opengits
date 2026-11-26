@@ -1,0 +1,4 @@
+{
+  "op": "billing",
+  "fixturePath": "services/worker-sidecar/testdata/billing.golden.json"
+}

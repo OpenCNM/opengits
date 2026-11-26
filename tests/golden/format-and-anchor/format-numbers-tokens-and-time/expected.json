@@ -1,0 +1,516 @@
+{
+  "compactNumbers": [
+    {
+      "input": 0,
+      "output": "0"
+    },
+    {
+      "input": 1,
+      "output": "1"
+    },
+    {
+      "input": 999,
+      "output": "999"
+    },
+    {
+      "input": 1000,
+      "output": "1k"
+    },
+    {
+      "input": 1200,
+      "output": "1.2k"
+    },
+    {
+      "input": 1499,
+      "output": "1.5k"
+    },
+    {
+      "input": 23456,
+      "output": "23.5k"
+    },
+    {
+      "input": 999400,
+      "output": "999.4k"
+    },
+    {
+      "input": 999949,
+      "output": "999.9k"
+    },
+    {
+      "input": 999950,
+      "output": "1M"
+    },
+    {
+      "input": 1000000,
+      "output": "1M"
+    },
+    {
+      "input": 1234567,
+      "output": "1.2M"
+    },
+    {
+      "input": 23456789,
+      "output": "23.5M"
+    },
+    {
+      "input": 999400000,
+      "output": "999.4M"
+    },
+    {
+      "input": 999949999,
+      "output": "999.9M"
+    },
+    {
+      "input": 999950000,
+      "output": "1B"
+    },
+    {
+      "input": 1500000000,
+      "output": "1.5B"
+    },
+    {
+      "input": 1234567890123,
+      "output": "1.2T"
+    },
+    {
+      "input": 2000000000000,
+      "output": "2T"
+    },
+    {
+      "input": "NaN",
+      "output": "0"
+    },
+    {
+      "input": "Infinity",
+      "output": "0"
+    }
+  ],
+  "progressPercent": [
+    {
+      "done": 458,
+      "total": 460,
+      "output": 99
+    },
+    {
+      "done": 459,
+      "total": 460,
+      "output": 99
+    },
+    {
+      "done": 999,
+      "total": 1000,
+      "output": 99
+    },
+    {
+      "done": 99,
+      "total": 100,
+      "output": 99
+    },
+    {
+      "done": 460,
+      "total": 460,
+      "output": 100
+    },
+    {
+      "done": 461,
+      "total": 460,
+      "output": 100
+    },
+    {
+      "done": 1,
+      "total": 1000,
+      "output": 1
+    },
+    {
+      "done": 0,
+      "total": 460,
+      "output": 0
+    },
+    {
+      "done": 0,
+      "total": 0,
+      "output": 0
+    },
+    {
+      "done": -5,
+      "total": 10,
+      "output": 0
+    },
+    {
+      "done": "NaN",
+      "total": 10,
+      "output": 0
+    }
+  ],
+  "compactTokens": [
+    {
+      "input": 0,
+      "output": "0"
+    },
+    {
+      "input": -100,
+      "output": "0"
+    },
+    {
+      "input": null,
+      "output": "0"
+    },
+    {
+      "input": "__undefined__",
+      "output": "0"
+    },
+    {
+      "input": "NaN",
+      "output": "0"
+    },
+    {
+      "input": 1,
+      "output": "< 1k"
+    },
+    {
+      "input": 500,
+      "output": "< 1k"
+    },
+    {
+      "input": 999,
+      "output": "< 1k"
+    },
+    {
+      "input": 1000,
+      "output": "1k"
+    },
+    {
+      "input": 2300,
+      "output": "2k"
+    },
+    {
+      "input": 10400,
+      "output": "10k"
+    },
+    {
+      "input": 20100,
+      "output": "20k"
+    },
+    {
+      "input": 98700,
+      "output": "99k"
+    },
+    {
+      "input": 99499,
+      "output": "99k"
+    },
+    {
+      "input": 100000,
+      "output": "0.1M"
+    },
+    {
+      "input": 150000,
+      "output": "0.2M"
+    },
+    {
+      "input": 500000,
+      "output": "0.5M"
+    },
+    {
+      "input": 850000,
+      "output": "0.9M"
+    },
+    {
+      "input": 900000,
+      "output": "0.9M"
+    },
+    {
+      "input": 994000,
+      "output": "1M"
+    },
+    {
+      "input": 1000000,
+      "output": "1M"
+    },
+    {
+      "input": 2000000,
+      "output": "2M"
+    },
+    {
+      "input": 2400000,
+      "output": "2M"
+    },
+    {
+      "input": 20000000,
+      "output": "20M"
+    },
+    {
+      "input": 99000000,
+      "output": "99M"
+    }
+  ],
+  "editionRelativeTime": [
+    {
+      "raw": null,
+      "output": ""
+    },
+    {
+      "raw": "__undefined__",
+      "output": ""
+    },
+    {
+      "raw": "",
+      "output": ""
+    },
+    {
+      "raw": "invalid-date",
+      "output": ""
+    },
+    {
+      "offsetMs": 60000,
+      "locale": "zh-CN",
+      "output": "刚刚"
+    },
+    {
+      "offsetMs": 60000,
+      "locale": "en",
+      "output": "Just now"
+    },
+    {
+      "offsetMs": 0,
+      "locale": "zh-CN",
+      "output": "刚刚"
+    },
+    {
+      "offsetMs": -300000,
+      "locale": "zh-CN",
+      "output": "5分钟前"
+    },
+    {
+      "offsetMs": -300000,
+      "locale": "en",
+      "output": "5m ago"
+    },
+    {
+      "offsetMs": -3600000,
+      "locale": "zh-CN",
+      "output": "1小时前"
+    },
+    {
+      "offsetMs": -43200000,
+      "locale": "zh-CN",
+      "output": "12小时前"
+    },
+    {
+      "offsetMs": -43200000,
+      "locale": "en",
+      "output": "12h ago"
+    },
+    {
+      "offsetMs": -86400000,
+      "locale": "zh-CN",
+      "output": "1天前"
+    },
+    {
+      "offsetMs": -1296000000,
+      "locale": "zh-CN",
+      "output": "15天前"
+    },
+    {
+      "offsetMs": -1296000000,
+      "locale": "en",
+      "output": "15d ago"
+    },
+    {
+      "offsetMs": -2592000000,
+      "locale": "zh-CN",
+      "output": "1月前"
+    },
+    {
+      "offsetMs": -5616000000,
+      "locale": "zh-CN",
+      "output": "2月前"
+    },
+    {
+      "offsetMs": -5616000000,
+      "locale": "en",
+      "output": "2mo ago"
+    }
+  ],
+  "relativeTime": [
+    {
+      "iso": null,
+      "output": ""
+    },
+    {
+      "iso": "__undefined__",
+      "output": ""
+    },
+    {
+      "iso": "not-a-date",
+      "output": ""
+    },
+    {
+      "iso": "__invalid_date__",
+      "output": ""
+    },
+    {
+      "offsetMs": 300000,
+      "output": "Just now"
+    },
+    {
+      "offsetMs": 0,
+      "output": "Just now"
+    },
+    {
+      "offsetMs": -60000,
+      "output": "1m ago"
+    },
+    {
+      "offsetMs": -3540000,
+      "output": "59m ago"
+    },
+    {
+      "offsetMs": -3600000,
+      "output": "1h ago"
+    },
+    {
+      "offsetMs": -82800000,
+      "output": "23h ago"
+    },
+    {
+      "offsetMs": -86400000,
+      "output": "Yesterday"
+    },
+    {
+      "offsetMs": -172800000,
+      "output": "2d ago"
+    },
+    {
+      "offsetMs": -604800000,
+      "output": "7d ago"
+    },
+    {
+      "iso": "2024-05-03T00:00:00Z",
+      "output": "2024.05.03"
+    }
+  ],
+  "wordCounts": [
+    {
+      "count": null,
+      "output": ""
+    },
+    {
+      "count": "__undefined__",
+      "output": ""
+    },
+    {
+      "count": -10,
+      "output": ""
+    },
+    {
+      "count": "NaN",
+      "output": ""
+    },
+    {
+      "count": 0,
+      "locale": "zh-CN",
+      "output": "0字"
+    },
+    {
+      "count": 850,
+      "locale": "zh-CN",
+      "output": "850字"
+    },
+    {
+      "count": 1500,
+      "locale": "zh-CN",
+      "output": "1.5千字"
+    },
+    {
+      "count": 2000,
+      "locale": "zh-CN",
+      "output": "2千字"
+    },
+    {
+      "count": 8250,
+      "locale": "zh-CN",
+      "output": "8.3千字"
+    },
+    {
+      "count": 9949,
+      "locale": "zh-CN",
+      "output": "9.9千字"
+    },
+    {
+      "count": 9950,
+      "locale": "zh-CN",
+      "output": "1万字"
+    },
+    {
+      "count": 9960,
+      "locale": "zh-CN",
+      "output": "1万字"
+    },
+    {
+      "count": 9999,
+      "locale": "zh-CN",
+      "output": "1万字"
+    },
+    {
+      "count": 10000,
+      "locale": "zh-CN",
+      "output": "1万字"
+    },
+    {
+      "count": 25400,
+      "locale": "zh-CN",
+      "output": "2.5万字"
+    },
+    {
+      "count": 120000,
+      "locale": "zh-CN",
+      "output": "12万字"
+    },
+    {
+      "count": 850,
+      "locale": "en",
+      "output": "850 words"
+    },
+    {
+      "count": 1500,
+      "locale": "en",
+      "output": "1.5k words"
+    },
+    {
+      "count": 25000,
+      "locale": "en",
+      "output": "25k words"
+    },
+    {
+      "count": 9960,
+      "locale": "en",
+      "output": "10k words"
+    }
+  ],
+  "chapterCounts": [
+    {
+      "count": null,
+      "output": ""
+    },
+    {
+      "count": -1,
+      "output": ""
+    },
+    {
+      "count": 8,
+      "locale": "zh-CN",
+      "output": "8章"
+    },
+    {
+      "count": 1,
+      "locale": "zh-CN",
+      "output": "1章"
+    },
+    {
+      "count": 8,
+      "locale": "en",
+      "output": "8 chapters"
+    }
+  ]
+}

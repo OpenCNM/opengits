@@ -1,0 +1,45 @@
+{
+  "fixturePath": "services/worker-sidecar/testdata/code-wrap.golden.json",
+  "cases": [
+    {
+      "name": "ordinary-ts",
+      "got": "## 📄 `index.ts` <!-- path: src/index.ts -->\n\n```typescript\nconst a = 1;\nconsole.log(a);\n```\n"
+    },
+    {
+      "name": "md-with-triple-fence",
+      "got": "## 📄 `readme.md` <!-- path: docs/readme.md -->\n\n````markdown\n# Markdown Guide\n```json\n{\"foo\": \"bar\"}\n```\n````\n"
+    },
+    {
+      "name": "quadruple-fence",
+      "got": "## 📄 `snippet.ts` <!-- path: snippet.ts -->\n\n`````typescript\n````ts\nconst x = 1;\n````\n`````\n"
+    },
+    {
+      "name": "unknown-ext-text",
+      "got": "## 📄 `file.xyz` <!-- path: data/file.xyz -->\n\n```text\nplain content\n```\n"
+    },
+    {
+      "name": "filename-backtick-strip",
+      "got": "## 📄 `evilname.py` <!-- path: src/evil`name`.py -->\n\n```python\nprint(1)\n```\n"
+    },
+    {
+      "name": "no-trailing-newline-normalized",
+      "got": "## 📄 `a.go` <!-- path: a.go -->\n\n```go\npackage main\n```\n"
+    },
+    {
+      "name": "trailing-newline-preserved-single",
+      "got": "## 📄 `a.go` <!-- path: a.go -->\n\n```go\npackage main\n```\n"
+    },
+    {
+      "name": "unicode-filename",
+      "got": "## 📄 `入口.tsx` <!-- path: 示例/入口.tsx -->\n\n```tsx\nexport default () => <div/>\n```\n"
+    },
+    {
+      "name": "empty-content",
+      "got": "## 📄 `empty.js` <!-- path: empty.js -->\n\n```javascript\n\n```\n"
+    },
+    {
+      "name": "uppercase-ext",
+      "got": "## 📄 `Main.PY` <!-- path: Main.PY -->\n\n```python\nprint(1)\n```\n"
+    }
+  ]
+}

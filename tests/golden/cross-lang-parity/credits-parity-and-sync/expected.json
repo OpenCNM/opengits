@@ -1,0 +1,39 @@
+{
+  "goDefaults": {
+    "defaultDailyCredits": 1000,
+    "resetIntervalHours": 24,
+    "maxCreditsPerImport": 300,
+    "codePedagogyMulti": 2,
+    "standardChunkCharSize": 1500,
+    "publishGiftEnabled": false
+  },
+  "tsDefaults": {
+    "DEFAULT_DAILY_CREDITS": 1000,
+    "DEFAULT_RESET_INTERVAL_HOURS": 24,
+    "MAX_CREDITS_PER_IMPORT": 300,
+    "STANDARD_CHUNK_CHAR_SIZE": 1500,
+    "CODE_PEDAGOGY_MULTIPLIER": 2,
+    "PUBLISH_GIFT_ENABLED": false
+  },
+  "prismaCommentValues": [
+    "CANCELLED",
+    "PENDING",
+    "UNLOCKED"
+  ],
+  "goSqlLiterals": [
+    "CANCELLED",
+    "PENDING",
+    "UNLOCKED"
+  ],
+  "pendingCreditStatuses": [
+    "CANCELLED",
+    "PENDING",
+    "UNLOCKED"
+  ],
+  "defaultStatus": "PENDING",
+  "terminalMatrix": {
+    "UNLOCKED": true,
+    "CANCELLED": false,
+    "PENDING": false
+  }
+}

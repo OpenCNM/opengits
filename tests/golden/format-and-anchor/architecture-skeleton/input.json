@@ -1,0 +1,37 @@
+{
+  "op": "architecture-skeleton",
+  "cases": [
+    {
+      "name": "call-flow-with-upstream-and-downstream",
+      "moduleTitle": "Pipeline Engine",
+      "cognitive": {
+        "phase": "phase3_pipeline",
+        "phaseOrder": 2,
+        "rationale": "Core pipeline processing",
+        "callFlow": [
+          { "caller": "ParseEvent", "callee": "ValidateEvent" },
+          { "caller": "ValidateEvent", "callee": "EmitRecord" }
+        ],
+        "upstreamModules": ["IngestSource"],
+        "downstreamModules": ["StorageSink"]
+      }
+    },
+    {
+      "name": "golden-symbols-fallback",
+      "moduleTitle": "Store Module",
+      "cognitive": null,
+      "goldenSymbols": [
+        { "name": "Store", "file": "store.ts", "kind": "type" },
+        { "name": "createStore", "file": "store.ts", "kind": "function" }
+      ],
+      "options": { "includeExternal": false }
+    },
+    {
+      "name": "empty-fallback-with-quote-escaping",
+      "moduleTitle": "My \"Cool\" Module",
+      "cognitive": null,
+      "goldenSymbols": null,
+      "options": { "includeExternal": false }
+    }
+  ]
+}

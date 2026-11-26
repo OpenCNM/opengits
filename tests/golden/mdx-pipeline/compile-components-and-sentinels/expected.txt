@@ -1,0 +1,173 @@
+=== META ===
+{
+  "toc": [
+    {
+      "depth": 1,
+      "url": "#sentinel_h1_title",
+      "title": "SENTINEL_H1_TITLE"
+    },
+    {
+      "depth": 2,
+      "url": "#sentinel_h2_heading",
+      "title": "SENTINEL_H2_HEADING"
+    }
+  ],
+  "frontmatter": {},
+  "deepDiveCount": 0
+}
+=== COMPILED ===
+"use strict";
+const {Fragment: _Fragment, jsx: _jsx, jsxs: _jsxs} = arguments[0];
+let toc = [{
+  depth: 1,
+  url: "#sentinel_h1_title",
+  title: _jsx(_Fragment, {
+    children: "SENTINEL_H1_TITLE"
+  })
+}, {
+  depth: 2,
+  url: "#sentinel_h2_heading",
+  title: _jsx(_Fragment, {
+    children: "SENTINEL_H2_HEADING"
+  })
+}];
+function _createMdxContent(props) {
+  const _components = {
+    code: "code",
+    h1: "h1",
+    h2: "h2",
+    p: "p",
+    pre: "pre",
+    strong: "strong",
+    table: "table",
+    tbody: "tbody",
+    td: "td",
+    th: "th",
+    thead: "thead",
+    tr: "tr",
+    ...props.components
+  }, {Accordion, AccordionGroup, Callout, Card, CardGroup, CodeGroup, CodeGroupItem, DynamicVar, Expandable, InterleafAnswer, Jargon, MicroQuiz, Step, Steps, Summary, UnknownMdxComponent, WhiteboardImage, YouTube} = _components;
+  if (!Accordion) _missingMdxReference("Accordion", true);
+  if (!AccordionGroup) _missingMdxReference("AccordionGroup", true);
+  if (!Callout) _missingMdxReference("Callout", true);
+  if (!Card) _missingMdxReference("Card", true);
+  if (!CardGroup) _missingMdxReference("CardGroup", true);
+  if (!CodeGroup) _missingMdxReference("CodeGroup", true);
+  if (!CodeGroupItem) _missingMdxReference("CodeGroupItem", true);
+  if (!DynamicVar) _missingMdxReference("DynamicVar", true);
+  if (!Expandable) _missingMdxReference("Expandable", true);
+  if (!InterleafAnswer) _missingMdxReference("InterleafAnswer", true);
+  if (!Jargon) _missingMdxReference("Jargon", true);
+  if (!MicroQuiz) _missingMdxReference("MicroQuiz", true);
+  if (!Step) _missingMdxReference("Step", true);
+  if (!Steps) _missingMdxReference("Steps", true);
+  if (!Summary) _missingMdxReference("Summary", true);
+  if (!UnknownMdxComponent) _missingMdxReference("UnknownMdxComponent", true);
+  if (!WhiteboardImage) _missingMdxReference("WhiteboardImage", true);
+  if (!YouTube) _missingMdxReference("YouTube", true);
+  return _jsxs(_Fragment, {
+    children: [_jsx(_components.h1, {
+      id: "sentinel_h1_title",
+      children: "SENTINEL_H1_TITLE"
+    }), "\n", _jsx(_components.h2, {
+      id: "sentinel_h2_heading",
+      children: "SENTINEL_H2_HEADING"
+    }), "\n", _jsxs(_components.p, {
+      children: ["Here is a paragraph with ", _jsx(_components.strong, {
+        children: "SENTINEL_BOLD_TEXT"
+      }), " and a standard markdown baseline."]
+    }), "\n\n\n\n\n\n\n\n\n\n\n\n\n\n", _jsxs(_components.table, {
+      children: [_jsx(_components.thead, {
+        children: _jsxs(_components.tr, {
+          children: [_jsx(_components.th, {
+            children: "Col A"
+          }), _jsx(_components.th, {
+            children: "Col B"
+          })]
+        })
+      }), _jsx(_components.tbody, {
+        children: _jsxs(_components.tr, {
+          children: [_jsx(_components.td, {
+            children: "SENTINEL_TABLE_CELL_1"
+          }), _jsx(_components.td, {
+            children: "SENTINEL_TABLE_CELL_2"
+          })]
+        })
+      })]
+    }), "\n", _jsx(CardGroup, {
+      children: _jsx(Card, {
+        title: "SENTINEL_CARD_TITLE",
+        children: "SENTINEL_CARD_BODY"
+      })
+    }), "\n", _jsx(Steps, {
+      children: _jsx(Step, {
+        title: "SENTINEL_STEP_TITLE",
+        children: "SENTINEL_STEP_BODY"
+      })
+    }), "\n", _jsx(Callout, {
+      type: "info",
+      children: "SENTINEL_CALLOUT_BODY"
+    }), "\n", _jsx(AccordionGroup, {
+      children: _jsx(Accordion, {
+        title: "SENTINEL_ACCORDION_TITLE",
+        children: "SENTINEL_ACCORDION_BODY"
+      })
+    }), "\n", _jsx(Expandable, {
+      title: "SENTINEL_EXPANDABLE_TITLE",
+      children: "SENTINEL_EXPANDABLE_BODY"
+    }), "\n", _jsx(CodeGroup, {
+      children: _jsx(CodeGroupItem, {
+        title: "SENTINEL_CODE_TAB",
+        children: "console.log(\"SENTINEL_CODE_CONTENT\");"
+      })
+    }), "\n", _jsxs(_components.p, {
+      children: ["Dynamic brace test: ", _jsx(DynamicVar, {
+        name: "SENTINEL_DYNAMIC_VAR"
+      })]
+    }), "\n", _jsx(Summary, {
+      children: "SENTINEL_SUMMARY_BODY"
+    }), "\n", _jsx(Jargon, {
+      term: "SENTINEL_JARGON_TERM",
+      children: "SENTINEL_JARGON_BODY"
+    }), "\n", _jsx(InterleafAnswer, {
+      children: "SENTINEL_INTERLEAF_BODY"
+    }), "\n", _jsx(YouTube, {
+      id: "SENTINEL_YT_VIDEO_123"
+    }), "\n", _jsx(WhiteboardImage, {
+      src: "SENTINEL_WHITEBOARD_IMG.png",
+      alt: "SENTINEL_WHITEBOARD_ALT"
+    }), "\n", _jsx(MicroQuiz, {
+      question: "SENTINEL_QUIZ_QUESTION",
+      children: "SENTINEL_QUIZ_BODY"
+    }), "\n", _jsx(_components.pre, {
+      "data-code": "graph TD\n  A[SENTINEL_MERMAID_NODE_A] --> B[SENTINEL_MERMAID_NODE_B]",
+      "data-language": "mermaid",
+      "data-highlighted-html": "<pre class=\"shiki shiki-themes github-light github-dark solarized-light github-light\" style=\"--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-parchment:#657B83;--shiki-vercel:#24292e;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e;--shiki-parchment-bg:#FDF6E3;--shiki-vercel-bg:#fff\" tabindex=\"0\"><code><span class=\"line\" data-line=\"1\" id=\"L1\"><span style=\"--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-parchment:#657B83;--shiki-vercel:#24292E\">graph TD</span></span>\n<span class=\"line\" data-line=\"2\" id=\"L2\"><span style=\"--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-parchment:#657B83;--shiki-vercel:#24292E\">  A[SENTINEL_MERMAID_NODE_A] --> B[SENTINEL_MERMAID_NODE_B]</span></span></code></pre>",
+      children: _jsx(_components.code, {
+        className: "language-mermaid",
+        "data-language": "mermaid",
+        "data-code": "graph TD\n  A[SENTINEL_MERMAID_NODE_A] --> B[SENTINEL_MERMAID_NODE_B]",
+        children: "graph TD\n  A[SENTINEL_MERMAID_NODE_A] --> B[SENTINEL_MERMAID_NODE_B]"
+      })
+    }), "\n", _jsx(UnknownMdxComponent, {
+      children: "SENTINEL_UNKNOWN_WIDGET_BODY"
+    })]
+  });
+}
+function MDXContent(props = {}) {
+  const {wrapper: MDXLayout} = props.components || ({});
+  return MDXLayout ? _jsx(MDXLayout, {
+    ...props,
+    children: _jsx(_createMdxContent, {
+      ...props
+    })
+  }) : _createMdxContent(props);
+}
+return {
+  toc,
+  default: MDXContent
+};
+function _missingMdxReference(id, component) {
+  throw new Error("Expected " + (component ? "component" : "object") + " `" + id + "` to be defined: you likely forgot to import, pass, or provide it.");
+}
+

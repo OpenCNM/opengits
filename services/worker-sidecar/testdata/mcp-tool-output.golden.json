@@ -1,0 +1,96 @@
+{
+  "_comment": "冻结手工维护契约（原生成脚本 gen-parity-goldens.ts 已于 2026-11 死代码清算退役）：单一事实源 TS renderToolResult（apps/client/src/lib/mcp/tools/shared.ts），Go 孪生（internal/mcp/render_pipeline.go）跑同一夹具必须逐字节一致；改实现 → 手工同步夹具 → 双侧同绿。",
+  "cases": [
+    {
+      "name": "plain-no-warning",
+      "ctxFlags": {},
+      "result": {
+        "header": "# 🔍 Code Symbol: `add` (function)\n",
+        "body": "- **File**: `src/calc.ts` (Lines 3–7)\n\n### Source Implementation\n\n```typescript\nreturn a + b;\n```\n"
+      },
+      "wantText": "# 🔍 Code Symbol: `add` (function)\n- **File**: `src/calc.ts` (Lines 3–7)\n\n### Source Implementation\n\n```typescript\nreturn a + b;\n```\n"
+    },
+    {
+      "name": "fallback-to-base-warning",
+      "ctxFlags": {
+        "fallback": true,
+        "requestedEdition": "ed_deep"
+      },
+      "result": {
+        "header": "Search Results for \"install\" across acme/calculator [Locator Mode]:\n\n",
+        "body": "--- Result 1 (Score: 87.0%) ---\n"
+      },
+      "wantText": "⚠ Edition fallback: requested \"ed_deep\" was not found; results below come from the BASE edition. Use list_resources to discover available editions.\n\nSearch Results for \"install\" across acme/calculator [Locator Mode]:\n\n--- Result 1 (Score: 87.0%) ---\n"
+    },
+    {
+      "name": "fallback-to-edition-with-label",
+      "ctxFlags": {
+        "fallback": true,
+        "requestedEdition": "v16",
+        "edition": "ed_deep",
+        "editionLabel": "深度剖析版"
+      },
+      "result": {
+        "header": "# 📄 Source File: `a.go` [sha]\n\n",
+        "body": "```go\npackage x\n```\n"
+      },
+      "wantText": "⚠ Edition fallback: requested \"v16\" was not found; results below come from edition \"深度剖析版\". Use list_resources to discover available editions.\n\n# 📄 Source File: `a.go` [sha]\n\n```go\npackage x\n```\n"
+    },
+    {
+      "name": "preamble-graphpos-shape",
+      "ctxFlags": {},
+      "result": {
+        "preamble": "📍 Graph Position: …\n\n",
+        "header": "# Getting Started\nSource Path: docs/getting-started.md\n\n",
+        "body": "Full doc body.\n"
+      },
+      "wantText": "📍 Graph Position: …\n\n# Getting Started\nSource Path: docs/getting-started.md\n\nFull doc body.\n"
+    },
+    {
+      "name": "footer-hint-shape",
+      "ctxFlags": {},
+      "result": {
+        "header": "# 📝 Chapter Quizzes for \"调度器\"\n\n",
+        "body": "### Q1: 核心数据结构？\n- A. 时间轮\n",
+        "footer": "\n(Answers are for self-check.)"
+      },
+      "wantText": "# 📝 Chapter Quizzes for \"调度器\"\n\n### Q1: 核心数据结构？\n- A. 时间轮\n\n(Answers are for self-check.)"
+    },
+    {
+      "name": "full-envelope-all-segments",
+      "ctxFlags": {},
+      "result": {
+        "preamble": "🏛️ Architecture Topology\n\n---\n\n",
+        "header": "Available Documentation in acme/calculator:\n\n",
+        "body": "📁 docs\n📄 a.md\n",
+        "footer": "\n---\n\n(Next steps: …)"
+      },
+      "wantText": "🏛️ Architecture Topology\n\n---\n\nAvailable Documentation in acme/calculator:\n\n📁 docs\n📄 a.md\n\n---\n\n(Next steps: …)"
+    },
+    {
+      "name": "fallback-with-preamble-and-footer",
+      "ctxFlags": {
+        "fallback": true,
+        "requestedEdition": "ed_deep",
+        "edition": "ed_lite",
+        "editionLabel": "速查手册版"
+      },
+      "result": {
+        "preamble": "📍 Graph Position: …\n\n",
+        "header": "# Ch1\nSource Path: ch01.md\n\n",
+        "body": "body\n",
+        "footer": "\n(Use read …)"
+      },
+      "wantText": "⚠ Edition fallback: requested \"ed_deep\" was not found; results below come from edition \"速查手册版\". Use list_resources to discover available editions.\n\n📍 Graph Position: …\n\n# Ch1\nSource Path: ch01.md\n\nbody\n\n(Use read …)"
+    },
+    {
+      "name": "empty-body-error-shape",
+      "ctxFlags": {},
+      "result": {
+        "header": "",
+        "body": "Error: Document \"missing.md\" not found in acme/calculator."
+      },
+      "wantText": "Error: Document \"missing.md\" not found in acme/calculator."
+    }
+  ]
+}

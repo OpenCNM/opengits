@@ -1,0 +1,256 @@
+{
+  "lineAnchors": [
+    {
+      "input": "#L15",
+      "parsed": {
+        "startLine": 15,
+        "endLine": 15
+      }
+    },
+    {
+      "input": "#L15-L25",
+      "parsed": {
+        "startLine": 15,
+        "endLine": 25
+      }
+    },
+    {
+      "input": "#L15-25",
+      "parsed": {
+        "startLine": 15,
+        "endLine": 25
+      }
+    },
+    {
+      "input": "#L25-L15",
+      "parsed": {
+        "startLine": 15,
+        "endLine": 25
+      }
+    },
+    {
+      "input": "#heading-1",
+      "parsed": null
+    },
+    {
+      "input": "",
+      "parsed": null
+    },
+    {
+      "input": null,
+      "parsed": null
+    }
+  ],
+  "formattedLineAnchors": [
+    {
+      "startLine": 15,
+      "formatted": "#L15"
+    },
+    {
+      "startLine": 15,
+      "endLine": 25,
+      "formatted": "#L15-L25"
+    },
+    {
+      "startLine": 15,
+      "endLine": 15,
+      "formatted": "#L15"
+    },
+    {
+      "startLine": 25,
+      "endLine": 15,
+      "formatted": "#L15-L25"
+    }
+  ],
+  "rangeChecks": [
+    {
+      "line": 9,
+      "range": {
+        "startLine": 10,
+        "endLine": 20
+      },
+      "inRange": false
+    },
+    {
+      "line": 10,
+      "range": {
+        "startLine": 10,
+        "endLine": 20
+      },
+      "inRange": true
+    },
+    {
+      "line": 15,
+      "range": {
+        "startLine": 10,
+        "endLine": 20
+      },
+      "inRange": true
+    },
+    {
+      "line": 20,
+      "range": {
+        "startLine": 10,
+        "endLine": 20
+      },
+      "inRange": true
+    },
+    {
+      "line": 21,
+      "range": {
+        "startLine": 10,
+        "endLine": 20
+      },
+      "inRange": false
+    }
+  ],
+  "codeAnchors": [
+    {
+      "input": "#code:src/lib/auth.ts:L20-L45",
+      "parsed": {
+        "filePath": "src/lib/auth.ts",
+        "range": {
+          "startLine": 20,
+          "endLine": 45
+        }
+      }
+    },
+    {
+      "input": "#code:src/lib/auth.ts:L20",
+      "parsed": {
+        "filePath": "src/lib/auth.ts",
+        "range": {
+          "startLine": 20,
+          "endLine": 20
+        }
+      }
+    },
+    {
+      "input": "#code:src/lib/auth.ts:20-45",
+      "parsed": {
+        "filePath": "src/lib/auth.ts",
+        "range": {
+          "startLine": 20,
+          "endLine": 45
+        }
+      }
+    },
+    {
+      "input": "#code:packages/core/src/index.ts",
+      "parsed": {
+        "filePath": "packages/core/src/index.ts",
+        "range": {
+          "startLine": 1,
+          "endLine": 1
+        }
+      }
+    },
+    {
+      "input": "#code:./src/utils/math.ts:L5-L10",
+      "parsed": {
+        "filePath": "src/utils/math.ts",
+        "range": {
+          "startLine": 5,
+          "endLine": 10
+        }
+      }
+    },
+    {
+      "input": "#L12-L18",
+      "parsed": {
+        "range": {
+          "startLine": 12,
+          "endLine": 18
+        }
+      }
+    },
+    {
+      "input": "#heading-summary",
+      "parsed": null
+    },
+    {
+      "input": null,
+      "parsed": null
+    }
+  ],
+  "formattedCodeAnchors": [
+    {
+      "filePath": "src/lib/auth.ts",
+      "startLine": 20,
+      "endLine": 45,
+      "formatted": "#code:src/lib/auth.ts:L20-L45"
+    },
+    {
+      "filePath": "src/lib/auth.ts",
+      "startLine": 20,
+      "formatted": "#code:src/lib/auth.ts:L20"
+    },
+    {
+      "startLine": 15,
+      "endLine": 30,
+      "formatted": "#L15-L30"
+    }
+  ],
+  "fileMatches": [
+    {
+      "target": "__undefined__",
+      "block": "__undefined__",
+      "match": true
+    },
+    {
+      "target": null,
+      "block": "src/auth.ts",
+      "match": true
+    },
+    {
+      "target": "",
+      "block": "src/auth.ts",
+      "match": true
+    },
+    {
+      "target": "src/auth.ts",
+      "block": "__undefined__",
+      "match": false
+    },
+    {
+      "target": "src/auth.ts",
+      "block": null,
+      "match": false
+    },
+    {
+      "target": "src/auth.ts",
+      "block": "",
+      "match": false
+    },
+    {
+      "target": "src/auth.ts",
+      "block": "src/auth.ts",
+      "match": true
+    },
+    {
+      "target": "src/auth.ts",
+      "block": "./src/auth.ts",
+      "match": true
+    },
+    {
+      "target": "auth.ts",
+      "block": "src/auth.ts",
+      "match": true
+    },
+    {
+      "target": "src/auth.ts",
+      "block": "auth.ts",
+      "match": true
+    },
+    {
+      "target": "src/auth.ts",
+      "block": "src/user.ts",
+      "match": false
+    },
+    {
+      "target": "src/server.ts",
+      "block": "src/client.ts",
+      "match": false
+    }
+  ]
+}

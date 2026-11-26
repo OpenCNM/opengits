@@ -1,0 +1,2766 @@
+{
+  "signal": [
+    {
+      "name": "toc-sidecar-intersection",
+      "input": {
+        "nodes": [
+          {
+            "path": "README.md",
+            "type": "blob"
+          },
+          {
+            "path": "SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "10-advanced.md",
+            "type": "blob"
+          },
+          {
+            "path": "changelog.md",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src",
+            "type": "tree"
+          }
+        ],
+        "tocContent": "- [Intro](01-intro.md)\n- [Syntax](02-syntax.md)\n- [Advanced](10-advanced.md)\n- [External](https://example.com)",
+        "readmeHead": "",
+        "prefix": ""
+      },
+      "expected": {
+        "type": "toc",
+        "sequence": [
+          "01-intro.md",
+          "02-syntax.md",
+          "10-advanced.md"
+        ]
+      }
+    },
+    {
+      "name": "readme-head-toc-fallback",
+      "input": {
+        "nodes": [
+          {
+            "path": "README.md",
+            "type": "blob"
+          },
+          {
+            "path": "guide/a.md",
+            "type": "blob"
+          },
+          {
+            "path": "guide/b.md",
+            "type": "blob"
+          },
+          {
+            "path": "guide/c.md",
+            "type": "blob"
+          }
+        ],
+        "tocContent": "",
+        "readmeHead": "1. [A](guide/a.md)\n2. [B](guide/b.md)\n3. [C](guide/c.md)",
+        "prefix": ""
+      },
+      "expected": {
+        "type": "toc",
+        "sequence": [
+          "guide/a.md",
+          "guide/b.md",
+          "guide/c.md"
+        ]
+      }
+    },
+    {
+      "name": "numeric-prefix-files",
+      "input": {
+        "nodes": [
+          {
+            "path": "README.md",
+            "type": "blob"
+          },
+          {
+            "path": "SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "10-advanced.md",
+            "type": "blob"
+          },
+          {
+            "path": "changelog.md",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src",
+            "type": "tree"
+          }
+        ],
+        "tocContent": "",
+        "readmeHead": "",
+        "prefix": ""
+      },
+      "expected": {
+        "type": "numeric",
+        "sequence": [
+          "01-intro.md",
+          "02-syntax.md",
+          "10-advanced.md"
+        ]
+      }
+    },
+    {
+      "name": "numeric-prefix-dirs",
+      "input": {
+        "nodes": [
+          {
+            "path": "00-setup/README.md",
+            "type": "blob"
+          },
+          {
+            "path": "01-basics/index.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-advanced/index.md",
+            "type": "blob"
+          },
+          {
+            "path": "notes.md",
+            "type": "blob"
+          }
+        ],
+        "tocContent": "",
+        "readmeHead": "",
+        "prefix": ""
+      },
+      "expected": {
+        "type": "numeric",
+        "sequence": [
+          "00-setup/README.md",
+          "01-basics/index.md",
+          "02-advanced/index.md"
+        ]
+      }
+    },
+    {
+      "name": "numeric-tiebreak-mixed-case-locale",
+      "input": {
+        "nodes": [
+          {
+            "path": "1-Beta.md",
+            "type": "blob"
+          },
+          {
+            "path": "1-alpha.md",
+            "type": "blob"
+          },
+          {
+            "path": "2-chapter.md",
+            "type": "blob"
+          },
+          {
+            "path": "appendix.md",
+            "type": "blob"
+          }
+        ],
+        "tocContent": "",
+        "readmeHead": "",
+        "prefix": ""
+      },
+      "expected": {
+        "type": "numeric",
+        "sequence": [
+          "1-alpha.md",
+          "1-Beta.md",
+          "2-chapter.md"
+        ]
+      }
+    },
+    {
+      "name": "toc-wins-over-numeric",
+      "input": {
+        "nodes": [
+          {
+            "path": "SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "01-a.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-b.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-c.md",
+            "type": "blob"
+          },
+          {
+            "path": "04-d.md",
+            "type": "blob"
+          }
+        ],
+        "tocContent": "- [D](04-d.md)\n- [A](01-a.md)\n- [B](02-b.md)",
+        "readmeHead": "",
+        "prefix": ""
+      },
+      "expected": {
+        "type": "toc",
+        "sequence": [
+          "04-d.md",
+          "01-a.md",
+          "02-b.md"
+        ]
+      }
+    },
+    {
+      "name": "below-min-intersection-falls-through",
+      "input": {
+        "nodes": [
+          {
+            "path": "README.md",
+            "type": "blob"
+          },
+          {
+            "path": "only-one.md",
+            "type": "blob"
+          },
+          {
+            "path": "src/app.ts",
+            "type": "blob"
+          }
+        ],
+        "tocContent": "- [One](only-one.md)",
+        "readmeHead": "",
+        "prefix": ""
+      },
+      "expected": {
+        "type": "none",
+        "sequence": []
+      }
+    },
+    {
+      "name": "prefix-scoped-dir-and-encoded-links",
+      "input": {
+        "nodes": [
+          {
+            "path": "docs/SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/01-intro/index.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/my notes.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/deep/03-extra.md",
+            "type": "blob"
+          }
+        ],
+        "tocContent": "- [Intro](01-intro/)\n- [Syntax](<02-syntax.md>)\n- [Notes](my%20notes.md)\n- [Deep](deep/03-extra.md)",
+        "readmeHead": "",
+        "prefix": "docs"
+      },
+      "expected": {
+        "type": "toc",
+        "sequence": [
+          "docs/01-intro/index.md",
+          "docs/02-syntax.md",
+          "docs/my notes.md",
+          "docs/deep/03-extra.md"
+        ]
+      }
+    },
+    {
+      "name": "dir-first-md-casefold-picks-lowercase",
+      "input": {
+        "nodes": [
+          {
+            "path": "SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "units/B.md",
+            "type": "blob"
+          },
+          {
+            "path": "units/a.md",
+            "type": "blob"
+          },
+          {
+            "path": "units/c.md",
+            "type": "blob"
+          }
+        ],
+        "tocContent": "- [U1](units/)\n- [U2](units/B.md)\n- [U3](units/c.md)",
+        "readmeHead": "",
+        "prefix": ""
+      },
+      "expected": {
+        "type": "toc",
+        "sequence": [
+          "units/a.md",
+          "units/B.md",
+          "units/c.md"
+        ]
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "name": "classification-and-natural-order",
+      "input": {
+        "nodes": [
+          {
+            "path": "chapter2.md",
+            "type": "blob"
+          },
+          {
+            "path": "chapter10.md",
+            "type": "blob"
+          },
+          {
+            "path": "chapter1.md",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          },
+          {
+            "path": "pkg/parser.go",
+            "type": "blob"
+          },
+          {
+            "path": "app.py",
+            "type": "blob"
+          },
+          {
+            "path": "logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src",
+            "type": "tree"
+          }
+        ],
+        "textRoot": ""
+      },
+      "expected": {
+        "docFiles": [
+          "chapter1.md",
+          "chapter2.md",
+          "chapter10.md"
+        ],
+        "codeFiles": [
+          "app.py",
+          "pkg/parser.go",
+          "src/main.ts"
+        ]
+      }
+    },
+    {
+      "name": "text-root-filtering",
+      "input": {
+        "nodes": [
+          {
+            "path": "docs/guide/a.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/guide/b.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/src/tool.ts",
+            "type": "blob"
+          },
+          {
+            "path": "root.md",
+            "type": "blob"
+          },
+          {
+            "path": "other/x.md",
+            "type": "blob"
+          }
+        ],
+        "textRoot": "docs/guide"
+      },
+      "expected": {
+        "docFiles": [
+          "docs/guide/a.md",
+          "docs/guide/b.md"
+        ],
+        "codeFiles": []
+      }
+    },
+    {
+      "name": "candidate-cap-doc-priority",
+      "input": {
+        "nodes": [
+          {
+            "path": "docs/ch001.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch002.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch003.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch004.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch005.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch006.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch007.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch008.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch009.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch010.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch011.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch012.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch013.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch014.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch015.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch016.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch017.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch018.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch019.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch020.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch021.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch022.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch023.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch024.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch025.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch026.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch027.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch028.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch029.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch030.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch031.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch032.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch033.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch034.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch035.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch036.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch037.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch038.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch039.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch040.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch041.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch042.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch043.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch044.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch045.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch046.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch047.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch048.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch049.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch050.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch051.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch052.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch053.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch054.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch055.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch056.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch057.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch058.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch059.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch060.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch061.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch062.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch063.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch064.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch065.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch066.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch067.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch068.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch069.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch070.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch071.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch072.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch073.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch074.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch075.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch076.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch077.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch078.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch079.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch080.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch081.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch082.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch083.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch084.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch085.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch086.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch087.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch088.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch089.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch090.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch091.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch092.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch093.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch094.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch095.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch096.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch097.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch098.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch099.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch100.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch101.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch102.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch103.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch104.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch105.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch106.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch107.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch108.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch109.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch110.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch111.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch112.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch113.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch114.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch115.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch116.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch117.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch118.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch119.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch120.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch121.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch122.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch123.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch124.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch125.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch126.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch127.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch128.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch129.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch130.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch131.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch132.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch133.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch134.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch135.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch136.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch137.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch138.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch139.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch140.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch141.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch142.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch143.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch144.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch145.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch146.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch147.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch148.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch149.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch150.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch151.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch152.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch153.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch154.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch155.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch156.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch157.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch158.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch159.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch160.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch161.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch162.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch163.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch164.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch165.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch166.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch167.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch168.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch169.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch170.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch171.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch172.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch173.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch174.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch175.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch176.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch177.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch178.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch179.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch180.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch181.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch182.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch183.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch184.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch185.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch186.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch187.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch188.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch189.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch190.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch191.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch192.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch193.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch194.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch195.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch196.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch197.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch198.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch199.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch200.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch201.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch202.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch203.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch204.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch205.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch206.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch207.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch208.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch209.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch210.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch211.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch212.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch213.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch214.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch215.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch216.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch217.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch218.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch219.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch220.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch221.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch222.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch223.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch224.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch225.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch226.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch227.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch228.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch229.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch230.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch231.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch232.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch233.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch234.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch235.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch236.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch237.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch238.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch239.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch240.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch241.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch242.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch243.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch244.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch245.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch246.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch247.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch248.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch249.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch250.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch251.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch252.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch253.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch254.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch255.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch256.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch257.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch258.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch259.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch260.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch261.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch262.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch263.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch264.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch265.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch266.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch267.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch268.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch269.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch270.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch271.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch272.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch273.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch274.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch275.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch276.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch277.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch278.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch279.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch280.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch281.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch282.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch283.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch284.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch285.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch286.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch287.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch288.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch289.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch290.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch291.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch292.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch293.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch294.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch295.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch296.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch297.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/ch298.md",
+            "type": "blob"
+          },
+          {
+            "path": "src/file0.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file1.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file2.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file3.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file4.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file5.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file6.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file7.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file8.ts",
+            "type": "blob"
+          },
+          {
+            "path": "src/file9.ts",
+            "type": "blob"
+          }
+        ],
+        "textRoot": ""
+      },
+      "expected": {
+        "docFiles": [
+          "docs/ch010.md",
+          "docs/ch011.md",
+          "docs/ch012.md",
+          "docs/ch013.md",
+          "docs/ch014.md",
+          "docs/ch015.md",
+          "docs/ch016.md",
+          "docs/ch017.md",
+          "docs/ch018.md",
+          "docs/ch019.md",
+          "docs/ch020.md",
+          "docs/ch021.md",
+          "docs/ch022.md",
+          "docs/ch023.md",
+          "docs/ch024.md",
+          "docs/ch025.md",
+          "docs/ch026.md",
+          "docs/ch027.md",
+          "docs/ch028.md",
+          "docs/ch029.md",
+          "docs/ch030.md",
+          "docs/ch031.md",
+          "docs/ch032.md",
+          "docs/ch033.md",
+          "docs/ch034.md",
+          "docs/ch035.md",
+          "docs/ch036.md",
+          "docs/ch037.md",
+          "docs/ch038.md",
+          "docs/ch039.md",
+          "docs/ch040.md",
+          "docs/ch041.md",
+          "docs/ch042.md",
+          "docs/ch043.md",
+          "docs/ch044.md",
+          "docs/ch045.md",
+          "docs/ch046.md",
+          "docs/ch047.md",
+          "docs/ch048.md",
+          "docs/ch049.md",
+          "docs/ch050.md",
+          "docs/ch051.md",
+          "docs/ch052.md",
+          "docs/ch053.md",
+          "docs/ch054.md",
+          "docs/ch055.md",
+          "docs/ch056.md",
+          "docs/ch057.md",
+          "docs/ch058.md",
+          "docs/ch059.md",
+          "docs/ch060.md",
+          "docs/ch061.md",
+          "docs/ch062.md",
+          "docs/ch063.md",
+          "docs/ch064.md",
+          "docs/ch065.md",
+          "docs/ch066.md",
+          "docs/ch067.md",
+          "docs/ch068.md",
+          "docs/ch069.md",
+          "docs/ch070.md",
+          "docs/ch071.md",
+          "docs/ch072.md",
+          "docs/ch073.md",
+          "docs/ch074.md",
+          "docs/ch075.md",
+          "docs/ch076.md",
+          "docs/ch077.md",
+          "docs/ch078.md",
+          "docs/ch079.md",
+          "docs/ch080.md",
+          "docs/ch081.md",
+          "docs/ch082.md",
+          "docs/ch083.md",
+          "docs/ch084.md",
+          "docs/ch085.md",
+          "docs/ch086.md",
+          "docs/ch087.md",
+          "docs/ch088.md",
+          "docs/ch089.md",
+          "docs/ch090.md",
+          "docs/ch091.md",
+          "docs/ch092.md",
+          "docs/ch093.md",
+          "docs/ch094.md",
+          "docs/ch095.md",
+          "docs/ch096.md",
+          "docs/ch097.md",
+          "docs/ch098.md",
+          "docs/ch099.md",
+          "docs/ch001.md",
+          "docs/ch002.md",
+          "docs/ch003.md",
+          "docs/ch004.md",
+          "docs/ch005.md",
+          "docs/ch006.md",
+          "docs/ch007.md",
+          "docs/ch008.md",
+          "docs/ch009.md",
+          "docs/ch100.md",
+          "docs/ch101.md",
+          "docs/ch102.md",
+          "docs/ch103.md",
+          "docs/ch104.md",
+          "docs/ch105.md",
+          "docs/ch106.md",
+          "docs/ch107.md",
+          "docs/ch108.md",
+          "docs/ch109.md",
+          "docs/ch110.md",
+          "docs/ch111.md",
+          "docs/ch112.md",
+          "docs/ch113.md",
+          "docs/ch114.md",
+          "docs/ch115.md",
+          "docs/ch116.md",
+          "docs/ch117.md",
+          "docs/ch118.md",
+          "docs/ch119.md",
+          "docs/ch120.md",
+          "docs/ch121.md",
+          "docs/ch122.md",
+          "docs/ch123.md",
+          "docs/ch124.md",
+          "docs/ch125.md",
+          "docs/ch126.md",
+          "docs/ch127.md",
+          "docs/ch128.md",
+          "docs/ch129.md",
+          "docs/ch130.md",
+          "docs/ch131.md",
+          "docs/ch132.md",
+          "docs/ch133.md",
+          "docs/ch134.md",
+          "docs/ch135.md",
+          "docs/ch136.md",
+          "docs/ch137.md",
+          "docs/ch138.md",
+          "docs/ch139.md",
+          "docs/ch140.md",
+          "docs/ch141.md",
+          "docs/ch142.md",
+          "docs/ch143.md",
+          "docs/ch144.md",
+          "docs/ch145.md",
+          "docs/ch146.md",
+          "docs/ch147.md",
+          "docs/ch148.md",
+          "docs/ch149.md",
+          "docs/ch150.md",
+          "docs/ch151.md",
+          "docs/ch152.md",
+          "docs/ch153.md",
+          "docs/ch154.md",
+          "docs/ch155.md",
+          "docs/ch156.md",
+          "docs/ch157.md",
+          "docs/ch158.md",
+          "docs/ch159.md",
+          "docs/ch160.md",
+          "docs/ch161.md",
+          "docs/ch162.md",
+          "docs/ch163.md",
+          "docs/ch164.md",
+          "docs/ch165.md",
+          "docs/ch166.md",
+          "docs/ch167.md",
+          "docs/ch168.md",
+          "docs/ch169.md",
+          "docs/ch170.md",
+          "docs/ch171.md",
+          "docs/ch172.md",
+          "docs/ch173.md",
+          "docs/ch174.md",
+          "docs/ch175.md",
+          "docs/ch176.md",
+          "docs/ch177.md",
+          "docs/ch178.md",
+          "docs/ch179.md",
+          "docs/ch180.md",
+          "docs/ch181.md",
+          "docs/ch182.md",
+          "docs/ch183.md",
+          "docs/ch184.md",
+          "docs/ch185.md",
+          "docs/ch186.md",
+          "docs/ch187.md",
+          "docs/ch188.md",
+          "docs/ch189.md",
+          "docs/ch190.md",
+          "docs/ch191.md",
+          "docs/ch192.md",
+          "docs/ch193.md",
+          "docs/ch194.md",
+          "docs/ch195.md",
+          "docs/ch196.md",
+          "docs/ch197.md",
+          "docs/ch198.md",
+          "docs/ch199.md",
+          "docs/ch200.md",
+          "docs/ch201.md",
+          "docs/ch202.md",
+          "docs/ch203.md",
+          "docs/ch204.md",
+          "docs/ch205.md",
+          "docs/ch206.md",
+          "docs/ch207.md",
+          "docs/ch208.md",
+          "docs/ch209.md",
+          "docs/ch210.md",
+          "docs/ch211.md",
+          "docs/ch212.md",
+          "docs/ch213.md",
+          "docs/ch214.md",
+          "docs/ch215.md",
+          "docs/ch216.md",
+          "docs/ch217.md",
+          "docs/ch218.md",
+          "docs/ch219.md",
+          "docs/ch220.md",
+          "docs/ch221.md",
+          "docs/ch222.md",
+          "docs/ch223.md",
+          "docs/ch224.md",
+          "docs/ch225.md",
+          "docs/ch226.md",
+          "docs/ch227.md",
+          "docs/ch228.md",
+          "docs/ch229.md",
+          "docs/ch230.md",
+          "docs/ch231.md",
+          "docs/ch232.md",
+          "docs/ch233.md",
+          "docs/ch234.md",
+          "docs/ch235.md",
+          "docs/ch236.md",
+          "docs/ch237.md",
+          "docs/ch238.md",
+          "docs/ch239.md",
+          "docs/ch240.md",
+          "docs/ch241.md",
+          "docs/ch242.md",
+          "docs/ch243.md",
+          "docs/ch244.md",
+          "docs/ch245.md",
+          "docs/ch246.md",
+          "docs/ch247.md",
+          "docs/ch248.md",
+          "docs/ch249.md",
+          "docs/ch250.md",
+          "docs/ch251.md",
+          "docs/ch252.md",
+          "docs/ch253.md",
+          "docs/ch254.md",
+          "docs/ch255.md",
+          "docs/ch256.md",
+          "docs/ch257.md",
+          "docs/ch258.md",
+          "docs/ch259.md",
+          "docs/ch260.md",
+          "docs/ch261.md",
+          "docs/ch262.md",
+          "docs/ch263.md",
+          "docs/ch264.md",
+          "docs/ch265.md",
+          "docs/ch266.md",
+          "docs/ch267.md",
+          "docs/ch268.md",
+          "docs/ch269.md",
+          "docs/ch270.md",
+          "docs/ch271.md",
+          "docs/ch272.md",
+          "docs/ch273.md",
+          "docs/ch274.md",
+          "docs/ch275.md",
+          "docs/ch276.md",
+          "docs/ch277.md",
+          "docs/ch278.md",
+          "docs/ch279.md",
+          "docs/ch280.md",
+          "docs/ch281.md",
+          "docs/ch282.md",
+          "docs/ch283.md",
+          "docs/ch284.md",
+          "docs/ch285.md",
+          "docs/ch286.md",
+          "docs/ch287.md",
+          "docs/ch288.md",
+          "docs/ch289.md",
+          "docs/ch290.md",
+          "docs/ch291.md",
+          "docs/ch292.md",
+          "docs/ch293.md",
+          "docs/ch294.md",
+          "docs/ch295.md",
+          "docs/ch296.md",
+          "docs/ch297.md",
+          "docs/ch298.md"
+        ],
+        "codeFiles": [
+          "src/file0.ts",
+          "src/file1.ts"
+        ]
+      }
+    }
+  ],
+  "validate": [
+    {
+      "name": "happy-path-with-assets-and-renumber",
+      "input": {
+        "raw": {
+          "isTutorial": true,
+          "chapters": [
+            {
+              "order": 3,
+              "title": "语法",
+              "mainPath": "02-syntax.md",
+              "assetPaths": [
+                {
+                  "path": "answers/02-answers.md",
+                  "kind": "answer"
+                },
+                {
+                  "path": "labs/lab1.py",
+                  "kind": "exercise"
+                }
+              ]
+            },
+            {
+              "order": 1,
+              "title": "",
+              "mainPath": "01-intro.md",
+              "assetPaths": []
+            },
+            {
+              "order": 2,
+              "title": "测验",
+              "mainPath": "03-quiz.md",
+              "assetPaths": [
+                {
+                  "path": "src/main.ts",
+                  "kind": "example"
+                }
+              ]
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          },
+          {
+            "path": "answers/02-answers.md",
+            "type": "blob"
+          },
+          {
+            "path": "assets/logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "order": 1,
+          "title": "01 intro",
+          "mainPath": "01-intro.md",
+          "assetPaths": []
+        },
+        {
+          "order": 2,
+          "title": "测验",
+          "mainPath": "03-quiz.md",
+          "assetPaths": [
+            {
+              "path": "src/main.ts",
+              "kind": "example"
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "title": "语法",
+          "mainPath": "02-syntax.md",
+          "assetPaths": [
+            {
+              "path": "answers/02-answers.md",
+              "kind": "answer"
+            },
+            {
+              "path": "labs/lab1.py",
+              "kind": "exercise"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hallucinated-and-dup-dropped-below-min-null",
+      "input": {
+        "raw": {
+          "chapters": [
+            {
+              "order": 1,
+              "title": "A",
+              "mainPath": "ghost.md",
+              "assetPaths": []
+            },
+            {
+              "order": 1,
+              "title": "B",
+              "mainPath": "01-intro.md",
+              "assetPaths": []
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          },
+          {
+            "path": "answers/02-answers.md",
+            "type": "blob"
+          },
+          {
+            "path": "assets/logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": null
+    },
+    {
+      "name": "asset-dedupe-and-main-as-asset-skipped",
+      "input": {
+        "raw": {
+          "chapters": [
+            {
+              "order": 1,
+              "title": "A",
+              "mainPath": "01-intro.md",
+              "assetPaths": [
+                {
+                  "path": "labs/lab1.py",
+                  "kind": "exercise"
+                },
+                {
+                  "path": "labs/lab1.py",
+                  "kind": "exercise"
+                },
+                {
+                  "path": "01-intro.md",
+                  "kind": "resource"
+                },
+                {
+                  "path": "ghost.py",
+                  "kind": "exercise"
+                },
+                {
+                  "path": "assets/logo.png",
+                  "kind": "resource"
+                }
+              ]
+            },
+            {
+              "order": 2,
+              "title": "B",
+              "mainPath": "02-syntax.md",
+              "assetPaths": []
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          },
+          {
+            "path": "answers/02-answers.md",
+            "type": "blob"
+          },
+          {
+            "path": "assets/logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "order": 1,
+          "title": "A",
+          "mainPath": "01-intro.md",
+          "assetPaths": [
+            {
+              "path": "labs/lab1.py",
+              "kind": "exercise"
+            },
+            {
+              "path": "assets/logo.png",
+              "kind": "resource"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "title": "B",
+          "mainPath": "02-syntax.md",
+          "assetPaths": []
+        }
+      ]
+    },
+    {
+      "name": "field-catch-defaults-and-idx-order-fallback",
+      "input": {
+        "raw": {
+          "chapters": [
+            {
+              "order": "3",
+              "title": 42,
+              "mainPath": "03-quiz.md",
+              "assetPaths": [
+                {
+                  "path": "labs/lab1.py",
+                  "kind": "weird"
+                }
+              ]
+            },
+            {
+              "order": 0,
+              "title": "Intro",
+              "mainPath": "01-intro.md",
+              "assetPaths": "oops"
+            },
+            {
+              "order": 2,
+              "title": "Syntax",
+              "mainPath": "02-syntax.md",
+              "assetPaths": null
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          },
+          {
+            "path": "answers/02-answers.md",
+            "type": "blob"
+          },
+          {
+            "path": "assets/logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "order": 1,
+          "title": "03 quiz",
+          "mainPath": "03-quiz.md",
+          "assetPaths": [
+            {
+              "path": "labs/lab1.py",
+              "kind": "resource"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "title": "Intro",
+          "mainPath": "01-intro.md",
+          "assetPaths": []
+        },
+        {
+          "order": 3,
+          "title": "Syntax",
+          "mainPath": "02-syntax.md",
+          "assetPaths": []
+        }
+      ]
+    },
+    {
+      "name": "malformed-element-catches-whole-array-null",
+      "input": {
+        "raw": {
+          "chapters": [
+            {
+              "order": 1,
+              "title": "A",
+              "mainPath": "01-intro.md",
+              "assetPaths": []
+            },
+            "not-an-object",
+            {
+              "order": 2,
+              "title": "B",
+              "mainPath": "02-syntax.md",
+              "assetPaths": []
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          },
+          {
+            "path": "answers/02-answers.md",
+            "type": "blob"
+          },
+          {
+            "path": "assets/logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": null
+    },
+    {
+      "name": "float-order-sorts-between-ints",
+      "input": {
+        "raw": {
+          "chapters": [
+            {
+              "order": 2,
+              "title": "B",
+              "mainPath": "02-syntax.md",
+              "assetPaths": []
+            },
+            {
+              "order": 1.5,
+              "title": "Quiz",
+              "mainPath": "03-quiz.md",
+              "assetPaths": []
+            },
+            {
+              "order": 1,
+              "title": "A",
+              "mainPath": "01-intro.md",
+              "assetPaths": []
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          },
+          {
+            "path": "answers/02-answers.md",
+            "type": "blob"
+          },
+          {
+            "path": "assets/logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "order": 1,
+          "title": "A",
+          "mainPath": "01-intro.md",
+          "assetPaths": []
+        },
+        {
+          "order": 2,
+          "title": "Quiz",
+          "mainPath": "03-quiz.md",
+          "assetPaths": []
+        },
+        {
+          "order": 3,
+          "title": "B",
+          "mainPath": "02-syntax.md",
+          "assetPaths": []
+        }
+      ]
+    },
+    {
+      "name": "missing-chapters-field-defaults-empty-null",
+      "input": {
+        "raw": {
+          "isTutorial": true
+        },
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          },
+          {
+            "path": "answers/02-answers.md",
+            "type": "blob"
+          },
+          {
+            "path": "assets/logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": null
+    },
+    {
+      "name": "non-object-raw-null",
+      "input": {
+        "raw": "just a string",
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          },
+          {
+            "path": "answers/02-answers.md",
+            "type": "blob"
+          },
+          {
+            "path": "assets/logo.png",
+            "type": "blob"
+          },
+          {
+            "path": "src/main.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": null
+    }
+  ],
+  "tocPath": [
+    {
+      "name": "shallow-first-and-natural-tiebreak",
+      "input": {
+        "nodes": [
+          {
+            "path": "deep/nested/SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/_sidebar.md",
+            "type": "blob"
+          },
+          {
+            "path": "SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "guide/SUMMARY.md",
+            "type": "blob"
+          }
+        ],
+        "textRoot": ""
+      },
+      "expected": "SUMMARY.md"
+    },
+    {
+      "name": "text-root-scoping",
+      "input": {
+        "nodes": [
+          {
+            "path": "SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "manual/SUMMARY.md",
+            "type": "blob"
+          },
+          {
+            "path": "manual/extra.md",
+            "type": "blob"
+          }
+        ],
+        "textRoot": "manual"
+      },
+      "expected": "manual/SUMMARY.md"
+    },
+    {
+      "name": "no-sidecar-null",
+      "input": {
+        "nodes": [
+          {
+            "path": "README.md",
+            "type": "blob"
+          },
+          {
+            "path": "docs/a.md",
+            "type": "blob"
+          }
+        ],
+        "textRoot": ""
+      },
+      "expected": null
+    }
+  ],
+  "fromSidecar": [
+    {
+      "name": "valid-summary-derived-titles",
+      "input": {
+        "content": "# Summary\n\n- [Intro](01-intro.md)\n- [Syntax](02-syntax.md)\n- [Quiz](03-quiz.md)\n- [Lab](labs/lab1.py)",
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          },
+          {
+            "path": "labs/lab1.py",
+            "type": "blob"
+          }
+        ],
+        "textRoot": ""
+      },
+      "expected": [
+        {
+          "order": 1,
+          "title": "01 intro",
+          "mainPath": "01-intro.md",
+          "assetPaths": []
+        },
+        {
+          "order": 2,
+          "title": "02 syntax",
+          "mainPath": "02-syntax.md",
+          "assetPaths": []
+        },
+        {
+          "order": 3,
+          "title": "03 quiz",
+          "mainPath": "03-quiz.md",
+          "assetPaths": []
+        }
+      ]
+    },
+    {
+      "name": "below-min-null",
+      "input": {
+        "content": "- [Intro](01-intro.md)\n- [Syntax](02-syntax.md)",
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          }
+        ],
+        "textRoot": ""
+      },
+      "expected": null
+    },
+    {
+      "name": "non-toc-content-null",
+      "input": {
+        "content": "Some prose without enough links.",
+        "nodes": [
+          {
+            "path": "01-intro.md",
+            "type": "blob"
+          },
+          {
+            "path": "02-syntax.md",
+            "type": "blob"
+          },
+          {
+            "path": "03-quiz.md",
+            "type": "blob"
+          }
+        ],
+        "textRoot": ""
+      },
+      "expected": null
+    }
+  ],
+  "textbookSignal": [
+    {
+      "name": "toc-present-regardless-of-profile",
+      "input": {
+        "profile": null,
+        "nodes": [
+          {
+            "path": "README.md",
+            "type": "blob"
+          },
+          {
+            "path": "SUMMARY.md",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "name": "profile-chapter-map-wins",
+      "input": {
+        "profile": {
+          "chapterMap": [
+            {
+              "order": 1,
+              "title": "A",
+              "mainPath": "a.md",
+              "assetPaths": []
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "path": "a.md",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "name": "profile-chapter-count-positive",
+      "input": {
+        "profile": {
+          "chapterCount": 3
+        },
+        "nodes": [
+          {
+            "path": "a.md",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "name": "no-signal-false",
+      "input": {
+        "profile": {
+          "chapterCount": 0
+        },
+        "nodes": [
+          {
+            "path": "a.md",
+            "type": "blob"
+          },
+          {
+            "path": "src/x.ts",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "name": "null-profile-no-toc-false",
+      "input": {
+        "profile": null,
+        "nodes": [
+          {
+            "path": "a.md",
+            "type": "blob"
+          }
+        ]
+      },
+      "expected": false
+    }
+  ]
+}

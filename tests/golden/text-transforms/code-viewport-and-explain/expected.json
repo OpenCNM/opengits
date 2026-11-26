@@ -1,0 +1,60 @@
+{
+  "explainRoundTrip": {
+    "serialized": "{\"type\":\"explain_code\",\"code\":\"class Neuron(Module):\\n  pass\",\"language\":\"python\",\"filePath\":\"micrograd/nn.py\",\"title\":\"nn.py\",\"sectionTitle\":\"神经元的前向计算\",\"surroundingContext\":\"每个神经元维护权重向量 w 与偏置 b，并在非线性和线性模式间切换。\",\"symbol\":\"Neuron\",\"lineRange\":{\"startLine\":1,\"endLine\":16},\"lineCount\":16}",
+    "parsed": {
+      "code": "class Neuron(Module):\n  pass",
+      "language": "python",
+      "filePath": "micrograd/nn.py",
+      "title": "nn.py",
+      "sectionTitle": "神经元的前向计算",
+      "surroundingContext": "每个神经元维护权重向量 w 与偏置 b，并在非线性和线性模式间切换。",
+      "symbol": "Neuron",
+      "lineRange": {
+        "startLine": 1,
+        "endLine": 16
+      },
+      "lineCount": 16
+    }
+  },
+  "invalidPayloads": [
+    {
+      "raw": "normal question",
+      "parsed": null
+    },
+    {
+      "raw": "{\"type\":\"explain_selection\",\"text\":\"hello\"}",
+      "parsed": null
+    },
+    {
+      "raw": "{\"type\":\"explain_code\",\"code\":\"   \"}",
+      "parsed": null
+    },
+    {
+      "raw": "{type: \"explain_code\"",
+      "parsed": null
+    }
+  ],
+  "searchQuery": "Neuron 前向传播 micrograd/nn.py Neuron zip 将输入向量和权重逐项配对求和。 python",
+  "oversizedContext": {
+    "filePath": "micrograd/engine.py",
+    "language": "python",
+    "lineCount": 320,
+    "hasLine1": true,
+    "hasTruncatedMarker": true,
+    "codeLength": 3422
+  },
+  "wrapCases": [
+    {
+      "name": "ordinary-ts",
+      "mdx": "## 📄 `index.ts` <!-- path: src/index.ts -->\n\n```typescript\nconst a = 1;\nconsole.log(a);\n```\n"
+    },
+    {
+      "name": "triple-backtick-md",
+      "mdx": "## 📄 `readme.md` <!-- path: docs/readme.md -->\n\n````markdown\n# Markdown Guide\n```json\n{\"foo\": \"bar\"}\n```\n````\n"
+    },
+    {
+      "name": "quadruple-backtick-ts",
+      "mdx": "## 📄 `snippet.ts` <!-- path: snippet.ts -->\n\n`````typescript\n````ts\nconst x = 1;\n````\n`````\n"
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "snippets": [
+    {
+      "name": "empty-text",
+      "input": {
+        "text": "",
+        "query": "foo",
+        "maxLen": 100
+      },
+      "expected": ""
+    },
+    {
+      "name": "frontmatter-only",
+      "input": {
+        "text": "---\ntitle: Foo\n---\n",
+        "query": "",
+        "maxLen": 100
+      },
+      "expected": ""
+    },
+    {
+      "name": "frontmatter-with-body",
+      "input": {
+        "text": "---\ntitle: Foo\n---\n\nHello world from documentation",
+        "query": "documentation",
+        "maxLen": 50
+      },
+      "expected": "Hello world from documentation"
+    },
+    {
+      "name": "html-comment-stripped",
+      "input": {
+        "text": "Before <!-- comment --> after",
+        "query": "after",
+        "maxLen": 50
+      },
+      "expected": "Before after"
+    },
+    {
+      "name": "code-block-fenced-backticks",
+      "input": {
+        "text": "Start\n```ts\nconst x = 1;\n```\nEnd of section",
+        "query": "End",
+        "maxLen": 50
+      },
+      "expected": "Start End of section"
+    },
+    {
+      "name": "code-block-fenced-tildes",
+      "input": {
+        "text": "Start\n~~~\nconsole.log(42)\n~~~\nFinish line",
+        "query": "Finish",
+        "maxLen": 50
+      },
+      "expected": "Start Finish line"
+    },
+    {
+      "name": "inline-code-and-html",
+      "input": {
+        "text": "Use `fetch()` to call <span class=\"bold\">API</span> endpoints.",
+        "query": "endpoints",
+        "maxLen": 50
+      },
+      "expected": "Use to call API endpoints."
+    },
+    {
+      "name": "markdown-links-and-images",
+      "input": {
+        "text": "Read ![logo](img.png) [Guide](https://example.com) for setup.",
+        "query": "setup",
+        "maxLen": 50
+      },
+      "expected": "Read Guide for setup."
+    },
+    {
+      "name": "markdown-formatting-mixed",
+      "input": {
+        "text": "## **Important**\n\n*Note* that __underlined__ and _italic_ exist.",
+        "query": "exist",
+        "maxLen": 50
+      },
+      "expected": "...that underlined and italic exist."
+    },
+    {
+      "name": "query-empty-short",
+      "input": {
+        "text": "Short text",
+        "query": "",
+        "maxLen": 100
+      },
+      "expected": "Short text"
+    },
+    {
+      "name": "query-empty-long-truncated",
+      "input": {
+        "text": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "query": "",
+        "maxLen": 50
+      },
+      "expected": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
+    },
+    {
+      "name": "query-not-found-short",
+      "input": {
+        "text": "Short text",
+        "query": "missing",
+        "maxLen": 100
+      },
+      "expected": "Short text"
+    },
+    {
+      "name": "query-not-found-long",
+      "input": {
+        "text": "Prefix BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "query": "missing",
+        "maxLen": 50
+      },
+      "expected": "Prefix BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB..."
+    },
+    {
+      "name": "query-at-beginning",
+      "input": {
+        "text": "PostgreSQL is a powerful database system with many features.",
+        "query": "postgresql",
+        "maxLen": 40
+      },
+      "expected": "PostgreSQL is a powerful database system..."
+    },
+    {
+      "name": "query-in-middle-word-boundary",
+      "input": {
+        "text": "In this comprehensive guide to open source software, we will explore PostgreSQL and its advanced features.",
+        "query": "postgresql",
+        "maxLen": 40
+      },
+      "expected": "...source software, we will explore Postgre..."
+    },
+    {
+      "name": "query-at-end",
+      "input": {
+        "text": "We have covered everything you need to know about optimizing PostgreSQL",
+        "query": "postgresql",
+        "maxLen": 40
+      },
+      "expected": "...need to know about optimizing PostgreSQL"
+    },
+    {
+      "name": "query-cjk",
+      "input": {
+        "text": "在现代分布式系统架构中，PostgreSQL 全文检索与向量检索扮演着至关重要的角色，提供极速响应。",
+        "query": "全文检索",
+        "maxLen": 40
+      },
+      "expected": "在现代分布式系统架构中，PostgreSQL 全文检索与向量检索扮演着至关重要的..."
+    },
+    {
+      "name": "query-case-insensitive",
+      "input": {
+        "text": "Docker and KUBERNETES container orchestration platform",
+        "query": "kubernetes",
+        "maxLen": 50
+      },
+      "expected": "Docker and KUBERNETES container orchestration plat..."
+    }
+  ],
+  "titles": [
+    {
+      "name": "explicit-title",
+      "input": {
+        "title": "Architecture Overview",
+        "path": "docs/arch.md",
+        "content": "# Ignored Heading"
+      },
+      "expected": "Architecture Overview"
+    },
+    {
+      "name": "explicit-title-formatted",
+      "input": {
+        "title": "  `Docker` Guide & Quickstart {#docker-guide}  ",
+        "path": "docs/docker.md",
+        "content": ""
+      },
+      "expected": "`Docker` Guide & Quickstart"
+    },
+    {
+      "name": "explicit-untitled-fallback-h1",
+      "input": {
+        "title": "Untitled",
+        "path": "docs/intro.md",
+        "content": "# Getting Started Guide\nWelcome!"
+      },
+      "expected": "Getting Started Guide"
+    },
+    {
+      "name": "explicit-untitled-case-insensitive",
+      "input": {
+        "title": "untitled",
+        "path": "docs/intro.md",
+        "content": "# Welcome to OpenGits"
+      },
+      "expected": "Welcome to OpenGits"
+    },
+    {
+      "name": "content-h1-with-frontmatter",
+      "input": {
+        "title": "",
+        "path": "docs/config.md",
+        "content": "---\ntitle: Meta\n---\n\n# Configuration Options {#options}"
+      },
+      "expected": "Configuration Options"
+    },
+    {
+      "name": "content-h1-after-code-comment",
+      "input": {
+        "title": "",
+        "path": "docs/script.md",
+        "content": "```python\n# This is a python comment\nx = 1\n```\n# Scripting Tutorial"
+      },
+      "expected": "Scripting Tutorial"
+    },
+    {
+      "name": "content-no-h1-path-fallback",
+      "input": {
+        "title": "",
+        "path": "guides/api-reference.mdx",
+        "content": "No H1 here, only ## H2"
+      },
+      "expected": "Api reference"
+    },
+    {
+      "name": "path-with-underscores",
+      "input": {
+        "title": "",
+        "path": "tutorials/01_advanced_setup.markdown",
+        "content": ""
+      },
+      "expected": "01 advanced setup"
+    },
+    {
+      "name": "path-html",
+      "input": {
+        "title": "",
+        "path": "faq/frequently-asked-questions.html",
+        "content": ""
+      },
+      "expected": "Frequently asked questions"
+    },
+    {
+      "name": "all-empty-fallback",
+      "input": {
+        "title": "",
+        "path": "",
+        "content": ""
+      },
+      "expected": "未命名文档"
+    }
+  ]
+}

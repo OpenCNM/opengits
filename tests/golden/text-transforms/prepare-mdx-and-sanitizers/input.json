@@ -1,0 +1,104 @@
+{
+  "op": "prepare-mdx-and-sanitizers",
+  "normalizeVoidTags": [
+    {
+      "name": "table-br-self-close",
+      "input": "| Col 1 | Col 2 |\n|---|---|\n| 配置项 | 说明1：<br>• 条目A<br>• 条目B |"
+    },
+    {
+      "name": "hr-img-wbr-void-elements",
+      "input": "段落一<hr>段落二\n<img src=\"/test.png\" alt=\"测试\">\n<wbr>"
+    },
+    {
+      "name": "fenced-code-protected",
+      "input": "```html\n<br>\n<hr>\n<img src=\"foo.png\">\n```\n\n正文中的 <br>"
+    },
+    {
+      "name": "inline-code-protected",
+      "input": "正文使用 `<br>` 进行换行，而外部的 <br> 会被自闭合"
+    }
+  ],
+  "prepareMdxSource": [
+    {
+      "name": "strip-sentinels-concept-manifest-and-void-tags",
+      "input": "===CONTENT_BEGIN===\n# 标题\n\n<Summary title=\"要点\">\n- 点1<br>点2\n</Summary>\n\n<concept_manifest>\n[{\"name\":\"foo\"}]\n</concept_manifest>\n===CONTENT_END==="
+    }
+  ],
+  "normalizeDeepDiveBlocks": [
+    {
+      "name": "compact-single-line-and-idempotent",
+      "input": "正文导语<details data-layer=\"deep\"><summary>源码深潜：内部状态</summary>```ts\nconst state = 1;\n```\n解释正文。</details>后续章节"
+    },
+    {
+      "name": "no-summary-blank-lines",
+      "input": "<details data-layer=\"deep\">无摘要正文</details>"
+    },
+    {
+      "name": "immune-in-inline-fence-and-comments",
+      "input": "教程说明 `<details data-layer=\"deep\"><summary>示例</summary>正文</details>` 行内语法。\n\n```mdx\n<details data-layer=\"deep\"><summary>围栏内</summary>```ts\nx()\n```</details>\n```\n\n<!-- <details data-layer=\"deep\"><summary>注释内</summary>正文</details> -->\n\n<details data-layer=\"deep\">\n<summary>真实深潜块</summary>\n紧跟围栏正文\n</details>"
+    },
+    {
+      "name": "escaped-backtick-and-jsx-brace-comparison",
+      "input": "转义 \\` 与 <Callout icon={a > b ? \"x\" : \"y\"}><details data-layer=\"deep\"><summary>S</summary>Body</details></Callout> 及 `code`。"
+    },
+    {
+      "name": "uppercase-details-component-untouched",
+      "input": "<Details data-layer=\"deep\"><Summary>Comp</Summary>Body</Details>"
+    }
+  ],
+  "stripDeepDiveBlocks": [
+    {
+      "name": "strip-deep-keep-normal-details-and-fences",
+      "input": "# 标题\n\n主线解释 `<details data-layer=\"deep\">行内示例</details>`。\n\n<details data-layer=\"deep\"><summary>紧凑深潜</summary>隐藏内容。</details>\n\n<details>\n<summary>普通折叠</summary>\n\n普通折叠内容保留。\n</details>\n\n<details data-layer=\"deep\">\n<summary>带围栏的深潜</summary>\n\n```html\n<details>围栏里的假闭合</details>\n```\n\n仍属于深潜块尾段。\n</details>\n\n```md\n<details data-layer=\"deep\"><summary>示例</summary>围栏外代码块应保留</details>\n```\n\n<!-- <details data-layer=\"deep\">注释外文本不受影响</details> -->\n\n主线收尾。"
+    },
+    {
+      "name": "unclosed-deep-dive-truncates-to-eof",
+      "input": "主线第一段\n\n<details data-layer=\"deep\">\n<summary>未闭合</summary>\n内部实现"
+    },
+    {
+      "name": "compact-summary-with-fence",
+      "input": "导语\n\n<details data-layer=\"deep\"><summary>紧凑围栏</summary>```ts\nconst secret = 1;\n```\n</details>保留后续主线"
+    },
+    {
+      "name": "escaped-backtick-and-jsx-brace-attr-on-details",
+      "input": "转义 \\` 后面有 <details data-layer=\"deep\" data-cond={a > b ? 1 : 2}><summary>S</summary>隐藏</details> 以及 `code`。"
+    }
+  ],
+  "scanFallbackTocAndDeepDives": [
+    {
+      "name": "multiline-tags-and-inline-spans-plus-unicode-slugs",
+      "input": "# かな入門\n\n## 한국어 概要\n\n## 🚀 +++\n\n`跨行行内\n<details data-layer=\"deep\">\n# 伪标题\n`\n\n<details\n  data-layer=\"deep\">\n<summary>深潜</summary>\n\n## 深潜内隐藏标题\n\n</details>\n\n## 主线收尾"
+    }
+  ],
+  "remarkDeepDiveHygiene": [
+    {
+      "name": "demote-headings-inside-deep-dive-and-count",
+      "source": "## 主线章节\n\n主线说明。\n\n<details data-layer=\"deep\">\n  <summary>深入剖析</summary>\n\n  ### 内部步骤 A\n\n  内部细节。\n</details>\n\n<details>\n  <summary>普通折叠</summary>\n\n  ### 保留的标题\n</details>\n"
+    }
+  ],
+  "remarkPlugins": [
+    {
+      "name": "strip-esm-keep-export",
+      "plugin": "remarkStripEsm",
+      "source": "import Foo from 'bar';\n\nexport const meta = { title: 'x' };\n\n# 正文\n"
+    },
+    {
+      "name": "tag-normalizer-kebab-to-pascal",
+      "plugin": "remarkTagNormalizer",
+      "source": "<card-group>\n<card>内容</card>\n</card-group>\n"
+    },
+    {
+      "name": "safe-braces-single-identifier",
+      "plugin": "remarkSafeBraces",
+      "source": "变量 {now} 与 {API_URL} 并存\n"
+    },
+    {
+      "name": "safe-braces-reserved-this",
+      "plugin": "remarkSafeBraces",
+      "source": "{this}\n"
+    }
+  ],
+  "safeBracesAst": [
+    { "name": "multi-word-prose-expression", "value": "Context Engineering" }
+  ]
+}

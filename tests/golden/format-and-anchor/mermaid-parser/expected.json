@@ -1,0 +1,373 @@
+{
+  "nodeDefs": [
+    {
+      "input": "A([\"Stadium Shape\"])",
+      "node": {
+        "id": "A",
+        "label": "Stadium Shape"
+      }
+    },
+    {
+      "input": "B[(\"PostgreSQL Database\")]",
+      "node": {
+        "id": "B",
+        "label": "PostgreSQL Database"
+      }
+    },
+    {
+      "input": "C((\"Event Trigger\"))",
+      "node": {
+        "id": "C",
+        "label": "Event Trigger"
+      }
+    },
+    {
+      "input": "D(((\"Double Circle\")))",
+      "node": {
+        "id": "D",
+        "label": "Double Circle"
+      }
+    },
+    {
+      "input": "E[[\"Subroutine Call\"]]",
+      "node": {
+        "id": "E",
+        "label": "Subroutine Call"
+      }
+    },
+    {
+      "input": "F{{\"Hexagon Module\"}}",
+      "node": {
+        "id": "F",
+        "label": "Hexagon Module"
+      }
+    },
+    {
+      "input": "G{\"Is Valid?\"}",
+      "node": {
+        "id": "G",
+        "label": "Is Valid?"
+      }
+    },
+    {
+      "input": "H{Branching}",
+      "node": {
+        "id": "H",
+        "label": "Branching"
+      }
+    },
+    {
+      "input": "I[\"Label (Detail)\"]",
+      "node": {
+        "id": "I",
+        "label": "Label (Detail)"
+      }
+    },
+    {
+      "input": "J>[\"Flag State\"]",
+      "node": {
+        "id": "J",
+        "label": "Flag State"
+      }
+    },
+    {
+      "input": "节点A[\"模块 \\\"核心\\\" 处理\"]",
+      "node": {
+        "id": "节点A",
+        "label": "模块 \"核心\" 处理"
+      }
+    }
+  ],
+  "graphs": [
+    {
+      "name": "dotted-and-inline-labeled-arrows",
+      "graph": {
+        "nodes": [
+          {
+            "id": "A",
+            "label": "A"
+          },
+          {
+            "id": "B",
+            "label": "B"
+          },
+          {
+            "id": "C",
+            "label": "C"
+          },
+          {
+            "id": "D",
+            "label": "D"
+          },
+          {
+            "id": "E",
+            "label": "E"
+          },
+          {
+            "id": "F",
+            "label": "F"
+          },
+          {
+            "id": "G",
+            "label": "G"
+          },
+          {
+            "id": "H",
+            "label": "H"
+          },
+          {
+            "id": "I",
+            "label": "I"
+          },
+          {
+            "id": "J",
+            "label": "J"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-A-B",
+            "source": "A",
+            "target": "B"
+          },
+          {
+            "id": "e-C-D",
+            "source": "C",
+            "target": "D"
+          },
+          {
+            "id": "e-E-F",
+            "source": "E",
+            "target": "F",
+            "label": "yes"
+          },
+          {
+            "id": "e-G-H",
+            "source": "G",
+            "target": "H",
+            "label": "critical"
+          },
+          {
+            "id": "e-I-J",
+            "source": "I",
+            "target": "J",
+            "label": "optional"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chained-edges",
+      "graph": {
+        "nodes": [
+          {
+            "id": "A",
+            "label": "Start"
+          },
+          {
+            "id": "B",
+            "label": "Check"
+          },
+          {
+            "id": "C",
+            "label": "Finish"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-A-B",
+            "source": "A",
+            "target": "B",
+            "label": "step 1"
+          },
+          {
+            "id": "e-B-C",
+            "source": "B",
+            "target": "C",
+            "label": "step 2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "open-line-connectors-with-dashes",
+      "graph": {
+        "nodes": [
+          {
+            "id": "A",
+            "label": "A"
+          },
+          {
+            "id": "B",
+            "label": "B"
+          },
+          {
+            "id": "C",
+            "label": "C"
+          },
+          {
+            "id": "D",
+            "label": "D"
+          },
+          {
+            "id": "E",
+            "label": "E"
+          },
+          {
+            "id": "F",
+            "label": "F"
+          },
+          {
+            "id": "G",
+            "label": "G"
+          },
+          {
+            "id": "H",
+            "label": "H"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-A-B",
+            "source": "A",
+            "target": "B",
+            "label": "open-link"
+          },
+          {
+            "id": "e-C-D",
+            "source": "C",
+            "target": "D",
+            "label": "thick-open"
+          },
+          {
+            "id": "e-E-F",
+            "source": "E",
+            "target": "F",
+            "label": "dot-open"
+          },
+          {
+            "id": "e-G-H",
+            "source": "G",
+            "target": "H",
+            "label": "my-dashed-label"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ampersand-branching-and-quoted-ampersand",
+      "graph": {
+        "nodes": [
+          {
+            "id": "A",
+            "label": "Source"
+          },
+          {
+            "id": "B",
+            "label": "Target 1"
+          },
+          {
+            "id": "C",
+            "label": "Target 2"
+          },
+          {
+            "id": "D",
+            "label": "D"
+          },
+          {
+            "id": "E",
+            "label": "E"
+          },
+          {
+            "id": "F",
+            "label": "F"
+          },
+          {
+            "id": "G",
+            "label": "G"
+          },
+          {
+            "id": "H",
+            "label": "Research & Development"
+          },
+          {
+            "id": "I",
+            "label": "Design & QA"
+          },
+          {
+            "id": "J",
+            "label": "Production & Release"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-A-B",
+            "source": "A",
+            "target": "B"
+          },
+          {
+            "id": "e-A-C",
+            "source": "A",
+            "target": "C"
+          },
+          {
+            "id": "e-D-F",
+            "source": "D",
+            "target": "F",
+            "label": "merged"
+          },
+          {
+            "id": "e-D-G",
+            "source": "D",
+            "target": "G",
+            "label": "merged"
+          },
+          {
+            "id": "e-E-F",
+            "source": "E",
+            "target": "F",
+            "label": "merged"
+          },
+          {
+            "id": "e-E-G",
+            "source": "E",
+            "target": "G",
+            "label": "merged"
+          },
+          {
+            "id": "e-H-J",
+            "source": "H",
+            "target": "J"
+          },
+          {
+            "id": "e-I-J",
+            "source": "I",
+            "target": "J"
+          }
+        ]
+      }
+    },
+    {
+      "name": "comments-subgraphs-direction-and-quoted-connectors",
+      "graph": {
+        "nodes": [
+          {
+            "id": "A",
+            "label": "Step 1: Input --> Transform"
+          },
+          {
+            "id": "B",
+            "label": "Step 2: Output"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-A-B",
+            "source": "A",
+            "target": "B"
+          }
+        ]
+      }
+    }
+  ]
+}

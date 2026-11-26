@@ -1,0 +1,65 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "cases": [
+    {
+      "name": "ordinary-ts",
+      "filePath": "src/index.ts",
+      "raw": "const a = 1;\nconsole.log(a);",
+      "expected": "## 📄 `index.ts` <!-- path: src/index.ts -->\n\n```typescript\nconst a = 1;\nconsole.log(a);\n```\n"
+    },
+    {
+      "name": "md-with-triple-fence",
+      "filePath": "docs/readme.md",
+      "raw": "# Markdown Guide\n```json\n{\"foo\": \"bar\"}\n```",
+      "expected": "## 📄 `readme.md` <!-- path: docs/readme.md -->\n\n````markdown\n# Markdown Guide\n```json\n{\"foo\": \"bar\"}\n```\n````\n"
+    },
+    {
+      "name": "quadruple-fence",
+      "filePath": "snippet.ts",
+      "raw": "````ts\nconst x = 1;\n````",
+      "expected": "## 📄 `snippet.ts` <!-- path: snippet.ts -->\n\n`````typescript\n````ts\nconst x = 1;\n````\n`````\n"
+    },
+    {
+      "name": "unknown-ext-text",
+      "filePath": "data/file.xyz",
+      "raw": "plain content",
+      "expected": "## 📄 `file.xyz` <!-- path: data/file.xyz -->\n\n```text\nplain content\n```\n"
+    },
+    {
+      "name": "filename-backtick-strip",
+      "filePath": "src/evil`name`.py",
+      "raw": "print(1)",
+      "expected": "## 📄 `evilname.py` <!-- path: src/evil`name`.py -->\n\n```python\nprint(1)\n```\n"
+    },
+    {
+      "name": "no-trailing-newline-normalized",
+      "filePath": "a.go",
+      "raw": "package main",
+      "expected": "## 📄 `a.go` <!-- path: a.go -->\n\n```go\npackage main\n```\n"
+    },
+    {
+      "name": "trailing-newline-preserved-single",
+      "filePath": "a.go",
+      "raw": "package main\n",
+      "expected": "## 📄 `a.go` <!-- path: a.go -->\n\n```go\npackage main\n```\n"
+    },
+    {
+      "name": "unicode-filename",
+      "filePath": "示例/入口.tsx",
+      "raw": "export default () => <div/>",
+      "expected": "## 📄 `入口.tsx` <!-- path: 示例/入口.tsx -->\n\n```tsx\nexport default () => <div/>\n```\n"
+    },
+    {
+      "name": "empty-content",
+      "filePath": "empty.js",
+      "raw": "",
+      "expected": "## 📄 `empty.js` <!-- path: empty.js -->\n\n```javascript\n\n```\n"
+    },
+    {
+      "name": "uppercase-ext",
+      "filePath": "Main.PY",
+      "raw": "print(1)",
+      "expected": "## 📄 `Main.PY` <!-- path: Main.PY -->\n\n```python\nprint(1)\n```\n"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Docusaurus SDK Guide</title></head>
+<body>
+  <main>
+    <article>
+      <h1>Docusaurus SDK Integration</h1>
+      <p>Configure your project SDK and inspect multi-language usage patterns across TypeScript and Python runtimes.</p>
+      <div class="theme-admonition theme-admonition-warning admonition admonition-warning">
+        <div class="admonition-heading"><h5>Rate Limit Notice</h5></div>
+        <div class="admonition-content"><p>Production webhooks retry with exponential backoff up to five attempts before moving events into the dead-letter queue.</p></div>
+      </div>
+      <div class="tabs-container">
+        <ul role="tablist">
+          <li role="tab" aria-selected="true" aria-controls="panel-ts">TypeScript</li>
+          <li role="tab" aria-selected="false" aria-controls="panel-py">Python</li>
+        </ul>
+        <div id="panel-ts" role="tabpanel"><pre><code class="language-ts">import { Client } from "@acme/sdk";
+export const client = new Client({ apiKey: process.env.API_KEY });</code></pre></div>
+        <div id="panel-py" role="tabpanel" hidden><pre><code class="language-python">from acme_sdk import Client
+client = Client(api_key=os.environ["API_KEY"])</code></pre></div>
+      </div>
+      <details>
+        <summary>How do I rotate webhook signing secrets without downtime?</summary>
+        <p>Enable dual-secret verification during migration so both active and newly generated secrets validate signatures cleanly.</p>
+      </details>
+    </article>
+  </main>
+</body>
+</html>

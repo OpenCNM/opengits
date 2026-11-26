@@ -1,0 +1,336 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "estimateCases": [
+    {
+      "name": "empty-string",
+      "input": {
+        "text": ""
+      },
+      "expected": 0
+    },
+    {
+      "name": "ascii-english",
+      "input": {
+        "text": "Hello, world! This is a fast token counter test with 12345 numbers and symbols: []{}."
+      },
+      "expected": 22
+    },
+    {
+      "name": "cjk-chinese",
+      "input": {
+        "text": "这是一个针对大语言模型的快速 Token 计数器，专门优化了 CJK 字符估算精度。"
+      },
+      "expected": 40
+    },
+    {
+      "name": "cjk-japanese",
+      "input": {
+        "text": "こんにちは世界。日本語のトークンカウンターのテストです。ひらがな、カタカナ、漢字。"
+      },
+      "expected": 49
+    },
+    {
+      "name": "cjk-korean",
+      "input": {
+        "text": "안녕하세요 세계. 한국어 토큰 계산기 테스트입니다. 한글 자모와 완성형."
+      },
+      "expected": 41
+    },
+    {
+      "name": "mixed-cjk-ascii",
+      "input": {
+        "text": "OpenGits 知识库构建引擎使用 Go worker-sidecar 承载高密计算，消除 Node.js 内存开销。"
+      },
+      "expected": 38
+    },
+    {
+      "name": "emojis-astral-symbols",
+      "input": {
+        "text": "AI 智能体开发 🚀 探索未知领域 🌟 编程语言：Go 🐹 & TS 🦕 ~!@#"
+      },
+      "expected": 27
+    },
+    {
+      "name": "code-block",
+      "input": {
+        "text": "```go\nfunc add(a, b int) int {\n\treturn a + b\n}\n```"
+      },
+      "expected": 13
+    },
+    {
+      "name": "code-with-tilde",
+      "input": {
+        "text": "~~~python\ndef hello():\n    print('hello')\n~~~"
+      },
+      "expected": 12
+    },
+    {
+      "name": "unclosed-code-fence",
+      "input": {
+        "text": "```typescript\nconst api = '/v1/llms-txt';\nconsole.log(api);"
+      },
+      "expected": 15
+    },
+    {
+      "name": "html-comments",
+      "input": {
+        "text": "<!-- Centralized registry comment -->\nSome markdown text here."
+      },
+      "expected": 16
+    },
+    {
+      "name": "unclosed-html-comment",
+      "input": {
+        "text": "<!-- Unclosed warning banner\nThis comment never closed properly"
+      },
+      "expected": 16
+    },
+    {
+      "name": "whitespaces-tabs-newlines",
+      "input": {
+        "text": "\t\t\n\n   \r\n\t   "
+      },
+      "expected": 4
+    },
+    {
+      "name": "special-punctuation",
+      "input": {
+        "text": "~!@#$%^&*()_+`-={}|[]\\:\";'<>?,./·~！@#￥%……&*（）——+{}【】|：“”‘’《》？"
+      },
+      "expected": 16
+    },
+    {
+      "name": "cjk-ext-a-and-compat",
+      "input": {
+        "text": "CJK Ext A: 㐀㐁㐂㐃, CJK Compat: 豈更車"
+      },
+      "expected": 16
+    },
+    {
+      "name": "hangul-jamo-and-syllables",
+      "input": {
+        "text": "한글 테스트: ㄱㄴㄷㄹㅁㅂㅅ 및 가나다라마바사"
+      },
+      "expected": 20
+    },
+    {
+      "name": "surrogate-pairs-mixed",
+      "input": {
+        "text": "Multiple astral emoji: 🚀✨🎉🐹🦕 and text: Test 123"
+      },
+      "expected": 13
+    },
+    {
+      "name": "fence-indented-3-spaces",
+      "input": {
+        "text": "   ```python\nprint(\"indented by 3\")\n   ```"
+      },
+      "expected": 11
+    },
+    {
+      "name": "fence-indented-4-spaces",
+      "input": {
+        "text": "    ```python\nprint(\"indented by 4 is code block, not fence\")\n    ```"
+      },
+      "expected": 18
+    },
+    {
+      "name": "consecutive-newlines-and-spaces",
+      "input": {
+        "text": "Line 1\n\n\n\r\n\r\nLine 2    \t    End"
+      },
+      "expected": 8
+    }
+  ],
+  "truncateCases": [
+    {
+      "name": "zero-budget",
+      "input": {
+        "text": "Hello world",
+        "maxTokens": 0,
+        "suffix": null
+      },
+      "expected": ""
+    },
+    {
+      "name": "negative-budget",
+      "input": {
+        "text": "Hello world",
+        "maxTokens": -10,
+        "suffix": null
+      },
+      "expected": ""
+    },
+    {
+      "name": "empty-text",
+      "input": {
+        "text": "",
+        "maxTokens": 50,
+        "suffix": null
+      },
+      "expected": ""
+    },
+    {
+      "name": "within-budget",
+      "input": {
+        "text": "This is a short text within budget.",
+        "maxTokens": 100,
+        "suffix": null
+      },
+      "expected": "This is a short text within budget."
+    },
+    {
+      "name": "exact-budget",
+      "input": {
+        "text": "Exact text",
+        "maxTokens": 3,
+        "suffix": null
+      },
+      "expected": "Exact text"
+    },
+    {
+      "name": "budget-smaller-than-suffix",
+      "input": {
+        "text": "Some long text here that needs truncation",
+        "maxTokens": 5,
+        "suffix": null
+      },
+      "expected": ""
+    },
+    {
+      "name": "ascii-budget-10",
+      "input": {
+        "text": "The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow. Packaging and chunking pipelines in distributed systems require careful token budget planning to prevent context overflow.",
+        "maxTokens": 10,
+        "suffix": null
+      },
+      "expected": ""
+    },
+    {
+      "name": "ascii-budget-50",
+      "input": {
+        "text": "The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow. Packaging and chunking pipelines in distributed systems require careful token budget planning to prevent context overflow. Additional sentences are appended here to ensure the total text exceeds 50 tokens comfortably.",
+        "maxTokens": 50,
+        "suffix": null
+      },
+      "expected": "The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow. Packaging and\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "cjk-budget-15",
+      "input": {
+        "text": "知识库大纲编排与全仓转录系统，为大语言模型提供高质量上下文。在处理海量文档时，预算控制机制能够保障生成内容不会超出大模型的上下文窗口限制，同时保留关键结构与高优先级信息。",
+        "maxTokens": 15,
+        "suffix": null
+      },
+      "expected": "\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "cjk-budget-50",
+      "input": {
+        "text": "知识库大纲编排与全仓转录系统，为大语言模型提供高质量上下文。在处理海量文档时，预算控制机制能够保障生成内容不会超出大模型的上下文窗口限制，同时保留关键结构与高优先级信息。我们必须对中文字符与英文字符分别赋予合理的权重。",
+        "maxTokens": 50,
+        "suffix": null
+      },
+      "expected": "知识库大纲编排与全仓转录系统，为大语言\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "mixed-budget-30",
+      "input": {
+        "text": "OpenGits 的 llms.txt 生成引擎支持 strict 与 balanced 两种截断模式。在 strict 模式下，文档正文若超出 token 预算将直接截断；而在 balanced 模式下，系统将自动降级为摘要输出，最大化保留文档广度。",
+        "maxTokens": 30,
+        "suffix": null
+      },
+      "expected": "OpenG\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "unclosed-fence-balance",
+      "input": {
+        "text": "# Code Guide\nHere is some code:\n```typescript\nfunction processItems(items: string[]) {\n  for (const item of items) {\n    console.log('Processing:', item);\n  }\n  return items.length;\n}\n```\nAnd more prose follows...",
+        "maxTokens": 25,
+        "suffix": null
+      },
+      "expected": "\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "unclosed-html-balance",
+      "input": {
+        "text": "# Documentation\n<!-- Section 1: Intro\nThis is an intro section comment that explains internal details\n-->\n<!-- Section 2: Important notes without closing comment\nRemember to sanitize all inputs carefully before passing them to the AST parser.",
+        "maxTokens": 30,
+        "suffix": null
+      },
+      "expected": "# Documentation\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "custom-suffix",
+      "input": {
+        "text": "Custom suffix test with lots of content here to truncate.",
+        "maxTokens": 20,
+        "suffix": "\n\n...[CUSTOM_TRUNCATED]"
+      },
+      "expected": "Custom suffix test with lots of content here to truncate."
+    },
+    {
+      "name": "empty-suffix",
+      "input": {
+        "text": "Empty suffix test with enough content to exceed the target budget.",
+        "maxTokens": 5,
+        "suffix": ""
+      },
+      "expected": ""
+    },
+    {
+      "name": "crlf-unclosed-fence",
+      "input": {
+        "text": "# Title\r\n```go\r\nfunc Run() {\r\n\tprintln(\"test\")\r\n",
+        "maxTokens": 20,
+        "suffix": null
+      },
+      "expected": "# Title\r\n```go\r\nfunc Run() {\r\n\tprintln(\"test\")\r\n"
+    },
+    {
+      "name": "both-unclosed-fence-and-html",
+      "input": {
+        "text": "# Title\n<!-- open comment\n```python\nprint(\"hello\")\n",
+        "maxTokens": 30,
+        "suffix": null
+      },
+      "expected": "# Title\n<!-- open comment\n```python\nprint(\"hello\")\n"
+    },
+    {
+      "name": "budget-one-less-than-text",
+      "input": {
+        "text": "The quick brown fox jumps over the lazy dog.",
+        "maxTokens": 10,
+        "suffix": null
+      },
+      "expected": ""
+    },
+    {
+      "name": "deep-monotonic-reduction",
+      "input": {
+        "text": "Monotonic descent stress testing requires repeated patterns that exceed budget by large margin. Monotonic descent stress testing requires repeated patterns that exceed budget by large margin. Monotonic descent stress testing requires repeated patterns that exceed budget by large margin.",
+        "maxTokens": 25,
+        "suffix": null
+      },
+      "expected": "\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "target-tokens-zero-returns-suffix",
+      "input": {
+        "text": "Some text that is quite long and definitely exceeds budget",
+        "maxTokens": 14,
+        "suffix": "\n\n...[Content truncated to fit token budget]"
+      },
+      "expected": "\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "indented-fence-balancing",
+      "input": {
+        "text": "Here is indented code:\n   ```javascript\nconst x = 1;\n",
+        "maxTokens": 20,
+        "suffix": null
+      },
+      "expected": "Here is indented code:\n   ```javascript\nconst x = 1;\n"
+    }
+  ]
+}

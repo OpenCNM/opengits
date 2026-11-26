@@ -1,0 +1,171 @@
+{
+  "fixturePath": "services/worker-sidecar/testdata/mdx-fingerprint.golden.json",
+  "results": [
+    {
+      "name": "full-options",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "lang": "en",
+        "model": "qwen3.6-flash",
+        "preset": "standard",
+        "teachingDepth": "standard",
+        "aiCondensation": "balanced",
+        "customPrompt": "更口语化"
+      },
+      "fingerprint": "4bf14e1113dc4e65ce93a9fdbabf44a82725924cbee5939ed0d41a657eafbea9"
+    },
+    {
+      "name": "minimal-repo-path-model",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "model": "gpt-5",
+        "teachingDepth": "standard",
+        "aiCondensation": "balanced"
+      },
+      "fingerprint": "762e3f63b5a1f79238b4c14f5b647e032d4a21142f98f8cce3fedb3084300f69"
+    },
+    {
+      "name": "preset-standard-default-teaching-depth",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "model": "m",
+        "preset": "standard",
+        "teachingDepth": "standard",
+        "aiCondensation": "balanced"
+      },
+      "fingerprint": "be971dc821d706b05cd3d4bd7533fc266ddbe2d9aca13fb0d588515b04ba69be"
+    },
+    {
+      "name": "preset-deep-default-teaching-depth",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "model": "m",
+        "preset": "deep",
+        "teachingDepth": "deep"
+      },
+      "fingerprint": "24ec5b65a7b7bad6b4af34f783ba5a7db849835298f9892a1d2d89cceb018340"
+    },
+    {
+      "name": "preset-cheatsheet-no-teaching-depth",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "model": "m",
+        "preset": "cheatsheet",
+        "aiCondensation": "tldr"
+      },
+      "fingerprint": "02ddad2646d6c6e9b707581f616e9ad59c6d62f9f27121d14e54f22ecf21eb17"
+    },
+    {
+      "name": "preset-analogy-no-defaults",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "model": "m",
+        "preset": "analogy"
+      },
+      "fingerprint": "a93b7157b8beb01b19e9cea37430b73fe9aca141abf08953ea9fd529cfa4cab7"
+    },
+    {
+      "name": "unknown-preset-id-kept-with-default-depth",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "model": "m",
+        "preset": "bogus",
+        "teachingDepth": "standard",
+        "aiCondensation": "balanced"
+      },
+      "fingerprint": "0c9df4457015f3ce016279772e5eb87107abdabcfcff2006ca5edb648cc81b0c"
+    },
+    {
+      "name": "profile-fallbacks",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "lang": "ja",
+        "model": "m",
+        "preset": "deep",
+        "teachingDepth": "deep",
+        "customPrompt": "简明扼要"
+      },
+      "fingerprint": "c50370ad9640686b7b2b4d80f1d677615d458154dc5772f507afabd970d10fb0"
+    },
+    {
+      "name": "options-override-profile",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "lang": "en",
+        "model": "m",
+        "preset": "faithful",
+        "aiCondensation": "faithful",
+        "customPrompt": "option prompt"
+      },
+      "fingerprint": "959e38d44f96ff406ea492a0df3dba02616b6d12818bc2affa4bacaa712b4c10"
+    },
+    {
+      "name": "non-ascii-lang-and-path",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "文档/指南/快速开始.md",
+        "gitSha": "abc123def456",
+        "lang": "日本語",
+        "model": "模型-X",
+        "teachingDepth": "standard",
+        "aiCondensation": "balanced"
+      },
+      "fingerprint": "b5c919f144582df045d00b65f08863b7dfa3592df0a897757749590362d642c0"
+    },
+    {
+      "name": "value-trim-at-hash",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "lang": "  en  ",
+        "model": "  m  ",
+        "teachingDepth": "standard",
+        "aiCondensation": "balanced",
+        "customPrompt": "  padded  "
+      },
+      "fingerprint": "99a98727b24b45f6d73440a92f3da12632371237ad26b4a48ee3f57906853142"
+    },
+    {
+      "name": "empty-lang-filtered",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "model": "m",
+        "teachingDepth": "standard",
+        "aiCondensation": "balanced"
+      },
+      "fingerprint": "95ce94d35b3ed11ef92a5b1928dea81f9a28126cd595680ea6612e433db0f592"
+    },
+    {
+      "name": "ai-condensation-only",
+      "inputs": {
+        "repositoryId": "repo-uuid-1",
+        "path": "docs/guide/getting-started.md",
+        "gitSha": "abc123def456",
+        "model": "m",
+        "teachingDepth": "standard",
+        "aiCondensation": "tldr"
+      },
+      "fingerprint": "cba0e8134cf7e910a566ffceb7c87da21ce14cef4c794ae5c976144278a20f82"
+    }
+  ]
+}

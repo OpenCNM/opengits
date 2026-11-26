@@ -1,0 +1,378 @@
+{
+  "snippets": [
+    {
+      "name": "empty-text",
+      "got": ""
+    },
+    {
+      "name": "frontmatter-only",
+      "got": ""
+    },
+    {
+      "name": "frontmatter-with-body",
+      "got": "Hello world from documentation"
+    },
+    {
+      "name": "html-comment-stripped",
+      "got": "Before after"
+    },
+    {
+      "name": "code-block-fenced-backticks",
+      "got": "Start End of section"
+    },
+    {
+      "name": "code-block-fenced-tildes",
+      "got": "Start Finish line"
+    },
+    {
+      "name": "inline-code-and-html",
+      "got": "Use to call API endpoints."
+    },
+    {
+      "name": "markdown-links-and-images",
+      "got": "Read Guide for setup."
+    },
+    {
+      "name": "markdown-formatting-mixed",
+      "got": "...that underlined and italic exist."
+    },
+    {
+      "name": "query-empty-short",
+      "got": "Short text"
+    },
+    {
+      "name": "query-empty-long-truncated",
+      "got": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
+    },
+    {
+      "name": "query-not-found-short",
+      "got": "Short text"
+    },
+    {
+      "name": "query-not-found-long",
+      "got": "Prefix BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB..."
+    },
+    {
+      "name": "query-at-beginning",
+      "got": "PostgreSQL is a powerful database system..."
+    },
+    {
+      "name": "query-in-middle-word-boundary",
+      "got": "...source software, we will explore Postgre..."
+    },
+    {
+      "name": "query-at-end",
+      "got": "...need to know about optimizing PostgreSQL"
+    },
+    {
+      "name": "query-cjk",
+      "got": "在现代分布式系统架构中，PostgreSQL 全文检索与向量检索扮演着至关重要的..."
+    },
+    {
+      "name": "query-case-insensitive",
+      "got": "Docker and KUBERNETES container orchestration plat..."
+    }
+  ],
+  "titles": [
+    {
+      "name": "explicit-title",
+      "got": "Architecture Overview"
+    },
+    {
+      "name": "explicit-title-formatted",
+      "got": "`Docker` Guide & Quickstart"
+    },
+    {
+      "name": "explicit-untitled-fallback-h1",
+      "got": "Getting Started Guide"
+    },
+    {
+      "name": "explicit-untitled-case-insensitive",
+      "got": "Welcome to OpenGits"
+    },
+    {
+      "name": "content-h1-with-frontmatter",
+      "got": "Configuration Options"
+    },
+    {
+      "name": "content-h1-after-code-comment",
+      "got": "Scripting Tutorial"
+    },
+    {
+      "name": "content-no-h1-path-fallback",
+      "got": "Api reference"
+    },
+    {
+      "name": "path-with-underscores",
+      "got": "01 advanced setup"
+    },
+    {
+      "name": "path-html",
+      "got": "Frequently asked questions"
+    },
+    {
+      "name": "all-empty-fallback",
+      "got": "未命名文档"
+    }
+  ],
+  "tokenEstimates": [
+    {
+      "name": "empty-string",
+      "got": 0
+    },
+    {
+      "name": "ascii-english",
+      "got": 22
+    },
+    {
+      "name": "cjk-chinese",
+      "got": 40
+    },
+    {
+      "name": "cjk-japanese",
+      "got": 49
+    },
+    {
+      "name": "cjk-korean",
+      "got": 41
+    },
+    {
+      "name": "mixed-cjk-ascii",
+      "got": 38
+    },
+    {
+      "name": "emojis-astral-symbols",
+      "got": 27
+    },
+    {
+      "name": "code-block",
+      "got": 13
+    },
+    {
+      "name": "code-with-tilde",
+      "got": 12
+    },
+    {
+      "name": "unclosed-code-fence",
+      "got": 15
+    },
+    {
+      "name": "html-comments",
+      "got": 16
+    },
+    {
+      "name": "unclosed-html-comment",
+      "got": 16
+    },
+    {
+      "name": "whitespaces-tabs-newlines",
+      "got": 4
+    },
+    {
+      "name": "special-punctuation",
+      "got": 16
+    },
+    {
+      "name": "cjk-ext-a-and-compat",
+      "got": 16
+    },
+    {
+      "name": "hangul-jamo-and-syllables",
+      "got": 20
+    },
+    {
+      "name": "surrogate-pairs-mixed",
+      "got": 13
+    },
+    {
+      "name": "fence-indented-3-spaces",
+      "got": 11
+    },
+    {
+      "name": "fence-indented-4-spaces",
+      "got": 18
+    },
+    {
+      "name": "consecutive-newlines-and-spaces",
+      "got": 8
+    }
+  ],
+  "tokenTruncates": [
+    {
+      "name": "zero-budget",
+      "got": ""
+    },
+    {
+      "name": "negative-budget",
+      "got": ""
+    },
+    {
+      "name": "empty-text",
+      "got": ""
+    },
+    {
+      "name": "within-budget",
+      "got": "This is a short text within budget."
+    },
+    {
+      "name": "exact-budget",
+      "got": "Exact text"
+    },
+    {
+      "name": "budget-smaller-than-suffix",
+      "got": ""
+    },
+    {
+      "name": "ascii-budget-10",
+      "got": ""
+    },
+    {
+      "name": "ascii-budget-50",
+      "got": "The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow. Packaging and\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "cjk-budget-15",
+      "got": "\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "cjk-budget-50",
+      "got": "知识库大纲编排与全仓转录系统，为大语言\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "mixed-budget-30",
+      "got": "OpenG\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "unclosed-fence-balance",
+      "got": "\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "unclosed-html-balance",
+      "got": "# Documentation\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "custom-suffix",
+      "got": "Custom suffix test with lots of content here to truncate."
+    },
+    {
+      "name": "empty-suffix",
+      "got": ""
+    },
+    {
+      "name": "crlf-unclosed-fence",
+      "got": "# Title\r\n```go\r\nfunc Run() {\r\n\tprintln(\"test\")\r\n"
+    },
+    {
+      "name": "both-unclosed-fence-and-html",
+      "got": "# Title\n<!-- open comment\n```python\nprint(\"hello\")\n"
+    },
+    {
+      "name": "budget-one-less-than-text",
+      "got": ""
+    },
+    {
+      "name": "deep-monotonic-reduction",
+      "got": "\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "target-tokens-zero-returns-suffix",
+      "got": "\n\n...[Content truncated to fit token budget]"
+    },
+    {
+      "name": "indented-fence-balancing",
+      "got": "Here is indented code:\n   ```javascript\nconst x = 1;\n"
+    }
+  ],
+  "storeChunkAnchors": [
+    {
+      "conceptName": "System Overview",
+      "got": {
+        "chunkId": "chunk-1",
+        "headingPath": "docs/guide.md#01_System Overview",
+        "principlesText": "Detailed discussion of system architecture and components."
+      }
+    },
+    {
+      "conceptName": "Event Loop",
+      "got": {
+        "chunkId": "chunk-3",
+        "headingPath": "docs/guide.md#Module > Event Loop",
+        "principlesText": "Event loop execution model in Node.js runtime environment."
+      }
+    },
+    {
+      "conceptName": "Preamble",
+      "got": {
+        "chunkId": "chunk-2",
+        "headingPath": "docs/guide.md#General",
+        "principlesText": "Preamble text before any headings. Contains introductory anchors."
+      }
+    },
+    {
+      "conceptName": "Goroutines",
+      "got": {
+        "chunkId": "chunk-4",
+        "headingPath": "docs/guide.md#Concurrency",
+        "principlesText": "Existing principles preserved"
+      }
+    },
+    {
+      "conceptName": "Unmatched Concept",
+      "got": {
+        "chunkId": null,
+        "headingPath": null,
+        "principlesText": "Fallback summary for unmatched"
+      }
+    }
+  ],
+  "cooccurrenceEdges": [
+    {
+      "sourceId": "c-node-1",
+      "targetId": "c-node-2",
+      "type": "related",
+      "weight": 1,
+      "source": "cooccurrence",
+      "meta": {
+        "chunkId": "chk-1"
+      }
+    },
+    {
+      "sourceId": "c-node-3",
+      "targetId": "c-node-4",
+      "type": "related",
+      "weight": 1,
+      "source": "cooccurrence",
+      "meta": {
+        "chunkId": "chk-2"
+      }
+    }
+  ],
+  "curriculumEdges": [
+    {
+      "sourceId": "doc1-c1",
+      "targetId": "doc2-c1",
+      "type": "successor",
+      "weight": 0.3,
+      "source": "curriculum_order",
+      "meta": {
+        "docGap": 1
+      }
+    },
+    {
+      "sourceId": "doc1-c1",
+      "targetId": "doc2-c2",
+      "type": "successor",
+      "weight": 0.3,
+      "source": "curriculum_order",
+      "meta": {
+        "docGap": 1
+      }
+    }
+  ],
+  "armorFixtureCounts": {
+    "resolveHandles": 11,
+    "sanitize": 9,
+    "allocate": 6,
+    "total": 26
+  }
+}

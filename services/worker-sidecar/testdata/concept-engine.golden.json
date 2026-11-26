@@ -1,0 +1,469 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "skeleton": {
+    "inputNodes": [
+      {
+        "path": "src/index.ts",
+        "type": "blob",
+        "size": 100
+      },
+      {
+        "path": "src/utils.ts",
+        "type": "blob",
+        "size": 200
+      },
+      {
+        "path": "src/types.ts",
+        "type": "blob",
+        "size": 150
+      },
+      {
+        "path": "docs/readme.md",
+        "type": "blob",
+        "size": 300
+      },
+      {
+        "path": "docs/intro.md",
+        "type": "blob",
+        "size": 250
+      },
+      {
+        "path": "docs/guide.md",
+        "type": "blob",
+        "size": 400
+      },
+      {
+        "path": "pkg/api.go",
+        "type": "blob",
+        "size": 500
+      },
+      {
+        "path": "pkg/main.go",
+        "type": "blob",
+        "size": 600
+      },
+      {
+        "path": "node_modules/foo/index.js",
+        "type": "blob",
+        "size": 1000
+      },
+      {
+        "path": "binary.exe",
+        "type": "blob",
+        "size": 5000
+      }
+    ],
+    "extractedPaths": [
+      "src/index.ts",
+      "src/utils.ts",
+      "src/types.ts",
+      "docs/readme.md",
+      "docs/intro.md",
+      "docs/guide.md",
+      "pkg/api.go",
+      "pkg/main.go"
+    ],
+    "skeleton": "docs/guide.md\ndocs/intro.md\ndocs/readme.md\npkg/api.go\npkg/main.go\nsrc/index.ts\nsrc/types.ts\nsrc/utils.ts",
+    "skeletonHash": "a5e711920a2537a1d56bfaebaf591ad0",
+    "isComparable": true,
+    "promptInput": "  Explain Clean Architecture in Go & TypeScript! (v2.0)  ",
+    "normalizedPrompt": "explaincleanarchitectureingotypescriptv20",
+    "fingerprintInput": {
+      "preset": "tutorial",
+      "customPrompt": "  Explain Clean Architecture in Go & TypeScript! (v2.0)  ",
+      "targetLanguage": "zh-CN",
+      "teachingDepth": "in-depth"
+    },
+    "fingerprint": "da4dd83490c4e14f"
+  },
+  "heading": {
+    "cases": [
+      {
+        "input": "## 01_介绍与架构 {#intro-section}",
+        "normalizedKey": "介绍与架构",
+        "slug": "01_介绍与架构-intro-section"
+      },
+      {
+        "input": "1.2.3. Event Loop & Microtasks",
+        "normalizedKey": "event loop & microtasks",
+        "slug": "1-2-3-event-loop-microtasks"
+      },
+      {
+        "input": "**（1）核心模式**",
+        "normalizedKey": "核心模式",
+        "slug": "1-核心模式"
+      },
+      {
+        "input": "Chapter 3: Memory Management (Part 1)",
+        "normalizedKey": "chapter 3: memory management (part 1)",
+        "slug": "chapter-3-memory-management-part-1"
+      },
+      {
+        "input": "  `useState` and `useEffect` Hook  ",
+        "normalizedKey": "usestate and useeffect hook",
+        "slug": "usestate-and-useeffect-hook"
+      }
+    ],
+    "anchors": [
+      {
+        "heading": "Overview",
+        "matchedId": "chunk-1",
+        "matchedPath": "overview"
+      },
+      {
+        "heading": "Core System",
+        "matchedId": "chunk-2",
+        "matchedPath": "architecture/core"
+      },
+      {
+        "heading": "Guide",
+        "matchedId": "chunk-3",
+        "matchedPath": "guide"
+      },
+      {
+        "heading": "Non-existent Section",
+        "matchedId": null,
+        "matchedPath": null
+      }
+    ]
+  },
+  "manifest": [
+    {
+      "name": "frontmatter-yaml",
+      "raw": "---\nsummary: Overall System Summary\nconcepts:\n  - name: \"Event Loop\"\n    category: \"workflow\"\n    sourceHeading: \"## Event Loop Runtime\"\n    summary: \"Microtask and macrotask execution cycle\"\n    reflection: \"Watch out for starvation\"\nquizzes:\n  - question: \"Which queue executes first?\"\n    options: [\"Microtask queue\", \"Macrotask queue\"]\n    correctIndex: 0\n    explanation: \"Microtasks execute immediately after the current macrotask\"\ntakeaways:\n  - \"Always drain microtasks\"\n---\n\n# Runtime Architecture\nMain text here.",
+      "docPath": "docs/runtime",
+      "expected": {
+        "cleanContent": "# Runtime Architecture\nMain text here.",
+        "concepts": [
+          {
+            "conceptName": "Event Loop",
+            "slug": "docs-runtime-event-loop",
+            "category": "workflow",
+            "principlesText": "Microtask and macrotask execution cycle",
+            "authorReflections": "Watch out for starvation",
+            "sopSteps": [],
+            "summary": "Microtask and macrotask execution cycle",
+            "subTopics": [
+              "workflow",
+              "导师指引"
+            ],
+            "tags": [
+              "实战经验",
+              "workflow"
+            ],
+            "sourceHeading": "Event Loop Runtime",
+            "anchorText": "Event Loop Runtime"
+          }
+        ],
+        "quizzes": [
+          {
+            "question": "Which queue executes first?",
+            "options": [
+              "Microtask queue",
+              "Macrotask queue"
+            ],
+            "correctIndex": 0,
+            "explanation": "Microtasks execute immediately after the current macrotask"
+          }
+        ],
+        "takeaways": [
+          "Always drain microtasks"
+        ],
+        "summary": "Overall System Summary"
+      }
+    },
+    {
+      "name": "xml-manifest-tag",
+      "raw": "# Architecture Overview\nSome intro text.\n\n<concept_manifest>\n```json\n[\n  {\n    \"name\": \"Dependency Inversion Principle\",\n    \"category\": \"principle\",\n    \"summary\": \"High-level modules should not depend on low-level modules\"\n  },\n  {\n    \"name\": \"A very long concept name that exceeds sixty characters easily without doubt to trigger truncation\",\n    \"category\": \"architecture\"\n  }\n]\n```\n</concept_manifest>\n\nClosing thoughts.",
+      "docPath": "docs/arch",
+      "expected": {
+        "cleanContent": "# Architecture Overview\nSome intro text.\n\n\n\nClosing thoughts.",
+        "concepts": [
+          {
+            "conceptName": "Dependency Inversion Principle",
+            "slug": "docs-arch-dependency-inversion-principle",
+            "category": "principle",
+            "principlesText": "High-level modules should not depend on low-level modules",
+            "sopSteps": [],
+            "summary": "High-level modules should not depend on low-level modules",
+            "subTopics": [
+              "principle",
+              "导师指引"
+            ],
+            "tags": [
+              "实战经验",
+              "principle"
+            ],
+            "anchorText": "Dependency Inversion Principle"
+          },
+          {
+            "conceptName": "A very long concept name that exceeds sixty characters easily without doubt to trigger truncation",
+            "slug": "docs-arch-a-very-long-concept-name-that-exceeds-sixty-characters-easily-without-doubt-to-trigger-truncation",
+            "category": "architecture",
+            "principlesText": "A very long concept name that exceeds sixty characters easily without doubt to trigger truncation",
+            "sopSteps": [],
+            "summary": "A very long concept name that exceeds sixty characters easily without doubt to trigger truncation",
+            "subTopics": [
+              "architecture",
+              "导师指引"
+            ],
+            "tags": [
+              "实战经验",
+              "architecture"
+            ],
+            "anchorText": "A very long concept name that exceeds sixty characters easily without doubt to trigger truncation"
+          }
+        ]
+      }
+    }
+  ],
+  "condense": [
+    {
+      "name": "empty-graph",
+      "rawGraph": {
+        "nodes": [],
+        "edges": []
+      },
+      "maxNodes": 30,
+      "expected": {
+        "condensedGraph": {
+          "nodes": [],
+          "edges": []
+        },
+        "prunedNodesCount": 0,
+        "hasCycle": false
+      }
+    },
+    {
+      "name": "cyclic-and-pruned",
+      "rawGraph": {
+        "nodes": [
+          {
+            "id": "node-A",
+            "name": "A",
+            "score": 1
+          },
+          {
+            "id": "node-B",
+            "name": "B",
+            "score": 0.8
+          },
+          {
+            "id": "node-C",
+            "name": "C",
+            "score": 0.6
+          },
+          {
+            "id": "node-D",
+            "name": "D",
+            "score": 0.1
+          }
+        ],
+        "edges": [
+          {
+            "sourceId": "node-A",
+            "targetId": "node-B"
+          },
+          {
+            "sourceId": "node-B",
+            "targetId": "node-C"
+          },
+          {
+            "sourceId": "node-C",
+            "targetId": "node-A"
+          },
+          {
+            "sourceId": "node-C",
+            "targetId": "node-D"
+          }
+        ]
+      },
+      "maxNodes": 2,
+      "expected": {
+        "condensedGraph": {
+          "nodes": [
+            {
+              "id": "node-A",
+              "name": "A",
+              "score": 1
+            },
+            {
+              "id": "node-B",
+              "name": "B",
+              "score": 0.8
+            }
+          ],
+          "edges": [
+            {
+              "sourceId": "node-A",
+              "targetId": "node-B"
+            }
+          ]
+        },
+        "prunedNodesCount": 2,
+        "hasCycle": true
+      }
+    },
+    {
+      "name": "tie-break-equal-score",
+      "rawGraph": {
+        "nodes": [
+          {
+            "id": "node-Z",
+            "name": "Z",
+            "score": 1
+          },
+          {
+            "id": "node-A",
+            "name": "A",
+            "score": 1
+          }
+        ],
+        "edges": []
+      },
+      "maxNodes": 1,
+      "expected": {
+        "condensedGraph": {
+          "nodes": [
+            {
+              "id": "node-A",
+              "name": "A",
+              "score": 1
+            }
+          ],
+          "edges": []
+        },
+        "prunedNodesCount": 1,
+        "hasCycle": false
+      }
+    }
+  ],
+  "align": {
+    "withoutJaccard": [
+      {
+        "normalizedKey": "event loop",
+        "canonicalName": "Event Loop",
+        "aliases": [
+          "event_loop"
+        ],
+        "conceptIds": [
+          "c1",
+          "c2",
+          "c3"
+        ],
+        "repoCount": 3
+      },
+      {
+        "normalizedKey": "pipeline",
+        "canonicalName": "Pipeline",
+        "aliases": [],
+        "conceptIds": [
+          "c5",
+          "c6"
+        ],
+        "repoCount": 2
+      }
+    ],
+    "withJaccard": []
+  },
+  "edges": {
+    "cooccurrence": [
+      {
+        "sourceId": "node-1",
+        "targetId": "node-2",
+        "type": "related",
+        "weight": 1,
+        "source": "cooccurrence",
+        "meta": {
+          "chunkId": "chk-1"
+        }
+      },
+      {
+        "sourceId": "node-1",
+        "targetId": "node-3",
+        "type": "related",
+        "weight": 1,
+        "source": "cooccurrence",
+        "meta": {
+          "chunkId": "chk-1"
+        }
+      },
+      {
+        "sourceId": "node-2",
+        "targetId": "node-3",
+        "type": "related",
+        "weight": 1,
+        "source": "cooccurrence",
+        "meta": {
+          "chunkId": "chk-1"
+        }
+      }
+    ],
+    "curriculum": [
+      {
+        "sourceId": "node-1",
+        "targetId": "node-3",
+        "type": "successor",
+        "weight": 0.3,
+        "source": "curriculum_order",
+        "meta": {
+          "docGap": 1
+        }
+      },
+      {
+        "sourceId": "node-1",
+        "targetId": "node-4",
+        "type": "successor",
+        "weight": 0.3,
+        "source": "curriculum_order",
+        "meta": {
+          "docGap": 1
+        }
+      }
+    ],
+    "prioritized": [
+      {
+        "sourceId": "node-1",
+        "targetId": "node-3",
+        "type": "successor",
+        "weight": 0.3,
+        "source": "curriculum_order",
+        "meta": {
+          "docGap": 1
+        }
+      },
+      {
+        "sourceId": "node-1",
+        "targetId": "node-4",
+        "type": "successor",
+        "weight": 0.3,
+        "source": "curriculum_order",
+        "meta": {
+          "docGap": 1
+        }
+      },
+      {
+        "sourceId": "node-1",
+        "targetId": "node-2",
+        "type": "related",
+        "weight": 1,
+        "source": "cooccurrence",
+        "meta": {
+          "chunkId": "chk-1"
+        }
+      }
+    ],
+    "filterCandidates": {
+      "kept": [
+        {
+          "sourceId": "a",
+          "targetId": "b",
+          "type": "prerequisite",
+          "weight": 1,
+          "source": "llm"
+        }
+      ],
+      "dropped": 2
+    }
+  }
+}

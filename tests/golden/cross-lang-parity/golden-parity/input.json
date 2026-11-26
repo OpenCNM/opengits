@@ -1,0 +1,9 @@
+{
+  "op": "golden-parity",
+  "fixtures": {
+    "searchSnippet": "services/worker-sidecar/testdata/search-snippet.golden.json",
+    "tokenCounter": "services/worker-sidecar/testdata/token-counter.golden.json",
+    "storeChunks": "services/worker-sidecar/testdata/store-chunks.golden.json",
+    "armor": "services/worker-sidecar/testdata/armor.golden.json"
+  }
+}

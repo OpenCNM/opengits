@@ -1,0 +1,32 @@
+=== call-flow-with-upstream-and-downstream ===
+```mermaid
+flowchart TD
+  subgraph ChapterMod["Pipeline Engine"]
+    fn1["ParseEvent()"]
+    fn2["ValidateEvent()"]
+    fn1 --> fn2
+    fn2["ValidateEvent()"]
+    fn3["EmitRecord()"]
+    fn2 --> fn3
+  end
+  up1(["Prerequisite: IngestSource"]) --> fn1
+  fn3 --> down1(["Dependent: StorageSink"])
+```
+
+=== golden-symbols-fallback ===
+```mermaid
+flowchart TD
+  subgraph ChapterMod["Store Module"]
+    fn1["Store (type)"]
+    fn2["createStore (function)"]
+    fn1 -.-> fn2
+  end
+```
+
+=== empty-fallback-with-quote-escaping ===
+```mermaid
+flowchart TD
+  subgraph ChapterMod["My ''Cool'' Module"]
+    fn1["My ''Cool'' Module Core"]
+  end
+```

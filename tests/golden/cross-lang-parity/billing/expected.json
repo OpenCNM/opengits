@@ -1,0 +1,475 @@
+{
+  "fixturePath": "services/worker-sidecar/testdata/billing.golden.json",
+  "cases": [
+    {
+      "name": "defaults/single-doc-minimal",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "defaults/exact-chunk-multiple",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "defaults/just-over-chunk",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "defaults/doc-count-floor",
+      "got": {
+        "estimatedChunks": 7,
+        "baseCredits": 7,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "defaults/zero-chars-one-doc",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "defaults/public-discount",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 4,
+        "finalCredits": 0,
+        "rewardCredits": 4,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "defaults/pedagogy-multiplier",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 8,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "defaults/public-pedagogy",
+      "got": {
+        "estimatedChunks": 6,
+        "baseCredits": 12,
+        "finalCredits": 0,
+        "rewardCredits": 12,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "defaults/negative-discount-public",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 2,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "dynamic/single-doc-minimal",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "dynamic/exact-chunk-multiple",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "dynamic/just-over-chunk",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "dynamic/doc-count-floor",
+      "got": {
+        "estimatedChunks": 7,
+        "baseCredits": 7,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "dynamic/zero-chars-one-doc",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "dynamic/public-discount",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 4,
+        "finalCredits": 0,
+        "rewardCredits": 4,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "dynamic/pedagogy-multiplier",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 12,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "dynamic/public-pedagogy",
+      "got": {
+        "estimatedChunks": 6,
+        "baseCredits": 18,
+        "finalCredits": 0,
+        "rewardCredits": 18,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "dynamic/negative-discount-public",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 2,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "zero-discount/single-doc-minimal",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-discount/exact-chunk-multiple",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-discount/just-over-chunk",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-discount/doc-count-floor",
+      "got": {
+        "estimatedChunks": 7,
+        "baseCredits": 7,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-discount/zero-chars-one-doc",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-discount/public-discount",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 4,
+        "finalCredits": 0,
+        "rewardCredits": 4,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "zero-discount/pedagogy-multiplier",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 8,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-discount/public-pedagogy",
+      "got": {
+        "estimatedChunks": 6,
+        "baseCredits": 12,
+        "finalCredits": 0,
+        "rewardCredits": 12,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "zero-discount/negative-discount-public",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 2,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "negative-discount/single-doc-minimal",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "negative-discount/exact-chunk-multiple",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "negative-discount/just-over-chunk",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "negative-discount/doc-count-floor",
+      "got": {
+        "estimatedChunks": 7,
+        "baseCredits": 7,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "negative-discount/zero-chars-one-doc",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "negative-discount/public-discount",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 4,
+        "finalCredits": 0,
+        "rewardCredits": 4,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "negative-discount/pedagogy-multiplier",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 8,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "negative-discount/public-pedagogy",
+      "got": {
+        "estimatedChunks": 6,
+        "baseCredits": 12,
+        "finalCredits": 0,
+        "rewardCredits": 12,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "negative-discount/negative-discount-public",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 2,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "zero-chunk-size/single-doc-minimal",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-chunk-size/exact-chunk-multiple",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-chunk-size/just-over-chunk",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-chunk-size/doc-count-floor",
+      "got": {
+        "estimatedChunks": 7,
+        "baseCredits": 7,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-chunk-size/zero-chars-one-doc",
+      "got": {
+        "estimatedChunks": 1,
+        "baseCredits": 1,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-chunk-size/public-discount",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 4,
+        "finalCredits": 0,
+        "rewardCredits": 4,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "zero-chunk-size/pedagogy-multiplier",
+      "got": {
+        "estimatedChunks": 4,
+        "baseCredits": 8,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    },
+    {
+      "name": "zero-chunk-size/public-pedagogy",
+      "got": {
+        "estimatedChunks": 6,
+        "baseCredits": 12,
+        "finalCredits": 0,
+        "rewardCredits": 12,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "zero-chunk-size/negative-discount-public",
+      "got": {
+        "estimatedChunks": 2,
+        "baseCredits": 2,
+        "finalCredits": 0,
+        "rewardCredits": 2,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "cap/public-large-import",
+      "got": {
+        "estimatedChunks": 400,
+        "baseCredits": 400,
+        "finalCredits": 0,
+        "rewardCredits": 300,
+        "discountApplied": true
+      }
+    },
+    {
+      "name": "cap/private-large-import",
+      "got": {
+        "estimatedChunks": 400,
+        "baseCredits": 400,
+        "finalCredits": 0,
+        "rewardCredits": 0,
+        "discountApplied": false
+      }
+    }
+  ]
+}

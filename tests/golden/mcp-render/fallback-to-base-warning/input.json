@@ -1,0 +1,10 @@
+{
+  "ctxFlags": {
+    "fallback": true,
+    "requestedEdition": "ed_deep"
+  },
+  "result": {
+    "header": "Search Results for \"install\" across acme/calculator [Locator Mode]:\n\n",
+    "body": "--- Result 1 (Score: 87.0%) ---\n"
+  }
+}

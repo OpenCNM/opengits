@@ -1,0 +1,82 @@
+=== META ===
+{
+  "toc": [
+    {
+      "depth": 1,
+      "url": "#title",
+      "title": "Title"
+    }
+  ],
+  "frontmatter": {},
+  "deepDiveCount": 0
+}
+=== COMPILED ===
+"use strict";
+const {Fragment: _Fragment, jsx: _jsx, jsxs: _jsxs} = arguments[0];
+let toc = [{
+  depth: 1,
+  url: "#title",
+  title: _jsx(_Fragment, {
+    children: "Title"
+  })
+}];
+function _createMdxContent(props) {
+  const _components = {
+    h1: "h1",
+    p: "p",
+    strong: "strong",
+    ...props.components
+  }, {Card, DynamicVar, Step, Steps, UnknownMdxComponent} = _components;
+  if (!Card) _missingMdxReference("Card", true);
+  if (!DynamicVar) _missingMdxReference("DynamicVar", true);
+  if (!Step) _missingMdxReference("Step", true);
+  if (!Steps) _missingMdxReference("Steps", true);
+  if (!UnknownMdxComponent) _missingMdxReference("UnknownMdxComponent", true);
+  return _jsxs(_Fragment, {
+    children: [_jsx(_components.h1, {
+      id: "title",
+      children: "Title"
+    }), "\n", _jsxs(_components.p, {
+      children: ["some ", _jsx(_components.strong, {
+        children: "bold"
+      }), " paragraph"]
+    }), "\n", _jsx(Card, {
+      title: "hello",
+      children: "body text"
+    }), "\n", _jsx(Steps, {
+      children: _jsx(Step, {
+        title: "one",
+        children: "do it"
+      })
+    }), "\n", _jsx(UnknownMdxComponent, {
+      children: "secret sauce"
+    }), "\n", _jsx(UnknownMdxComponent, {
+      children: "哨兵内容"
+    }), "\n", _jsx(Card, {
+      children: "x"
+    }), "\n", _jsx(UnknownMdxComponent, {
+      children: "点我"
+    }), "\n", _jsxs(_components.p, {
+      children: ["当前时间是 ", _jsx(DynamicVar, {
+        name: "now"
+      }), " 点"]
+    })]
+  });
+}
+function MDXContent(props = {}) {
+  const {wrapper: MDXLayout} = props.components || ({});
+  return MDXLayout ? _jsx(MDXLayout, {
+    ...props,
+    children: _jsx(_createMdxContent, {
+      ...props
+    })
+  }) : _createMdxContent(props);
+}
+return {
+  toc,
+  default: MDXContent
+};
+function _missingMdxReference(id, component) {
+  throw new Error("Expected " + (component ? "component" : "object") + " `" + id + "` to be defined: you likely forgot to import, pass, or provide it.");
+}
+

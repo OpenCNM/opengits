@@ -1,0 +1,8 @@
+{
+  "op": "credits-parity-and-sync",
+  "paths": {
+    "settleGo": "services/worker-sidecar/internal/jobs/settle.go",
+    "prismaSchema": "prisma/schema.prisma",
+    "creditsSqlGo": "services/worker-sidecar/internal/platform/db/credits.sql.go"
+  }
+}

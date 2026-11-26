@@ -1,0 +1,86 @@
+{
+  "paragraphContentModel": [
+    {
+      "name": "single-inner-p-unwrap",
+      "html": "<p align=\"center\">The open source coding agent in your IDE, terminal, &#x26; desktop.</p>"
+    },
+    {
+      "name": "inline-rich-text-unwrap",
+      "html": "<p class=\"hero-lead\">Welcome to <strong>Cline</strong>: see <a href=\"https://docs.cline.bot\">Docs</a> or use <code>npm install</code></p>"
+    },
+    {
+      "name": "multi-paragraph-to-div",
+      "html": "<div align=\"center\"><p>段落一内容</p><p>段落二内容</p></div>"
+    },
+    {
+      "name": "block-heading-to-div",
+      "html": "<div align=\"center\"><h1 align=\"center\">Turbopack</h1></div>"
+    },
+    {
+      "name": "mdx-jsx-flow-element-p-unwrap",
+      "ast": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "p",
+          "attributes": [
+            {
+              "type": "mdxJsxAttribute",
+              "name": "align",
+              "value": "center"
+            }
+          ],
+          "children": [
+            {
+              "type": "element",
+              "tagName": "undefined",
+              "properties": {},
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "normal-paragraph-untouched",
+      "html": "<p>这是普通正文段落，不含子段落或块级元素。</p>"
+    }
+  ],
+  "polymorphicDemotion": [
+    {
+      "name": "empty-pseudo-tags-to-span",
+      "html": "<span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">&#x3C;name></span><span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">&#x3C;type></span><span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">&#x3C;T></span><span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">&#x3C;target_dir></span>"
+    },
+    {
+      "name": "unknown-tag-with-children",
+      "html": "<span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">inner text</span>"
+    },
+    {
+      "name": "forbidden-xss-tags-stripped",
+      "html": ""
+    },
+    {
+      "name": "standard-html-preserved",
+      "html": "<div id=\"container\"><p>Paragraph text</p><code>const x = 1;</code><table><tbody><tr><td>cell</td></tr></tbody></table></div>"
+    },
+    {
+      "name": "custom-web-component-with-children-preserved",
+      "html": "<my-web-component data-mode=\"test\">Component child</my-web-component>"
+    },
+    {
+      "name": "empty-hyphenated-cli-placeholders-demoted",
+      "html": "<span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">&#x3C;repo-url></span><span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">&#x3C;target-dir></span>"
+    },
+    {
+      "name": "unsafe-attributes-filtered",
+      "html": "<span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all custom-token\" id=\"token-1\" title=\"Token Hint\" role=\"term\" data-testid=\"token-test\" aria-label=\"token label\">&#x3C;token></span>"
+    },
+    {
+      "name": "comment-only-pseudo-tag-backfilled",
+      "html": "<span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">&#x3C;unknown_param></span>"
+    },
+    {
+      "name": "xml-namespace-tag-demoted",
+      "html": "<span data-syntax-role=\"placeholder-token\" class=\"syntax-placeholder-token font-mono text-xs px-1.5 py-0.5 rounded bg-theme-muted/15 text-theme-foreground border border-theme-border/60 inline-block align-baseline mx-0.5 select-all\">payload</span>"
+    }
+  ]
+}

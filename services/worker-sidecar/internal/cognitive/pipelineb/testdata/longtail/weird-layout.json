@@ -1,0 +1,61 @@
+{
+ "files": [
+  {
+   "path": "README.md",
+   "loc": 40,
+   "lang": "",
+   "isDoc": true,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "cli",
+   "loc": 200,
+   "lang": "",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "daemon",
+   "loc": 260,
+   "lang": "",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "go.mod",
+   "loc": 15,
+   "lang": "",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": true
+  },
+  {
+   "path": "lib.sh",
+   "loc": 80,
+   "lang": "",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "plugins/alpha.sh",
+   "loc": 120,
+   "lang": "",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "plugins/beta.sh",
+   "loc": 100,
+   "lang": "",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  }
+ ],
+ "name": "weird-layout"
+}

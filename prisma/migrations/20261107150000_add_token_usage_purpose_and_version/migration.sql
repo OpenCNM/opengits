@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "TokenUsageLog" ADD COLUMN IF NOT EXISTS "purpose" TEXT,
+ADD COLUMN IF NOT EXISTS "promptVersion" INTEGER;

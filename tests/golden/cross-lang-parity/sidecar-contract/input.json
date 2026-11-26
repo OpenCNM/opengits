@@ -1,0 +1,4 @@
+{
+  "op": "sidecar-contract",
+  "goldenDir": "services/worker-sidecar/internal/userinteraction/testdata"
+}

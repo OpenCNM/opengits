@@ -1,0 +1,325 @@
+{
+  "generatedBy": "scripts/parity-goldens/import-extractor.ts (TS = contract source of truth)",
+  "totalLanguages": 35,
+  "cases": [
+    {
+      "language": "typescript",
+      "filePath": "src/index.ts",
+      "content": "import { useState } from 'react';\nimport express from 'express';",
+      "expectedImports": [
+        "express",
+        "react"
+      ]
+    },
+    {
+      "language": "javascript",
+      "filePath": "src/index.js",
+      "content": "import path from 'path';\nimport express from 'express';",
+      "expectedImports": [
+        "express",
+        "path"
+      ]
+    },
+    {
+      "language": "python",
+      "filePath": "app/main.py",
+      "content": "import os\nimport sys\nfrom typing import List\nfrom fastapi import FastAPI",
+      "expectedImports": [
+        "fastapi",
+        "os",
+        "sys",
+        "typing"
+      ]
+    },
+    {
+      "language": "mojo",
+      "filePath": "main.mojo",
+      "content": "import math\nfrom python import Python",
+      "expectedImports": [
+        "math",
+        "python"
+      ]
+    },
+    {
+      "language": "bend",
+      "filePath": "main.bend",
+      "content": "import List/map\nuse Math/sin",
+      "expectedImports": [
+        "List/map",
+        "Math/sin"
+      ]
+    },
+    {
+      "language": "go",
+      "filePath": "main.go",
+      "content": "package main\nimport \"fmt\"\nimport (\n\t\"os\"\n\t\"path/filepath\"\n)",
+      "expectedImports": [
+        "fmt",
+        "os",
+        "path/filepath"
+      ]
+    },
+    {
+      "language": "rust",
+      "filePath": "src/main.rs",
+      "content": "use std::collections::HashMap;\nuse crate::models::User;\nmod routes;",
+      "expectedImports": [
+        "crate::models::User",
+        "std::collections::HashMap"
+      ]
+    },
+    {
+      "language": "java",
+      "filePath": "src/Main.java",
+      "content": "import java.util.List;\nimport static java.lang.Math.PI;",
+      "expectedImports": [
+        "java.lang.Math.PI",
+        "java.util.List"
+      ]
+    },
+    {
+      "language": "cpp",
+      "filePath": "src/main.cpp",
+      "content": "#include <iostream>\n#include \"utils.h\"",
+      "expectedImports": [
+        "iostream",
+        "utils.h"
+      ]
+    },
+    {
+      "language": "csharp",
+      "filePath": "src/Program.cs",
+      "content": "using System;\nusing System.Collections.Generic;",
+      "expectedImports": [
+        "System",
+        "System.Collections.Generic"
+      ]
+    },
+    {
+      "language": "ruby",
+      "filePath": "app.rb",
+      "content": "require 'sinatra'\nrequire_relative 'config/db'\nload 'helpers.rb'",
+      "expectedImports": [
+        "config/db",
+        "helpers.rb",
+        "sinatra"
+      ]
+    },
+    {
+      "language": "php",
+      "filePath": "index.php",
+      "content": "<?php\nuse App\\Models\\User;\nrequire 'vendor/autoload.php';",
+      "expectedImports": [
+        "App\\Models\\User"
+      ]
+    },
+    {
+      "language": "swift",
+      "filePath": "main.swift",
+      "content": "import Foundation\nimport SwiftUI",
+      "expectedImports": [
+        "Foundation",
+        "SwiftUI"
+      ]
+    },
+    {
+      "language": "kotlin",
+      "filePath": "Main.kt",
+      "content": "import java.io.File\nimport kotlinx.coroutines.*",
+      "expectedImports": [
+        "java.io.File",
+        "kotlinx.coroutines.*"
+      ]
+    },
+    {
+      "language": "zig",
+      "filePath": "main.zig",
+      "content": "const std = @import(\"std\");\nconst helper = @import(\"./helper.zig\");",
+      "expectedImports": [
+        "./helper.zig",
+        "std"
+      ]
+    },
+    {
+      "language": "nim",
+      "filePath": "main.nim",
+      "content": "import strutils\ninclude ./config",
+      "expectedImports": [
+        "./config",
+        "strutils"
+      ]
+    },
+    {
+      "language": "gleam",
+      "filePath": "main.gleam",
+      "content": "import gleam/io\nimport app/router",
+      "expectedImports": [
+        "app/router",
+        "gleam/io"
+      ]
+    },
+    {
+      "language": "moonbit",
+      "filePath": "main.mbt",
+      "content": "import \"moonbitlang/core/vec\"",
+      "expectedImports": [
+        "moonbitlang/core/vec"
+      ]
+    },
+    {
+      "language": "typst",
+      "filePath": "main.typ",
+      "content": "#import \"template.typ\"",
+      "expectedImports": [
+        "template.typ"
+      ]
+    },
+    {
+      "language": "odin",
+      "filePath": "main.odin",
+      "content": "import fmt\nimport core_os",
+      "expectedImports": [
+        "core_os",
+        "fmt"
+      ]
+    },
+    {
+      "language": "carbon",
+      "filePath": "main.carbon",
+      "content": "import Geometry\nimport Core",
+      "expectedImports": [
+        "Core",
+        "Geometry"
+      ]
+    },
+    {
+      "language": "vlang",
+      "filePath": "main.v",
+      "content": "import os\nimport json",
+      "expectedImports": [
+        "json",
+        "os"
+      ]
+    },
+    {
+      "language": "julia",
+      "filePath": "main.jl",
+      "content": "using DataFrames\nimport CSV\ninclude (\"helpers.jl\")",
+      "expectedImports": [
+        "CSV",
+        "DataFrames",
+        "helpers.jl"
+      ]
+    },
+    {
+      "language": "r",
+      "filePath": "main.r",
+      "content": "library(ggplot2)\nrequire(dplyr)\nsource(\"utils.R\")",
+      "expectedImports": [
+        "dplyr",
+        "ggplot2",
+        "utils.R"
+      ]
+    },
+    {
+      "language": "solidity",
+      "filePath": "Token.sol",
+      "content": "import \"./IERC20.sol\";\nimport { SafeMath } from \"./SafeMath.sol\";",
+      "expectedImports": [
+        "./IERC20.sol",
+        "./SafeMath.sol"
+      ]
+    },
+    {
+      "language": "dart",
+      "filePath": "main.dart",
+      "content": "import 'package:flutter/material.dart';\nexport 'src/models.dart';",
+      "expectedImports": [
+        "package:flutter/material.dart",
+        "src/models.dart"
+      ]
+    },
+    {
+      "language": "lua",
+      "filePath": "main.lua",
+      "content": "local socket = require(\"socket\")\nlocal json = require(\"cjson\")",
+      "expectedImports": [
+        "cjson",
+        "socket"
+      ]
+    },
+    {
+      "language": "elixir",
+      "filePath": "app.ex",
+      "content": "alias App.Repo\nimport Plug.Conn\nuse GenServer\nrequire Logger",
+      "expectedImports": [
+        "App.Repo",
+        "GenServer",
+        "Logger",
+        "Plug.Conn"
+      ]
+    },
+    {
+      "language": "erlang",
+      "filePath": "app.erl",
+      "content": "-module(app).\n-include(\"records.hrl\").\n-include_lib(\"kernel/include/file.hrl\").",
+      "expectedImports": [
+        "kernel/include/file.hrl",
+        "records.hrl"
+      ]
+    },
+    {
+      "language": "scala",
+      "filePath": "Main.scala",
+      "content": "import scala.collection.mutable.ListBuffer\nimport akka.actor._",
+      "expectedImports": [
+        "akka.actor._",
+        "scala.collection.mutable.ListBuffer"
+      ]
+    },
+    {
+      "language": "haskell",
+      "filePath": "Main.hs",
+      "content": "import Data.List\nimport qualified Data.Map as Map",
+      "expectedImports": [
+        "Data.List",
+        "Data.Map"
+      ]
+    },
+    {
+      "language": "ocaml",
+      "filePath": "main.ml",
+      "content": "open Printf\nopen Base",
+      "expectedImports": [
+        "Base",
+        "Printf"
+      ]
+    },
+    {
+      "language": "clojure",
+      "filePath": "core.clj",
+      "content": "(ns my-app.core\n  (:require [clojure.string :as str]))",
+      "expectedImports": [
+        "clojure.string"
+      ]
+    },
+    {
+      "language": "fsharp",
+      "filePath": "Program.fs",
+      "content": "open System\nusing System.IO;",
+      "expectedImports": [
+        "System",
+        "System.IO"
+      ]
+    },
+    {
+      "language": "groovy",
+      "filePath": "Main.groovy",
+      "content": "import groovy.json.JsonSlurper\nimport java.util.Date;",
+      "expectedImports": [
+        "groovy.json.JsonSlurper",
+        "java.util.Date"
+      ]
+    }
+  ]
+}

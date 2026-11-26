@@ -1,0 +1,95 @@
+{
+  "generatedBy": "frozen fixture, hand-maintained（原 TS 生成脚本已于 2026-11 死代码清算退役）",
+  "cases": [
+    {
+      "name": "pandoc-image-dimension",
+      "input": "# Test Image\n![fig](/images/fig.png){height=55%}",
+      "expected": "# Test Image\n![fig](/images/fig.png)"
+    },
+    {
+      "name": "raw-json-in-prose",
+      "input": "# API Spec\nBelow is raw json:\n{ \"status\": 200, \"choices\": [{ \"message\": { \"role\": \"user\" } }] }",
+      "expected": "# API Spec\nBelow is raw json:\n&#123; \"status\": 200, \"choices\": [&#123; \"message\": &#123; \"role\": \"user\" &#125; &#125;] &#125;"
+    },
+    {
+      "name": "prompt-template-vars",
+      "input": "# Prompt Engineering\nGiven query: {query} and context: {context}",
+      "expected": "# Prompt Engineering\nGiven query: &#123;query&#125; and context: &#123;context&#125;"
+    },
+    {
+      "name": "fenced-code-block-preserved",
+      "input": "# Code Block\n```json\n{ \"raw_code\": true, \"height\": \"55%\" }\n```",
+      "expected": "# Code Block\n```json\n{ \"raw_code\": true, \"height\": \"55%\" }\n```"
+    },
+    {
+      "name": "inline-code-preserved",
+      "input": "Inline code like `const obj = { a: 1 };` should stay untouched.",
+      "expected": "Inline code like `const obj = { a: 1 };` should stay untouched."
+    },
+    {
+      "name": "multiline-invalid-expression",
+      "input": "# Multi-line\nHere is an invalid expression:\n{\n  \"this\": \"is\",\n  \"not\": \"valid js\"\n}",
+      "expected": "# Multi-line\nHere is an invalid expression:\n&#123;\n  \"this\": \"is\",\n  \"not\": \"valid js\"\n&#125;"
+    },
+    {
+      "name": "nested-braces",
+      "input": "# Nested Braces\nLook at this json: { \"outer\": { \"inner\": true } }",
+      "expected": "# Nested Braces\nLook at this json: &#123; \"outer\": &#123; \"inner\": true &#125; &#125;"
+    },
+    {
+      "name": "unclosed-brace",
+      "input": "# Unclosed\nWhere { x > 5 and y < 10",
+      "expected": "# Unclosed\nWhere &#123; x > 5 and y < 10"
+    },
+    {
+      "name": "orphan-closing-brace",
+      "input": "# Orphan\nWhere x > 5 } and y < 10",
+      "expected": "# Orphan\nWhere x > 5 &#125; and y < 10"
+    },
+    {
+      "name": "image-followed-by-brace",
+      "input": "![fig](/images/fig.png) and some text {variable_here}",
+      "expected": "![fig](/images/fig.png) and some text &#123;variable_here&#125;"
+    },
+    {
+      "name": "sentinels-and-concept-manifest",
+      "input": "===CONTENT_BEGIN===\n# Hello\n<concept_manifest><item>概念</item></concept_manifest>\nText with {brace}===CONTENT_END===",
+      "expected": "\n# Hello\n\nText with &#123;brace&#125;"
+    },
+    {
+      "name": "blank-input",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "name": "fenced-code-with-csharp-alias",
+      "input": "# C# Code\n```c#\nint x = 1;\n```\nSome {brace} in text.",
+      "expected": "# C# Code\n```c#\nint x = 1;\n```\nSome &#123;brace&#125; in text."
+    },
+    {
+      "name": "fenced-code-with-env-alias",
+      "input": "# Env\n```env\nFOO=bar\n```\nHere {is} an env block.",
+      "expected": "# Env\n```env\nFOO=bar\n```\nHere &#123;is&#125; an env block."
+    },
+    {
+      "name": "fenced-code-with-pipe-title",
+      "input": "# Pipe\n```typescript|title=main.ts\nconst x = 1;\n```\nText with {var}.",
+      "expected": "# Pipe\n```typescript|title=main.ts\nconst x = 1;\n```\nText with &#123;var&#125;."
+    },
+    {
+      "name": "fenced-code-with-tilde-and-indent",
+      "input": "# Tildes\n   ~~~python\nprint({\"a\": 1})\n   ~~~\nProse with {val}.",
+      "expected": "# Tildes\n   ~~~python\nprint({\"a\": 1})\n   ~~~\nProse with &#123;val&#125;."
+    },
+    {
+      "name": "inline-code-with-double-backtick",
+      "input": "Text with `` `nested` {brace} `` and prose {outside}.",
+      "expected": "Text with `` `nested` {brace} `` and prose &#123;outside&#125;."
+    },
+    {
+      "name": "unclosed-fenced-code-block",
+      "input": "# Header\n```ts\nfunction foo() {\n  return { a: 1 };\n",
+      "expected": "# Header\n```ts\nfunction foo() {\n  return { a: 1 };\n"
+    }
+  ]
+}

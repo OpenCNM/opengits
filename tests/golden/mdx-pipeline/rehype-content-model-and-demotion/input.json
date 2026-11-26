@@ -1,0 +1,188 @@
+{
+  "op": "rehype-content-model-and-demotion",
+  "paragraphContentModel": [
+    {
+      "name": "single-inner-p-unwrap",
+      "nodes": [
+        {
+          "tag": "p",
+          "props": { "align": "center" },
+          "children": [
+            { "tag": "p", "children": ["The open source coding agent in your IDE, terminal, & desktop."] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "inline-rich-text-unwrap",
+      "nodes": [
+        {
+          "tag": "p",
+          "props": { "className": "hero-lead" },
+          "children": [
+            {
+              "tag": "p",
+              "children": [
+                "Welcome to ",
+                { "tag": "strong", "children": ["Cline"] },
+                ": see ",
+                { "tag": "a", "props": { "href": "https://docs.cline.bot" }, "children": ["Docs"] },
+                " or use ",
+                { "tag": "code", "children": ["npm install"] }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "multi-paragraph-to-div",
+      "nodes": [
+        {
+          "tag": "p",
+          "props": { "align": "center" },
+          "children": [
+            { "tag": "p", "children": ["段落一内容"] },
+            { "tag": "p", "children": ["段落二内容"] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "block-heading-to-div",
+      "nodes": [
+        {
+          "tag": "p",
+          "props": { "align": "center" },
+          "children": [
+            { "tag": "h1", "props": { "align": "center" }, "children": ["Turbopack"] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mdx-jsx-flow-element-p-unwrap",
+      "assertAstOnly": true,
+      "nodes": [
+        {
+          "rawType": "mdxJsxFlowElement",
+          "name": "p",
+          "attributes": [{ "type": "mdxJsxAttribute", "name": "align", "value": "center" }],
+          "children": [
+            {
+              "rawType": "element",
+              "tagName": "p",
+              "properties": {},
+              "children": [{ "type": "text", "value": "JSX 段落文本" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "normal-paragraph-untouched",
+      "nodes": [
+        { "tag": "p", "children": ["这是普通正文段落，不含子段落或块级元素。"] }
+      ]
+    }
+  ],
+  "polymorphicDemotion": [
+    {
+      "name": "empty-pseudo-tags-to-span",
+      "nodes": [
+        { "tag": "name" },
+        { "tag": "type" },
+        { "rawType": "element", "tagName": "T", "properties": {}, "children": [] },
+        { "tag": "target_dir" }
+      ]
+    },
+    {
+      "name": "unknown-tag-with-children",
+      "nodes": [
+        { "tag": "custom", "children": ["inner text"] }
+      ]
+    },
+    {
+      "name": "forbidden-xss-tags-stripped",
+      "nodes": [
+        { "tag": "script", "children": ["alert(\"XSS\")"] },
+        { "tag": "iframe", "props": { "src": "https://malicious.com" } },
+        { "tag": "style", "children": ["body { display: none; }"] },
+        { "tag": "object", "props": { "data": "exploit.swf" } }
+      ]
+    },
+    {
+      "name": "standard-html-preserved",
+      "nodes": [
+        {
+          "tag": "div",
+          "props": { "id": "container" },
+          "children": [
+            { "tag": "p", "children": ["Paragraph text"] },
+            { "tag": "code", "children": ["const x = 1;"] },
+            {
+              "tag": "table",
+              "children": [
+                {
+                  "tag": "tbody",
+                  "children": [
+                    { "tag": "tr", "children": [{ "tag": "td", "children": ["cell"] }] }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "custom-web-component-with-children-preserved",
+      "nodes": [
+        { "tag": "my-web-component", "props": { "data-mode": "test" }, "children": ["Component child"] }
+      ]
+    },
+    {
+      "name": "empty-hyphenated-cli-placeholders-demoted",
+      "nodes": [
+        { "tag": "repo-url" },
+        { "tag": "target-dir" }
+      ]
+    },
+    {
+      "name": "unsafe-attributes-filtered",
+      "nodes": [
+        {
+          "tag": "token",
+          "props": {
+            "id": "token-1",
+            "title": "Token Hint",
+            "role": "term",
+            "data-testid": "token-test",
+            "aria-label": "token label",
+            "style": "color: red",
+            "onclick": "alert(1)",
+            "invalidProp": "bad-value",
+            "className": ["custom-token"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "comment-only-pseudo-tag-backfilled",
+      "nodes": [
+        {
+          "rawType": "element",
+          "tagName": "unknown_param",
+          "properties": {},
+          "children": [{ "rawType": "comment", "value": "some comment" }]
+        }
+      ]
+    },
+    {
+      "name": "xml-namespace-tag-demoted",
+      "nodes": [
+        { "tag": "custom:element", "children": ["payload"] }
+      ]
+    }
+  ]
+}

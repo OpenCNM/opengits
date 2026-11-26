@@ -1,0 +1,61 @@
+{
+ "files": [
+  {
+   "path": "Makefile",
+   "loc": 30,
+   "lang": "",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": true
+  },
+  {
+   "path": "include/hardcore/alloc.h",
+   "loc": 80,
+   "lang": "c",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "include/hardcore/math.h",
+   "loc": 60,
+   "lang": "c",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "src/alloc.c",
+   "loc": 350,
+   "lang": "c",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "src/io.c",
+   "loc": 280,
+   "lang": "c",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "src/main.c",
+   "loc": 120,
+   "lang": "c",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  },
+  {
+   "path": "src/math.c",
+   "loc": 410,
+   "lang": "c",
+   "isDoc": false,
+   "isTest": false,
+   "isConfig": false
+  }
+ ],
+ "name": "no-readme-hardcore"
+}

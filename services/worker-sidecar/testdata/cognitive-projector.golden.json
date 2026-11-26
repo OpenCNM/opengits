@@ -1,0 +1,1160 @@
+{
+  "version": 1,
+  "phaseVoteCases": [
+    {
+      "name": "empty-files-adapter",
+      "input": {
+        "files": [],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase4_adapter",
+        "phaseOrder": 4,
+        "rationale": "No primary files detected; defaulted to infrastructure tier."
+      }
+    },
+    {
+      "name": "diluted-entry-bootstrap-domain-model",
+      "input": {
+        "files": [
+          {
+            "isEntryPoint": true,
+            "role": "entry_point",
+            "pageRank": 0.02
+          },
+          {
+            "isEntryPoint": false,
+            "role": "core_contract",
+            "pageRank": 0.3
+          },
+          {
+            "isEntryPoint": false,
+            "role": "core_contract",
+            "pageRank": 0.28
+          },
+          {
+            "isEntryPoint": false,
+            "role": "core_contract",
+            "pageRank": 0.25
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase2_entity",
+        "phaseOrder": 2,
+        "rationale": "Acts as a foundational data contract or domain state referenced across the system."
+      }
+    },
+    {
+      "name": "genuine-bootstrap-entry-perception",
+      "input": {
+        "files": [
+          {
+            "isEntryPoint": true,
+            "role": "entry_point",
+            "pageRank": 0.6
+          },
+          {
+            "isEntryPoint": false,
+            "role": "pipeline_flow",
+            "pageRank": 0.1
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase1_perception",
+        "phaseOrder": 1,
+        "rationale": "Contains the system entry points and execution bootstrap logic (topological mass gated)."
+      }
+    },
+    {
+      "name": "core-contract-dominance",
+      "input": {
+        "files": [
+          {
+            "isEntryPoint": false,
+            "role": "core_contract",
+            "pageRank": 0.5
+          },
+          {
+            "isEntryPoint": false,
+            "role": "pipeline_flow",
+            "pageRank": 0.3
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase2_entity",
+        "phaseOrder": 2,
+        "rationale": "Acts as a foundational data contract or domain state referenced across the system."
+      }
+    },
+    {
+      "name": "pipeline-flow-dominance",
+      "input": {
+        "files": [
+          {
+            "isEntryPoint": false,
+            "role": "pipeline_flow",
+            "pageRank": 0.5
+          },
+          {
+            "isEntryPoint": false,
+            "role": "leaf_utility",
+            "pageRank": 0.1
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase3_pipeline",
+        "phaseOrder": 3,
+        "rationale": "Executes core workflow, data transformation, and processing pipelines."
+      }
+    },
+    {
+      "name": "zero-mass-role-count-fallback-contract",
+      "input": {
+        "files": [
+          {
+            "isEntryPoint": true,
+            "role": "entry_point",
+            "pageRank": 0
+          },
+          {
+            "isEntryPoint": false,
+            "role": "core_contract",
+            "pageRank": 0
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase2_entity",
+        "phaseOrder": 2,
+        "rationale": "Acts as a foundational data contract or domain state referenced across the system."
+      }
+    },
+    {
+      "name": "zero-mass-role-count-fallback-pipeline",
+      "input": {
+        "files": [
+          {
+            "isEntryPoint": false,
+            "role": "pipeline_flow",
+            "pageRank": 0
+          },
+          {
+            "isEntryPoint": false,
+            "role": "leaf_utility",
+            "pageRank": 0
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase3_pipeline",
+        "phaseOrder": 3,
+        "rationale": "Executes core workflow, data transformation, and processing pipelines."
+      }
+    },
+    {
+      "name": "zero-mass-role-count-fallback-entry",
+      "input": {
+        "files": [
+          {
+            "isEntryPoint": true,
+            "role": "entry_point",
+            "pageRank": 0
+          },
+          {
+            "isEntryPoint": false,
+            "role": "leaf_utility",
+            "pageRank": 0
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase1_perception",
+        "phaseOrder": 1,
+        "rationale": "Contains the system entry points and execution bootstrap logic."
+      }
+    },
+    {
+      "name": "leaf-utility-only-honest-adapter",
+      "input": {
+        "files": [
+          {
+            "isEntryPoint": false,
+            "role": "leaf_utility",
+            "pageRank": 0.3
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": {
+        "phase": "phase4_adapter",
+        "phaseOrder": 4,
+        "rationale": "Comprises leaf utilities and supporting helpers without entry, contract, or pipeline mass."
+      }
+    }
+  ],
+  "projectCases": [
+    {
+      "name": "four-phase-gradient-ordering-with-dependencies",
+      "input": {
+        "graph": {
+          "nodes": {
+            "src/main.ts": {
+              "path": "src/main.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 1,
+              "pageRank": 0.4,
+              "role": "entry_point",
+              "importedBy": [],
+              "imports": [
+                "src/api/router.ts"
+              ],
+              "isBackbone": false,
+              "isEntryPoint": true,
+              "symbols": []
+            },
+            "src/api/router.ts": {
+              "path": "src/api/router.ts",
+              "language": "typescript",
+              "inDegree": 1,
+              "outDegree": 1,
+              "pageRank": 0.3,
+              "role": "pipeline_flow",
+              "importedBy": [
+                "src/main.ts"
+              ],
+              "imports": [
+                "src/models/user.ts"
+              ],
+              "isBackbone": true,
+              "isEntryPoint": false,
+              "symbols": []
+            },
+            "src/models/user.ts": {
+              "path": "src/models/user.ts",
+              "language": "typescript",
+              "inDegree": 1,
+              "outDegree": 0,
+              "pageRank": 0.2,
+              "role": "core_contract",
+              "importedBy": [
+                "src/api/router.ts"
+              ],
+              "imports": [],
+              "isBackbone": true,
+              "isEntryPoint": false,
+              "symbols": [
+                {
+                  "name": "UserModel",
+                  "kind": "type",
+                  "startLine": 1,
+                  "endLine": 1,
+                  "exported": true
+                }
+              ]
+            },
+            "src/utils/format.ts": {
+              "path": "src/utils/format.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.1,
+              "role": "leaf_utility",
+              "importedBy": [],
+              "imports": [],
+              "isBackbone": false,
+              "isEntryPoint": false,
+              "symbols": [
+                {
+                  "name": "format",
+                  "kind": "function",
+                  "startLine": 1,
+                  "endLine": 1,
+                  "exported": true
+                }
+              ]
+            }
+          },
+          "nodeList": [
+            {
+              "path": "src/main.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 1,
+              "pageRank": 0.4,
+              "role": "entry_point",
+              "importedBy": [],
+              "imports": [
+                "src/api/router.ts"
+              ],
+              "isBackbone": false,
+              "isEntryPoint": true,
+              "symbols": []
+            },
+            {
+              "path": "src/api/router.ts",
+              "language": "typescript",
+              "inDegree": 1,
+              "outDegree": 1,
+              "pageRank": 0.3,
+              "role": "pipeline_flow",
+              "importedBy": [
+                "src/main.ts"
+              ],
+              "imports": [
+                "src/models/user.ts"
+              ],
+              "isBackbone": true,
+              "isEntryPoint": false,
+              "symbols": []
+            },
+            {
+              "path": "src/models/user.ts",
+              "language": "typescript",
+              "inDegree": 1,
+              "outDegree": 0,
+              "pageRank": 0.2,
+              "role": "core_contract",
+              "importedBy": [
+                "src/api/router.ts"
+              ],
+              "imports": [],
+              "isBackbone": true,
+              "isEntryPoint": false,
+              "symbols": [
+                {
+                  "name": "UserModel",
+                  "kind": "type",
+                  "startLine": 1,
+                  "endLine": 1,
+                  "exported": true
+                }
+              ]
+            },
+            {
+              "path": "src/utils/format.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.1,
+              "role": "leaf_utility",
+              "importedBy": [],
+              "imports": [],
+              "isBackbone": false,
+              "isEntryPoint": false,
+              "symbols": [
+                {
+                  "name": "format",
+                  "kind": "function",
+                  "startLine": 1,
+                  "endLine": 1,
+                  "exported": true
+                }
+              ]
+            }
+          ],
+          "edges": [
+            {
+              "source": "src/main.ts",
+              "target": "src/api/router.ts"
+            },
+            {
+              "source": "src/api/router.ts",
+              "target": "src/models/user.ts"
+            }
+          ],
+          "softEdges": [],
+          "goldenSymbols": [
+            {
+              "file": "src/models/user.ts",
+              "name": "UserModel",
+              "kind": "type",
+              "score": 0.8,
+              "importers": 2
+            }
+          ],
+          "callEdges": [
+            {
+              "callerFile": "src/main.ts",
+              "callerSymbol": "start",
+              "calleeFile": "src/api/router.ts",
+              "calleeSymbol": "route",
+              "line": 10
+            }
+          ],
+          "entryPoints": [
+            "src/main.ts"
+          ],
+          "backboneNodes": [
+            "src/api/router.ts",
+            "src/models/user.ts"
+          ],
+          "coreContractNodes": [
+            "src/models/user.ts"
+          ],
+          "pipelineNodes": [
+            "src/api/router.ts"
+          ],
+          "symbolsByFile": {
+            "src/models/user.ts": [
+              {
+                "name": "UserModel",
+                "kind": "type",
+                "startLine": 1,
+                "endLine": 1,
+                "exported": true
+              }
+            ],
+            "src/utils/format.ts": [
+              {
+                "name": "format",
+                "kind": "function",
+                "startLine": 1,
+                "endLine": 1,
+                "exported": true
+              }
+            ]
+          },
+          "meta": {
+            "totalFiles": 4,
+            "astParsedFiles": 4,
+            "registryFallbackFiles": 0,
+            "skippedFiles": 0,
+            "droppedTestEdges": 0,
+            "unresolvedImportCount": 0,
+            "softEdgeCount": 0,
+            "ambiguousSoftReferenceCount": 0,
+            "unresolvedCallSiteCount": 0,
+            "grammarsUsed": [
+              "typescript"
+            ]
+          }
+        },
+        "modules": [
+          {
+            "name": "Utils",
+            "summary": "Helper formatting",
+            "directories": [
+              "src/utils"
+            ],
+            "draftIndex": 0
+          },
+          {
+            "name": "API Router",
+            "summary": "Routing flow",
+            "directories": [
+              "src/api"
+            ],
+            "draftIndex": 1
+          },
+          {
+            "name": "Entry Point",
+            "summary": "Bootstrap",
+            "directories": [
+              "src/main.ts"
+            ],
+            "draftIndex": 2
+          },
+          {
+            "name": "Data Models",
+            "summary": "User models",
+            "directories": [
+              "src/models"
+            ],
+            "draftIndex": 3
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": [
+        {
+          "name": "Entry Point",
+          "summary": "Bootstrap",
+          "phase": "phase1_perception",
+          "phaseOrder": 1,
+          "teachingOrder": 1,
+          "directories": [
+            "src/main.ts"
+          ],
+          "primaryFiles": [
+            "src/main.ts"
+          ],
+          "backboneCount": 0,
+          "entryPointCount": 1,
+          "averagePageRank": 0.4,
+          "cognitiveRationale": "Contains the system entry points and execution bootstrap logic (topological mass gated).",
+          "upstreamModules": [
+            "API Router"
+          ],
+          "downstreamModules": [],
+          "draftIndex": 2,
+          "goldenSymbols": [],
+          "callFlow": []
+        },
+        {
+          "name": "Data Models",
+          "summary": "User models",
+          "phase": "phase2_entity",
+          "phaseOrder": 2,
+          "teachingOrder": 2,
+          "directories": [
+            "src/models"
+          ],
+          "primaryFiles": [
+            "src/models/user.ts"
+          ],
+          "backboneCount": 1,
+          "entryPointCount": 0,
+          "averagePageRank": 0.2,
+          "cognitiveRationale": "Acts as a foundational data contract or domain state referenced across the system.",
+          "upstreamModules": [],
+          "downstreamModules": [
+            "API Router"
+          ],
+          "draftIndex": 3,
+          "goldenSymbols": [
+            {
+              "name": "UserModel",
+              "file": "src/models/user.ts",
+              "kind": "type"
+            }
+          ],
+          "callFlow": []
+        },
+        {
+          "name": "API Router",
+          "summary": "Routing flow",
+          "phase": "phase3_pipeline",
+          "phaseOrder": 3,
+          "teachingOrder": 3,
+          "directories": [
+            "src/api"
+          ],
+          "primaryFiles": [
+            "src/api/router.ts"
+          ],
+          "backboneCount": 1,
+          "entryPointCount": 0,
+          "averagePageRank": 0.3,
+          "cognitiveRationale": "Executes core workflow, data transformation, and processing pipelines.",
+          "upstreamModules": [
+            "Data Models"
+          ],
+          "downstreamModules": [
+            "Entry Point"
+          ],
+          "draftIndex": 1,
+          "goldenSymbols": [],
+          "callFlow": []
+        },
+        {
+          "name": "Utils",
+          "summary": "Helper formatting",
+          "phase": "phase4_adapter",
+          "phaseOrder": 4,
+          "teachingOrder": 4,
+          "directories": [
+            "src/utils"
+          ],
+          "primaryFiles": [
+            "src/utils/format.ts"
+          ],
+          "backboneCount": 0,
+          "entryPointCount": 0,
+          "averagePageRank": 0.1,
+          "cognitiveRationale": "Comprises leaf utilities and supporting helpers without entry, contract, or pipeline mass.",
+          "upstreamModules": [],
+          "downstreamModules": [],
+          "draftIndex": 0,
+          "goldenSymbols": [],
+          "callFlow": []
+        }
+      ]
+    },
+    {
+      "name": "collapsed-adapter-diversification",
+      "input": {
+        "graph": {
+          "nodeList": [
+            {
+              "path": "lib/foundation/util.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.3,
+              "role": "leaf_utility",
+              "isBackbone": true,
+              "isEntryPoint": false
+            },
+            {
+              "path": "lib/pipeline/flow.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.25,
+              "role": "leaf_utility",
+              "isBackbone": false,
+              "isEntryPoint": false
+            },
+            {
+              "path": "lib/adapters/api.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.2,
+              "role": "leaf_utility",
+              "isBackbone": false,
+              "isEntryPoint": false
+            },
+            {
+              "path": "lib/edge/tiny.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.1,
+              "role": "leaf_utility",
+              "isBackbone": false,
+              "isEntryPoint": false
+            }
+          ],
+          "edges": [
+            {
+              "source": "lib/pipeline/flow.ts",
+              "target": "lib/foundation/util.ts"
+            },
+            {
+              "source": "lib/adapters/api.ts",
+              "target": "lib/pipeline/flow.ts"
+            },
+            {
+              "source": "lib/edge/tiny.ts",
+              "target": "lib/adapters/api.ts"
+            }
+          ],
+          "softEdges": [],
+          "goldenSymbols": [],
+          "callEdges": []
+        },
+        "modules": [
+          {
+            "name": "core-foundation",
+            "summary": "s1",
+            "directories": [
+              "lib/foundation"
+            ]
+          },
+          {
+            "name": "pipeline-kit",
+            "summary": "s2",
+            "directories": [
+              "lib/pipeline"
+            ]
+          },
+          {
+            "name": "adapter-bundle",
+            "summary": "s3",
+            "directories": [
+              "lib/adapters"
+            ]
+          },
+          {
+            "name": "edge-helpers",
+            "summary": "s4",
+            "directories": [
+              "lib/edge"
+            ]
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": [
+        {
+          "name": "core-foundation",
+          "summary": "s1",
+          "phase": "phase2_entity",
+          "phaseOrder": 2,
+          "teachingOrder": 1,
+          "directories": [
+            "lib/foundation"
+          ],
+          "primaryFiles": [
+            "lib/foundation/util.ts"
+          ],
+          "backboneCount": 1,
+          "entryPointCount": 0,
+          "averagePageRank": 0.3,
+          "cognitiveRationale": "Re-tiered from a collapsed adapter gradient by dependency topology: depth 0, 1 in-set dependents.",
+          "upstreamModules": [],
+          "downstreamModules": [
+            "pipeline-kit"
+          ],
+          "goldenSymbols": [],
+          "callFlow": []
+        },
+        {
+          "name": "pipeline-kit",
+          "summary": "s2",
+          "phase": "phase3_pipeline",
+          "phaseOrder": 3,
+          "teachingOrder": 2,
+          "directories": [
+            "lib/pipeline"
+          ],
+          "primaryFiles": [
+            "lib/pipeline/flow.ts"
+          ],
+          "backboneCount": 0,
+          "entryPointCount": 0,
+          "averagePageRank": 0.25,
+          "cognitiveRationale": "Re-tiered from a collapsed adapter gradient by dependency topology: depth 1, 1 in-set dependents.",
+          "upstreamModules": [
+            "core-foundation"
+          ],
+          "downstreamModules": [
+            "adapter-bundle"
+          ],
+          "goldenSymbols": [],
+          "callFlow": []
+        },
+        {
+          "name": "adapter-bundle",
+          "summary": "s3",
+          "phase": "phase4_adapter",
+          "phaseOrder": 4,
+          "teachingOrder": 3,
+          "directories": [
+            "lib/adapters"
+          ],
+          "primaryFiles": [
+            "lib/adapters/api.ts"
+          ],
+          "backboneCount": 0,
+          "entryPointCount": 0,
+          "averagePageRank": 0.2,
+          "cognitiveRationale": "Retained adapter tier after dependency-topology re-tiering: depth 2, 1 in-set dependents.",
+          "upstreamModules": [
+            "pipeline-kit"
+          ],
+          "downstreamModules": [
+            "edge-helpers"
+          ],
+          "goldenSymbols": [],
+          "callFlow": []
+        },
+        {
+          "name": "edge-helpers",
+          "summary": "s4",
+          "phase": "phase4_adapter",
+          "phaseOrder": 4,
+          "teachingOrder": 4,
+          "directories": [
+            "lib/edge"
+          ],
+          "primaryFiles": [
+            "lib/edge/tiny.ts"
+          ],
+          "backboneCount": 0,
+          "entryPointCount": 0,
+          "averagePageRank": 0.1,
+          "cognitiveRationale": "Retained adapter tier after dependency-topology re-tiering: depth 3, 0 in-set dependents.",
+          "upstreamModules": [
+            "adapter-bundle"
+          ],
+          "downstreamModules": [],
+          "goldenSymbols": [],
+          "callFlow": []
+        }
+      ]
+    },
+    {
+      "name": "collapsed-entity-untouched",
+      "input": {
+        "graph": {
+          "nodeList": [
+            {
+              "path": "lib/foundation/contract.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.3,
+              "role": "core_contract",
+              "isBackbone": true,
+              "isEntryPoint": false
+            },
+            {
+              "path": "lib/order/order.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.25,
+              "role": "core_contract",
+              "isBackbone": false,
+              "isEntryPoint": false
+            },
+            {
+              "path": "lib/cart/cart.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.2,
+              "role": "core_contract",
+              "isBackbone": false,
+              "isEntryPoint": false
+            },
+            {
+              "path": "lib/edge/audit.ts",
+              "language": "typescript",
+              "inDegree": 0,
+              "outDegree": 0,
+              "pageRank": 0.1,
+              "role": "core_contract",
+              "isBackbone": false,
+              "isEntryPoint": false
+            }
+          ],
+          "edges": [
+            {
+              "source": "lib/order/order.ts",
+              "target": "lib/foundation/contract.ts"
+            },
+            {
+              "source": "lib/cart/cart.ts",
+              "target": "lib/order/order.ts"
+            },
+            {
+              "source": "lib/edge/audit.ts",
+              "target": "lib/cart/cart.ts"
+            }
+          ],
+          "softEdges": [],
+          "goldenSymbols": [],
+          "callEdges": []
+        },
+        "modules": [
+          {
+            "name": "core-contract",
+            "summary": "s1",
+            "directories": [
+              "lib/foundation"
+            ]
+          },
+          {
+            "name": "order-domain",
+            "summary": "s2",
+            "directories": [
+              "lib/order"
+            ]
+          },
+          {
+            "name": "cart-domain",
+            "summary": "s3",
+            "directories": [
+              "lib/cart"
+            ]
+          },
+          {
+            "name": "edge-audit",
+            "summary": "s4",
+            "directories": [
+              "lib/edge"
+            ]
+          }
+        ],
+        "options": {
+          "primaryEntryMassRatio": 0.25
+        }
+      },
+      "expected": [
+        {
+          "name": "core-contract",
+          "summary": "s1",
+          "phase": "phase2_entity",
+          "phaseOrder": 2,
+          "teachingOrder": 1,
+          "directories": [
+            "lib/foundation"
+          ],
+          "primaryFiles": [
+            "lib/foundation/contract.ts"
+          ],
+          "backboneCount": 1,
+          "entryPointCount": 0,
+          "averagePageRank": 0.3,
+          "cognitiveRationale": "Acts as a foundational data contract or domain state referenced across the system.",
+          "upstreamModules": [],
+          "downstreamModules": [
+            "order-domain"
+          ],
+          "goldenSymbols": [],
+          "callFlow": []
+        },
+        {
+          "name": "order-domain",
+          "summary": "s2",
+          "phase": "phase2_entity",
+          "phaseOrder": 2,
+          "teachingOrder": 2,
+          "directories": [
+            "lib/order"
+          ],
+          "primaryFiles": [
+            "lib/order/order.ts"
+          ],
+          "backboneCount": 0,
+          "entryPointCount": 0,
+          "averagePageRank": 0.25,
+          "cognitiveRationale": "Acts as a foundational data contract or domain state referenced across the system.",
+          "upstreamModules": [
+            "core-contract"
+          ],
+          "downstreamModules": [
+            "cart-domain"
+          ],
+          "goldenSymbols": [],
+          "callFlow": []
+        },
+        {
+          "name": "cart-domain",
+          "summary": "s3",
+          "phase": "phase2_entity",
+          "phaseOrder": 2,
+          "teachingOrder": 3,
+          "directories": [
+            "lib/cart"
+          ],
+          "primaryFiles": [
+            "lib/cart/cart.ts"
+          ],
+          "backboneCount": 0,
+          "entryPointCount": 0,
+          "averagePageRank": 0.2,
+          "cognitiveRationale": "Acts as a foundational data contract or domain state referenced across the system.",
+          "upstreamModules": [
+            "order-domain"
+          ],
+          "downstreamModules": [
+            "edge-audit"
+          ],
+          "goldenSymbols": [],
+          "callFlow": []
+        },
+        {
+          "name": "edge-audit",
+          "summary": "s4",
+          "phase": "phase2_entity",
+          "phaseOrder": 2,
+          "teachingOrder": 4,
+          "directories": [
+            "lib/edge"
+          ],
+          "primaryFiles": [
+            "lib/edge/audit.ts"
+          ],
+          "backboneCount": 0,
+          "entryPointCount": 0,
+          "averagePageRank": 0.1,
+          "cognitiveRationale": "Acts as a foundational data contract or domain state referenced across the system.",
+          "upstreamModules": [
+            "cart-domain"
+          ],
+          "downstreamModules": [],
+          "goldenSymbols": [],
+          "callFlow": []
+        }
+      ]
+    }
+  ],
+  "scaffoldCases": [
+    {
+      "name": "scaffold-with-full-metadata",
+      "input": {
+        "cognitive": {
+          "phase": "phase2_entity",
+          "phaseOrder": 2,
+          "rationale": "Core domain state",
+          "upstreamModules": [
+            "Config"
+          ],
+          "downstreamModules": [
+            "Router",
+            "Worker"
+          ],
+          "goldenSymbols": [
+            {
+              "name": "UserModel",
+              "file": "src/models/user.ts",
+              "kind": "type"
+            }
+          ],
+          "callFlow": [
+            {
+              "caller": "init",
+              "callee": "load"
+            }
+          ]
+        },
+        "teachingOrder": 2
+      },
+      "expected": "### COGNITIVE GRADIENT POSITION\nThis chapter is number 2 in the teaching sequence and sits at [Stage 2: Core Domain & State].\n- Role: Core domain state\n- Depends on: Config\n- Used by: Router, Worker\n- Anchor evidence (most-referenced symbols across the repository — teach around them; do not enumerate their siblings): `UserModel` (src/models/user.ts)\n- Observed call flow (verified against the code): init → load\nReference these relationships when explaining how this chapter connects to the rest of the system."
+    },
+    {
+      "name": "scaffold-empty-relationships",
+      "input": {
+        "cognitive": {
+          "phase": "phase4_adapter",
+          "phaseOrder": 4,
+          "rationale": "Peripheral utilities",
+          "upstreamModules": [],
+          "downstreamModules": []
+        },
+        "teachingOrder": 4
+      },
+      "expected": "### COGNITIVE GRADIENT POSITION\nThis chapter is number 4 in the teaching sequence and sits at [Stage 4: Adapters & Infrastructure].\n- Role: Peripheral utilities\nReference these relationships when explaining how this chapter connects to the rest of the system."
+    }
+  ],
+  "promptScaffoldCases": [
+    {
+      "name": "full-prompt-scaffold",
+      "input": {
+        "modules": [
+          {
+            "name": "Entry Point",
+            "summary": "Bootstrap",
+            "phase": "phase1_perception",
+            "phaseOrder": 1,
+            "teachingOrder": 1,
+            "directories": [
+              "src/main.ts"
+            ],
+            "primaryFiles": [
+              "src/main.ts"
+            ],
+            "backboneCount": 0,
+            "entryPointCount": 1,
+            "averagePageRank": 0.4,
+            "cognitiveRationale": "Contains the system entry points and execution bootstrap logic (topological mass gated).",
+            "upstreamModules": [
+              "API Router"
+            ],
+            "downstreamModules": [],
+            "draftIndex": 2,
+            "goldenSymbols": [],
+            "callFlow": []
+          },
+          {
+            "name": "Data Models",
+            "summary": "User models",
+            "phase": "phase2_entity",
+            "phaseOrder": 2,
+            "teachingOrder": 2,
+            "directories": [
+              "src/models"
+            ],
+            "primaryFiles": [
+              "src/models/user.ts"
+            ],
+            "backboneCount": 1,
+            "entryPointCount": 0,
+            "averagePageRank": 0.2,
+            "cognitiveRationale": "Acts as a foundational data contract or domain state referenced across the system.",
+            "upstreamModules": [],
+            "downstreamModules": [
+              "API Router"
+            ],
+            "draftIndex": 3,
+            "goldenSymbols": [
+              {
+                "name": "UserModel",
+                "file": "src/models/user.ts",
+                "kind": "type"
+              }
+            ],
+            "callFlow": []
+          },
+          {
+            "name": "API Router",
+            "summary": "Routing flow",
+            "phase": "phase3_pipeline",
+            "phaseOrder": 3,
+            "teachingOrder": 3,
+            "directories": [
+              "src/api"
+            ],
+            "primaryFiles": [
+              "src/api/router.ts"
+            ],
+            "backboneCount": 1,
+            "entryPointCount": 0,
+            "averagePageRank": 0.3,
+            "cognitiveRationale": "Executes core workflow, data transformation, and processing pipelines.",
+            "upstreamModules": [
+              "Data Models"
+            ],
+            "downstreamModules": [
+              "Entry Point"
+            ],
+            "draftIndex": 1,
+            "goldenSymbols": [],
+            "callFlow": []
+          },
+          {
+            "name": "Utils",
+            "summary": "Helper formatting",
+            "phase": "phase4_adapter",
+            "phaseOrder": 4,
+            "teachingOrder": 4,
+            "directories": [
+              "src/utils"
+            ],
+            "primaryFiles": [
+              "src/utils/format.ts"
+            ],
+            "backboneCount": 0,
+            "entryPointCount": 0,
+            "averagePageRank": 0.1,
+            "cognitiveRationale": "Provides external adapters, utilities, or supporting infrastructure.",
+            "upstreamModules": [],
+            "downstreamModules": [],
+            "draftIndex": 0,
+            "goldenSymbols": [],
+            "callFlow": []
+          }
+        ]
+      },
+      "expected": "### COGNITIVE GRADIENT ARCHITECTURE (TOPOLOGICAL SCAFFOLD)\nThe repository modules have been mathematically ordered by dependency topology and cognitive hierarchy:\n\nChapter 1: Entry Point [Stage 1: Perception & Entry]\n  - Role Rationale: Contains the system entry points and execution bootstrap logic (topological mass gated).\n  - Primary Files: src/main.ts\n  - Directories: src/main.ts\n  - Depends on: API Router\n\nChapter 2: Data Models [Stage 2: Core Domain & State]\n  - Role Rationale: Acts as a foundational data contract or domain state referenced across the system.\n  - Primary Files: src/models/user.ts\n  - Directories: src/models\n  - Used by: API Router\n\nChapter 3: API Router [Stage 3: Core Business Pipeline]\n  - Role Rationale: Executes core workflow, data transformation, and processing pipelines.\n  - Primary Files: src/api/router.ts\n  - Directories: src/api\n  - Depends on: Data Models\n  - Used by: Entry Point\n\nChapter 4: Utils [Stage 4: Adapters & Infrastructure]\n  - Role Rationale: Provides external adapters, utilities, or supporting infrastructure.\n  - Primary Files: src/utils/format.ts\n  - Directories: src/utils\n\nUse this structured progression to write deep, progressive, and cohesive pedagogical lessons."
+    }
+  ]
+}

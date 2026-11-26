@@ -1,0 +1,88 @@
+{
+  "op": "mermaid-resilience-and-xss",
+  "ensureQuotedMermaidLabels": [
+    {
+      "name": "box-colons-and-parens",
+      "code": "flowchart LR\n  client[Client: Browser (Chrome)] --> gateway[API: Gateway]\n  gateway --> service[Auth Service (v2)]"
+    },
+    {
+      "name": "cylinder-and-stadium",
+      "code": "flowchart TD\n  db[(Postgres: primary (5432))]\n  api([REST Endpoint: /api/v1])"
+    },
+    {
+      "name": "double-circle-single-and-multi",
+      "code": "flowchart LR\n  node(((Double Circle: test)))\n  node1(((Double 1: foo))) --> node2(((Double 2: bar)))"
+    },
+    {
+      "name": "nested-parens-and-brackets",
+      "code": "flowchart LR\n  client(Client (Web Browser): v1) --> server(API Server (Express): v2)\n  box[Box [Nested Tag]: v1] --> next[Simple: Node]"
+    },
+    {
+      "name": "mixed-shapes-same-line",
+      "code": "flowchart LR\n  A[Client: Web] --> B(Server: API) --> C((DB: SQL))"
+    },
+    {
+      "name": "subroutine-hexagon-circle-rhombus",
+      "code": "flowchart LR\n  worker[[Worker: Job Queue]]\n  cond{{Condition: count > 0}}\n  circ((Node: Start (001)))\n  dec{Decision: Is Valid?}"
+    },
+    {
+      "name": "subgraph-and-edge-labels",
+      "code": "flowchart TD\nsubgraph Core [Core Engine: Parser (v1)]\n  A -->|Payload: JSON (v1)| B\nend"
+    },
+    {
+      "name": "already-quoted-and-simple-untouched",
+      "code": "flowchart LR\n  A[\"Already: Quoted (Clean)\"] --> B[(\"Already: DB\")] --> C[Simple]"
+    },
+    {
+      "name": "comments-and-keywords-intact",
+      "code": "%% This is a comment: note (test)\nflowchart LR\n  classDef default fill:none\n  style A stroke:#333\n  direction TB\n  A --> B\n  end"
+    },
+    { "name": "empty", "code": "" },
+    { "name": "null", "code": null }
+  ],
+  "sanitizeMermaid": [
+    {
+      "name": "fenced-graph-td-with-preamble",
+      "raw": "以下是系统架构拓扑：\n```mermaid\ngraph TD\n  Entry[\"System Entry\"] --> Core[\"Core Engine\"]\n```"
+    },
+    {
+      "name": "flowchart-lr-and-no-dir",
+      "raw": "Here is the diagram:\nflowchart LR\n  A --> B"
+    },
+    {
+      "name": "graph-no-dir",
+      "raw": "Diagram:\ngraph\n  A[\"Start\"] --> B[\"End\"]"
+    },
+    {
+      "name": "strip-think-and-thought",
+      "raw": "<think>\nI should generate a graph TD.\n</think>\n```mermaid\ngraph TD\n  A[Start] --> B[End]\n```"
+    },
+    {
+      "name": "special-chars-nested-cjk-and-spaces",
+      "raw": "graph TD\n  サーバー[Port: 8080 (HTTP) & TLS] --> クライアント(Hello (Nested 1) and (Nested 2))\n  A [Port: 8080] --> B[\"foo (bar) \\\"baz\\\"\"]"
+    },
+    {
+      "name": "sequence-class-state-er-mindmap",
+      "raw": "Here is the sequence diagram:\n```mermaid\nsequenceDiagram\n  Alice->>Bob: Hello\n```"
+    },
+    {
+      "name": "state-diagram-v2",
+      "raw": "State machine below:\nstateDiagram-v2\n  [*] --> Still"
+    },
+    {
+      "name": "er-diagram",
+      "raw": "ER Schema:\nerDiagram\n  USER ||--o{ ORDER : places"
+    },
+    {
+      "name": "mindmap",
+      "raw": "Mindmap:\nmindmap\n  root((Root))"
+    }
+  ],
+  "stripMermaidDangerousHtml": [
+    { "name": "self-closing-script", "raw": "A[\"<script src=evil.js />Legit\"]" },
+    { "name": "paired-script", "raw": "B[\"<script>alert(1)</script>Safe\"]" },
+    { "name": "iframe-object-embed", "raw": "A[\"<iframe src=\\\"https://evil.com\\\"></iframe><object data=\\\"evil.swf\\\"></object><embed src=\\\"evil.pdf\\\" />World\"]" },
+    { "name": "atypical-event-handlers", "raw": "A[\"<svg/onload=alert(1)>Label\"] B[\"<button onclick=\\\"alert(1)\\\">Click</button>\"]" },
+    { "name": "javascript-vbscript-data-protocols", "raw": "A[\"<a href=\\\"javascript:alert('XSS')\\\">Click</a>\"] B[\"<a href=\\\"vbscript:msgbox(1)\\\">Click</a>\"] C[\"<a href=\\\"data:text/html,<script>alert(1)</script>\\\">Click</a>\"] D[\"<img src=x onload=\\\"alert('XSS')\\\">\"]" }
+  ]
+}

@@ -1,0 +1,288 @@
+{
+  "op": "search-and-snippet-pure",
+  "repos": [
+    {
+      "id": "repo-1",
+      "owner": "vllm-project",
+      "repo": "vllm",
+      "title": "vLLM",
+      "category": "AI",
+      "description": "A high-throughput and memory-efficient LLM serving engine",
+      "isPublic": true,
+      "chapterCount": 10,
+      "processedDocsCount": 10,
+      "isFullyTranscribed": true,
+      "isSaved": false,
+      "savedCount": 10,
+      "progress": 0,
+      "viewedCount": 10,
+      "hasUpdate": false,
+      "importedSha": null,
+      "isPinned": false
+    },
+    {
+      "id": "repo-2",
+      "owner": "web-doc",
+      "repo": "cilium-docs",
+      "title": "Cilium Documentation",
+      "category": "Systems",
+      "description": "eBPF-based Networking, Security, and Observability",
+      "repoProfile": {
+        "siteTitle": "Cilium",
+        "originalUrl": "https://docs.cilium.io/en/stable/",
+        "sourceType": "web"
+      },
+      "isPublic": true,
+      "chapterCount": 50,
+      "processedDocsCount": 50,
+      "isFullyTranscribed": true,
+      "isSaved": false,
+      "savedCount": 5,
+      "progress": 0,
+      "viewedCount": 20,
+      "hasUpdate": false,
+      "importedSha": null,
+      "isPinned": false
+    },
+    {
+      "id": "repo-3",
+      "owner": "karpathy",
+      "repo": "llm.c",
+      "title": "llm.c",
+      "category": "AI",
+      "description": "LLM training in simple pure C/CUDA",
+      "isPublic": true,
+      "chapterCount": 5,
+      "processedDocsCount": 5,
+      "isFullyTranscribed": true,
+      "isSaved": false,
+      "savedCount": 100,
+      "progress": 0,
+      "viewedCount": 200,
+      "hasUpdate": false,
+      "importedSha": null,
+      "isPinned": false
+    },
+    {
+      "id": "repo-4",
+      "owner": "web-doc",
+      "repo": "cloudflare-workerd",
+      "title": "cloudflare-workerd",
+      "category": "Cloud",
+      "description": "JavaScript/Wasm runtime",
+      "repoProfile": {
+        "siteTitle": "cloudflare-workerd",
+        "originalUrl": "https://github.com/cloudflare/workerd",
+        "sourceType": "web"
+      },
+      "isPublic": true,
+      "chapterCount": 20,
+      "processedDocsCount": 20,
+      "isFullyTranscribed": true,
+      "isSaved": false,
+      "savedCount": 5,
+      "progress": 0,
+      "viewedCount": 15,
+      "hasUpdate": false,
+      "importedSha": null,
+      "isPinned": false
+    }
+  ],
+  "dissectQueries": [
+    "vllm",
+    "karpathy/llm.c",
+    "https://github.com/vllm-project/vllm",
+    "https://docs.cilium.io/en/stable/"
+  ],
+  "smartMatchCases": [
+    { "name": "github-url-exact", "query": "https://github.com/vllm-project/vllm" },
+    { "name": "github-webdoc-exact", "query": "https://github.com/cloudflare/workerd" },
+    {
+      "name": "unrelated-github-url-no-leak",
+      "repoOverride": {
+        "owner": "web-doc",
+        "repo": "bpftrace-docs",
+        "repoProfile": {
+          "originalUrl": "https://github.com/bpftrace/bpftrace/blob/master/man/adoc/bpftrace.adoc",
+          "sourceType": "web"
+        }
+      },
+      "query": "https://github.com/xtls/xray-core"
+    },
+    { "name": "webdoc-hostname", "query": "https://docs.cilium.io/some-page" },
+    { "name": "source-github", "query": "", "sourceType": "github" },
+    { "name": "source-webdoc", "query": "", "sourceType": "webdoc" },
+    { "name": "ai-github", "query": "", "sourceType": "github", "category": "AI" },
+    { "name": "ai-webdoc-empty", "query": "", "sourceType": "webdoc", "category": "AI" },
+    { "name": "systems-webdoc", "query": "", "sourceType": "webdoc", "category": "Systems" },
+    { "name": "cloud-webdoc", "query": "", "sourceType": "webdoc", "category": "Cloud" },
+    {
+      "name": "hashtag-cuda",
+      "repoOverride": { "id": "repo-1", "owner": "vllm-project", "repo": "vllm", "title": "vLLM", "category": "AI", "description": "A high-throughput LLM serving engine", "tags": ["CUDA", "vLLM"], "isPublic": true, "chapterCount": 10, "processedDocsCount": 10, "isFullyTranscribed": true, "isSaved": false, "savedCount": 10, "progress": 0, "viewedCount": 10, "hasUpdate": false, "importedSha": null, "isPinned": false },
+      "query": "#cuda"
+    },
+    {
+      "name": "chinese-category-ai",
+      "repoOverride": { "id": "repo-1", "owner": "vllm-project", "repo": "vllm", "title": "vLLM", "category": "AI", "description": "A high-throughput LLM serving engine", "tags": ["CUDA", "vLLM"], "isPublic": true, "chapterCount": 10, "processedDocsCount": 10, "isFullyTranscribed": true, "isSaved": false, "savedCount": 10, "progress": 0, "viewedCount": 10, "hasUpdate": false, "importedSha": null, "isPinned": false },
+      "query": "",
+      "sourceType": "all",
+      "category": "人工智能"
+    },
+    {
+      "name": "fail-closed-webdoc-url-no-fuzz",
+      "repoOverride": {
+        "id": "buck2",
+        "owner": "web-doc",
+        "repo": "buck2-docs",
+        "title": "Buck2 高性能构建系统官方指南",
+        "description": "Meta 开源的 Rust 构建工具，面向超大规模单体代码库的高并发构建",
+        "tags": ["Build System", "Rust", "Tooling"],
+        "repoProfile": {
+          "siteTitle": "Buck2 高性能构建系统官方指南",
+          "originalUrl": "https://buck2.build/docs/about/why/",
+          "sourceType": "web"
+        }
+      },
+      "query": "https://coss.com/ui/docs"
+    },
+    {
+      "name": "allowed-prefixes-coss-ui-hit",
+      "repoOverride": {
+        "id": "coss-ui",
+        "owner": "web-doc",
+        "repo": "coss-ui",
+        "repoProfile": {
+          "originalUrl": "https://www.coss.com/ui/docs",
+          "allowedPrefixes": ["/ui"],
+          "sourceType": "web"
+        }
+      },
+      "query": "https://coss.com/ui/docs"
+    },
+    {
+      "name": "allowed-prefixes-coss-ai-miss",
+      "repoOverride": {
+        "id": "coss-ai",
+        "owner": "web-doc",
+        "repo": "coss-ai",
+        "repoProfile": {
+          "originalUrl": "https://coss.com/ai/docs",
+          "allowedPrefixes": ["/ai"],
+          "sourceType": "web"
+        }
+      },
+      "query": "https://coss.com/ui/docs"
+    },
+    { "name": "github-org-url-no-fuzz", "query": "https://github.com/serving" },
+    { "name": "github-org-url-exact", "query": "https://github.com/vllm-project" }
+  ],
+  "snippetCases": [
+    {
+      "name": "internal-horizontal-rules-preserved",
+      "text": "Section One Introduction\n---\nSection Two with target keyword authorization and permissions\n---\nSection Three Conclusion",
+      "query": "authorization"
+    },
+    {
+      "name": "frontmatter-stripped-no-query",
+      "text": "---\ntitle: My Guide\nauthor: Team\ndate: 2026-01-01\n---\nWelcome to our system documentation. Here is information about authentication.",
+      "query": ""
+    },
+    {
+      "name": "frontmatter-stripped-with-query",
+      "text": "---\ntitle: My Guide\nauthor: Team\ndate: 2026-01-01\n---\nWelcome to our system documentation. Here is information about authentication.",
+      "query": "authentication"
+    },
+    {
+      "name": "backtick-and-tilde-fences-stripped",
+      "text": "\nIntroduction to the API.\n\n```typescript\nconst token = 'xyz'; // should not be in snippet\n```\n\n~~~bash\ncurl -H \"Auth: none\" https://api.example.com\n~~~\n\nFollow the deployment checklist for authentication setup.\n",
+      "query": "deployment"
+    },
+    {
+      "name": "centered-ellipses",
+      "text": " keyword ",
+      "repeatA": 50,
+      "query": "keyword",
+      "maxLen": 60
+    },
+    {
+      "name": "snake-case-and-colons",
+      "text": "Welcome. Call get_user_profile(user_id) to fetch the details. Note: tokens expire in 1 hour.",
+      "query": "get_user_profile"
+    }
+  ],
+  "titleCases": [
+    { "name": "explicit-h1", "title": "# Getting Started" },
+    { "name": "explicit-h3", "title": "### Installation Guide" },
+    {
+      "name": "ignore-python-fence-comment",
+      "title": "",
+      "path": null,
+      "content": "\n```python\n# This is a python comment, not a title\nimport os\nimport sys\n```\n\n# Actual Document Title\n\nThis is the document body.\n"
+    },
+    {
+      "name": "ignore-tilde-bash-comment",
+      "title": null,
+      "path": null,
+      "content": "\n~~~bash\n# Shell comment here\nexport NODE_ENV=production\n~~~\n\n# Production Deployment Guide\n"
+    },
+    {
+      "name": "ignore-yaml-comment",
+      "title": "",
+      "path": null,
+      "content": "---\ntitle: \"\"\ndescription: \"Frontmatter with comments\"\n# This is a YAML comment, NOT a doc title\nauthor: developer\n---\n\n# Real Section Title\n\nDoc contents.\n"
+    },
+    { "name": "derive-from-mdx-path", "title": "", "path": "docs/user-account-settings.mdx", "content": "" },
+    { "name": "derive-from-md-path", "title": null, "path": "guide/api_reference.md", "content": null },
+    { "name": "derive-from-markdown-path", "title": null, "path": "guide/intro.markdown", "content": null },
+    { "name": "empty-fallback", "title": "", "path": "", "content": "" }
+  ],
+  "rerankCases": [
+    {
+      "name": "exact-phrase-in-heading-beats-content",
+      "query": "server actions",
+      "chunks": [
+        { "similarity": 0.7, "heading": "", "title": "", "content": "contains server actions deep inside", "path": "docs/z-overview.md" },
+        { "similarity": 0.6, "heading": "Server Actions", "title": "", "content": "", "path": "docs/a-target.md" }
+      ]
+    },
+    {
+      "name": "keyword-in-heading-beats-plain",
+      "query": "useEffect 生命周期",
+      "chunks": [
+        { "similarity": 0.6, "heading": "", "title": "", "content": "", "path": "docs/x.md" },
+        { "similarity": 0.55, "heading": "useEffect 生命周期", "title": "", "content": "", "path": "docs/y.md" }
+      ]
+    },
+    {
+      "name": "tiebreak-path-lexicographic",
+      "query": "随便",
+      "chunks": [
+        { "similarity": 0.5, "heading": "", "title": "", "content": "", "path": "docs/b.md" },
+        { "similarity": 0.5, "heading": "", "title": "", "content": "", "path": "docs/a.md" },
+        { "similarity": 0.5, "heading": "", "title": "", "content": "", "path": "docs/c.md" }
+      ]
+    },
+    {
+      "name": "blank-query-passthrough",
+      "query": "   ",
+      "chunks": [
+        { "similarity": 0.5, "heading": "", "title": "", "content": "", "path": "b.md" },
+        { "similarity": 0.5, "heading": "", "title": "", "content": "", "path": "a.md" }
+      ]
+    },
+    {
+      "name": "snippet-fallback-when-content-empty",
+      "query": "server actions",
+      "chunks": [
+        { "similarity": 0.5, "heading": "", "title": "", "content": "", "snippet": "contains server actions snippet", "path": "docs/z.md" },
+        { "similarity": 0.5, "heading": "", "title": "", "content": "", "snippet": "no match snippet", "path": "docs/a.md" }
+      ]
+    }
+  ],
+  "locatorSnippetCases": [
+    { "name": "longest-hit-centered", "content": "abcdefg", "repeatPad": 400, "keywords": ["zzz", "abcdefg"] },
+    { "name": "no-hit-from-start", "content": "plain start text", "keywords": ["nomatch"] },
+    { "name": "whitespace-collapsed", "content": "a\n\n  b\tc keyword", "keywords": ["keyword"] },
+    { "name": "empty-content", "content": "", "keywords": ["x"] }
+  ]
+}

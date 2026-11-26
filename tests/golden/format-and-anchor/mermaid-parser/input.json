@@ -1,0 +1,38 @@
+{
+  "op": "mermaid-parser",
+  "parseNodeDef": [
+    "A([\"Stadium Shape\"])",
+    "B[(\"PostgreSQL Database\")]",
+    "C((\"Event Trigger\"))",
+    "D(((\"Double Circle\")))",
+    "E[[\"Subroutine Call\"]]",
+    "F{{\"Hexagon Module\"}}",
+    "G{\"Is Valid?\"}",
+    "H{Branching}",
+    "I[\"Label (Detail)\"]",
+    "J>[\"Flag State\"]",
+    "节点A[\"模块 \\\"核心\\\" 处理\"]"
+  ],
+  "parseMermaidToGraph": [
+    {
+      "name": "dotted-and-inline-labeled-arrows",
+      "code": "graph LR\n  A -.-> B\n  C -.- D\n  E -- yes --> F\n  G == critical ==> H\n  I -. optional .-> J"
+    },
+    {
+      "name": "chained-edges",
+      "code": "graph TD\n  A[\"Start\"] -->|step 1| B{\"Check\"} -->|step 2| C[\"Finish\"]"
+    },
+    {
+      "name": "open-line-connectors-with-dashes",
+      "code": "graph LR\n  A -- open-link --- B\n  C == thick-open === D\n  E -. dot-open .- F\n  G -- my-dashed-label --> H"
+    },
+    {
+      "name": "ampersand-branching-and-quoted-ampersand",
+      "code": "graph LR\n  A[\"Source\"] --> B[\"Target 1\"] & C[\"Target 2\"]\n  D & E -->|merged| F & G\n  H[\"Research & Development\"] & I[\"Design & QA\"] --> J[\"Production & Release\"]"
+    },
+    {
+      "name": "comments-subgraphs-direction-and-quoted-connectors",
+      "code": "graph TD\n  %% This is a comment\n  subgraph Core Module\n    direction TB\n    A[\"Step 1: Input --> Transform\"] --> B[\"Step 2: Output\"]\n  end\n  style A fill:#f9f\n  classDef default fill:#fff"
+    }
+  ]
+}

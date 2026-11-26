@@ -1,0 +1,845 @@
+{
+  "planPurposeCases": [
+    {
+      "name": "chapter-0-missing-module-inherits",
+      "success": true,
+      "data": {
+        "curriculumMode": "matrix",
+        "chapters": [
+          {
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "name": "第 1 章: 架构全景与环境准备",
+            "summary": "全景与准备",
+            "targetPaths": [
+              "README.md"
+            ],
+            "phase": "入门",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "name": "第 2 章: 源码结构与运行入口",
+            "summary": "源码结构",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "入门",
+            "drillDown": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "summary-overflow-and-missing-fallback",
+      "success": true,
+      "data": {
+        "curriculumMode": "matrix",
+        "chapters": [
+          {
+            "moduleTitle": "模块 1: 基础",
+            "name": "第 1 章: 核心算法",
+            "summary": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "targetPaths": [
+              "src/algo"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 1: 基础",
+            "name": "第 2 章: 扩展系统",
+            "summary": "第 2 章: 扩展系统 核心教学意图与模块职责",
+            "targetPaths": [
+              "src/ext"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "target-paths-resilience",
+      "success": true,
+      "data": {
+        "curriculumMode": "matrix",
+        "chapters": [
+          {
+            "moduleTitle": "模块 1: 基础",
+            "name": "第 1 章: 单字符串路径",
+            "summary": "测试单字符串",
+            "targetPaths": [
+              "src/single"
+            ],
+            "phase": "入门",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 1: 基础",
+            "name": "第 2 章: 空路径",
+            "summary": "测试空数组",
+            "targetPaths": [
+              "README.md"
+            ],
+            "phase": "入门",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 1: 基础",
+            "name": "第 3 章: 超 4 路径",
+            "summary": "测试截断",
+            "targetPaths": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ],
+            "phase": "入门",
+            "drillDown": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "max-chapters-clamping-18-to-14",
+      "success": true,
+      "data": {
+        "curriculumMode": "matrix",
+        "chapters": [
+          {
+            "moduleTitle": "模块 1: 主题",
+            "name": "第 1 章: 章节内容",
+            "summary": "摘要 1",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 1: 主题",
+            "name": "第 2 章: 章节内容",
+            "summary": "摘要 2",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 1: 主题",
+            "name": "第 3 章: 章节内容",
+            "summary": "摘要 3",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 1: 主题",
+            "name": "第 4 章: 章节内容",
+            "summary": "摘要 4",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 1: 主题",
+            "name": "第 5 章: 章节内容",
+            "summary": "摘要 5",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 2: 主题",
+            "name": "第 6 章: 章节内容",
+            "summary": "摘要 6",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 2: 主题",
+            "name": "第 7 章: 章节内容",
+            "summary": "摘要 7",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 2: 主题",
+            "name": "第 8 章: 章节内容",
+            "summary": "摘要 8",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 2: 主题",
+            "name": "第 9 章: 章节内容",
+            "summary": "摘要 9",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 2: 主题",
+            "name": "第 10 章: 章节内容",
+            "summary": "摘要 10",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 3: 主题",
+            "name": "第 11 章: 章节内容",
+            "summary": "摘要 11",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 3: 主题",
+            "name": "第 12 章: 章节内容",
+            "summary": "摘要 12",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 3: 主题",
+            "name": "第 13 章: 章节内容",
+            "summary": "摘要 13",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          },
+          {
+            "moduleTitle": "模块 3: 主题",
+            "name": "第 14 章: 章节内容",
+            "summary": "摘要 14",
+            "targetPaths": [
+              "src"
+            ],
+            "phase": "进阶",
+            "drillDown": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "envelope-unwrapping-and-aliases",
+      "success": true,
+      "data": {
+        "curriculumMode": "matrix",
+        "chapters": [
+          {
+            "moduleTitle": "模块 1: 全景",
+            "name": "第 1 章: 入门总览",
+            "summary": "核心职责说明",
+            "targetPaths": [
+              "src/core"
+            ],
+            "phase": "入门",
+            "drillDown": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "fail-closed-on-error-garbage",
+      "success": false,
+      "data": null
+    },
+    {
+      "name": "fail-closed-on-empty-chapters",
+      "success": false,
+      "data": null
+    }
+  ],
+  "cleanChapterNames": [
+    {
+      "input": "第 1 章: 项目全景与训练入口 train.py",
+      "cleaned": "第 1 章: 项目全景与训练入口"
+    },
+    {
+      "input": "第 2 章: 分布式基础设施 utils.py",
+      "cleaned": "第 2 章: 分布式基础设施"
+    },
+    {
+      "input": "第 3 章: 偏好数据管线 preference_datasets.py",
+      "cleaned": "第 3 章: 偏好数据管线"
+    },
+    {
+      "input": "第 2 章：领域类型与配置模型 types.go",
+      "cleaned": "第 2 章：领域类型与配置模型"
+    },
+    {
+      "input": "第 5 章：HTTP 协议请求引擎 request.go",
+      "cleaned": "第 5 章：HTTP 协议请求引擎"
+    },
+    {
+      "input": "第 1 章: 项目入口 (train.py)",
+      "cleaned": "第 1 章: 项目入口"
+    },
+    {
+      "input": "第 1 章: train.py",
+      "cleaned": "第 1 章: train"
+    },
+    {
+      "input": "Chapter 1: Training Entrypoint train.py",
+      "cleaned": "Chapter 1: Training Entrypoint"
+    },
+    {
+      "input": "第 1 章: Node.js 异步运行时",
+      "cleaned": "第 1 章: Node.js 异步运行时"
+    },
+    {
+      "input": "第 1 章: Python 异步并发与 PyTorch 实战",
+      "cleaned": "第 1 章: Python 异步并发与 PyTorch 实战"
+    },
+    {
+      "input": "第 1 章: 门面契约与域名匹配体系 (Domain、NewDomain 与 matcherset)",
+      "cleaned": "第 1 章: 域名匹配体系"
+    },
+    {
+      "input": "第 2 章: 网络领域模型: 地址、端口与多缓冲区 (Address、Port、multi_buffer)",
+      "cleaned": "第 2 章: 地址、端口与多缓冲区"
+    },
+    {
+      "input": "第 3 章: 信号生命周期与序列化基础 (Done、Instance 与字符串工具)",
+      "cleaned": "第 3 章: 信号生命周期与序列化基础"
+    },
+    {
+      "input": "第 4 章: 核心执行引擎: 命令框架与错误处理管线 (Command、errors)",
+      "cleaned": "第 4 章: 命令框架与错误处理管线"
+    },
+    {
+      "input": "Chapter 1: Interface & Facade: Routing and Domain Matching (Domain, NewDomain and matcherset)",
+      "cleaned": "Chapter 1: Routing and Domain Matching"
+    },
+    {
+      "input": "Chapter 2: Core Engine: Command Framework and Errors (Command, errors)",
+      "cleaned": "Chapter 2: Command Framework and Errors"
+    }
+  ],
+  "mapPurposeCases": [
+    {
+      "name": "strip-code-extensions",
+      "normalized": {
+        "chapters": [
+          {
+            "name": "第 1 章: 项目全景与训练入口",
+            "summary": "训练入口",
+            "files": [
+              "train.py"
+            ],
+            "phase": "入门"
+          },
+          {
+            "name": "第 2 章: 分布式基础设施",
+            "summary": "基础设施",
+            "files": [
+              "utils.py"
+            ],
+            "phase": "进阶"
+          },
+          {
+            "name": "第 3 章: DPO 损失与 BasicTrainer 基础训练器",
+            "summary": "损失计算",
+            "files": [
+              "trainers.py"
+            ],
+            "phase": "实战"
+          }
+        ]
+      }
+    },
+    {
+      "name": "strip-abstract-jargon-and-paren-symbols",
+      "normalized": {
+        "chapters": [
+          {
+            "name": "第 1 章: 域名匹配体系",
+            "summary": "域名匹配体系解析",
+            "files": [
+              "common/router.go"
+            ],
+            "phase": "入门"
+          },
+          {
+            "name": "第 2 章: 地址、端口与多缓冲区",
+            "summary": "地址与缓冲区机制",
+            "files": [
+              "common/net.go"
+            ],
+            "phase": "入门"
+          },
+          {
+            "name": "第 3 章: 命令框架与错误处理管线",
+            "summary": "命令框架与调度管线",
+            "files": [
+              "app/dispatcher.go"
+            ],
+            "phase": "进阶"
+          }
+        ]
+      }
+    }
+  ],
+  "normalizeOutlinePlanCases": [
+    {
+      "name": "thematic-files-divert",
+      "normalized": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "第 1 章: 状态机与协议握手",
+            "summary": "状态流转核心机制",
+            "phase": "入门",
+            "files": [
+              "src/state-machine.ts",
+              "src/protocol/handshake.go"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "focusFiles": [
+              "src/state-machine.ts",
+              "src/protocol/handshake.go"
+            ],
+            "targetPaths": [],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "thematic-files-divert-merge",
+      "normalized": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "第 1 章: 状态机与协议握手",
+            "summary": "状态流转核心机制",
+            "phase": "入门",
+            "focusFiles": [
+              "src/core/engine.ts",
+              "src/core/scheduler.ts"
+            ],
+            "files": [
+              "src/core/engine.ts",
+              "src/core/scheduler.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "thematic-readme-guard",
+      "normalized": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "missing",
+            "summary": "s",
+            "phase": "入门",
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "non-empty",
+            "summary": "s",
+            "phase": "入门",
+            "focusFiles": [
+              "src/auth/login.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [],
+            "drillDown": false
+          },
+          {
+            "name": "blank-only",
+            "summary": "s",
+            "phase": "入门",
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "thematic-targets-alias-win",
+      "normalized": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "targetPaths",
+            "summary": "s",
+            "phase": "入门",
+            "targetPaths": [
+              "src/a.ts"
+            ],
+            "files": [
+              "src/b.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "drillDown": false
+          },
+          {
+            "name": "paths",
+            "summary": "s",
+            "phase": "入门",
+            "paths": [
+              "src/a.ts"
+            ],
+            "files": [
+              "src/b.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [
+              "src/a.ts"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "target_paths",
+            "summary": "s",
+            "phase": "入门",
+            "target_paths": [
+              "src/a.ts"
+            ],
+            "files": [
+              "src/b.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [
+              "src/a.ts"
+            ],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "thematic-module-title-neutral-all-phases",
+      "normalized": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "p1",
+            "summary": "s",
+            "phase": "入门",
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "p2",
+            "summary": "s",
+            "phase": "进阶",
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "p3",
+            "summary": "s",
+            "phase": "实战",
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "default-module-title-regression-absent-and-full-repo",
+      "normalized": {
+        "chapters": [
+          {
+            "name": "p1",
+            "summary": "s",
+            "phase": "入门",
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "p2",
+            "summary": "s",
+            "phase": "进阶",
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "p3",
+            "summary": "s",
+            "phase": "实战",
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "default-module-title-regression-explicit-full-repo",
+      "normalized": {
+        "intentMode": "full_repo",
+        "chapters": [
+          {
+            "name": "p1",
+            "summary": "s",
+            "phase": "入门",
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "p2",
+            "summary": "s",
+            "phase": "进阶",
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "p3",
+            "summary": "s",
+            "phase": "实战",
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "default-files-path-regression",
+      "normalized": {
+        "chapters": [
+          {
+            "name": "c1",
+            "summary": "s",
+            "phase": "入门",
+            "files": [
+              "a.ts",
+              "b.ts",
+              "c.ts",
+              "d.ts",
+              "e.ts",
+              "f.ts"
+            ],
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "targetPaths": [
+              "a.ts",
+              "b.ts",
+              "c.ts",
+              "d.ts"
+            ],
+            "drillDown": false
+          },
+          {
+            "name": "第 2 章: 无任何目标",
+            "summary": "s",
+            "phase": "入门",
+            "files": [],
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "targetPaths": [
+              "README.md"
+            ],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "intent-mode-invalid-string",
+      "normalized": {
+        "chapters": [
+          {
+            "name": "第 1 章: 状态机与协议握手",
+            "summary": "s",
+            "phase": "入门",
+            "targetPaths": [
+              "src/a.ts"
+            ],
+            "moduleTitle": "模块 1: 架构全景与环境准备",
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "intent-mode-trimmed-valid",
+      "normalized": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "第 1 章: 状态机与协议握手",
+            "summary": "s",
+            "phase": "入门",
+            "targetPaths": [
+              "src/a.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "intent-mode-envelope-unwrap",
+      "normalized": {
+        "data": {
+          "intentMode": "thematic_slice",
+          "chapters": [
+            {
+              "name": "第 1 章: 状态机与协议握手",
+              "summary": "s",
+              "phase": "入门",
+              "files": [
+                "src/x.ts"
+              ]
+            }
+          ]
+        },
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "第 1 章: 状态机与协议握手",
+            "summary": "s",
+            "phase": "入门",
+            "files": [
+              "src/x.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "focusFiles": [
+              "src/x.ts"
+            ],
+            "targetPaths": [],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "focus-files-cap-8-trim-dedup",
+      "normalized": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "c1",
+            "summary": "s",
+            "phase": "入门",
+            "focusFiles": [
+              "src/a.ts",
+              "src/b.ts",
+              "src/c.ts",
+              "src/d.ts",
+              "src/e.ts",
+              "src/f.ts",
+              "src/g.ts",
+              "src/h.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    },
+    {
+      "name": "focus-files-snake-alias-and-single-string",
+      "normalized": {
+        "intentMode": "thematic_slice",
+        "chapters": [
+          {
+            "name": "snake",
+            "summary": "s",
+            "phase": "入门",
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "focusFiles": [
+              "src/only.ts"
+            ],
+            "targetPaths": [],
+            "drillDown": false
+          },
+          {
+            "name": "single",
+            "summary": "s",
+            "phase": "入门",
+            "focusFiles": [
+              "src/single.ts"
+            ],
+            "moduleTitle": "模块 1: 核心专题剖析",
+            "targetPaths": [],
+            "drillDown": false
+          }
+        ],
+        "curriculumMode": "matrix"
+      }
+    }
+  ]
+}

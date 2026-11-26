@@ -1,0 +1,821 @@
+{
+  "gfmAlerts": [
+    {
+      "name": "note",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "note"
+            },
+            {
+              "name": "title",
+              "value": "Title"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "body"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tip",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "tip"
+            },
+            {
+              "name": "title",
+              "value": "Title"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "body"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "important",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "important"
+            },
+            {
+              "name": "title",
+              "value": "Title"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "body"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "warning",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "warning"
+            },
+            {
+              "name": "title",
+              "value": "Title"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "body"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "caution-maps-to-danger",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "danger"
+            },
+            {
+              "name": "title",
+              "value": "Title"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "body"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lowercase-multiline",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "note"
+            },
+            {
+              "name": "title",
+              "value": "T"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "first\nsecond"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "inline-no-title",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "important"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "“Design Decision”"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "leading-quote-inline",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "important"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Design Decision: 输入适配层"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "leading-quote-multiline",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "important"
+            },
+            {
+              "name": "title",
+              "value": "设计决策"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "输入适配层"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "balanced-inner-quotes",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "important"
+            },
+            {
+              "name": "title",
+              "value": "标题"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "正文“引文”"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "closed-header-balanced-body",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "important"
+            },
+            {
+              "name": "title",
+              "value": "标题"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "正文“引文”"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "nested-outer-close",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "important"
+            },
+            {
+              "name": "title",
+              "value": "标题"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "正文“引文”结束"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "multi-para-outer-close",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "important"
+            },
+            {
+              "name": "title",
+              "value": "标题"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "第一段"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "续完"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "inline-code-quote-ignored",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "note"
+            },
+            {
+              "name": "title",
+              "value": "标题"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "检查 "
+                },
+                {
+                  "type": "inlineCode",
+                  "value": "a”"
+                },
+                {
+                  "type": "text",
+                  "value": " 后闭合"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "balanced-ascii-quotes",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "note"
+            },
+            {
+              "name": "title",
+              "value": "Title"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "He said \"ok\""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unbalanced-ascii-quotes",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "note"
+            },
+            {
+              "name": "title",
+              "value": "Title"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Body"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "marker-only-no-title",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "warning"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "body only"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "multi-paragraph-body",
+      "children": [
+        {
+          "type": "mdxJsxFlowElement",
+          "name": "Callout",
+          "attributes": [
+            {
+              "name": "type",
+              "value": "note"
+            },
+            {
+              "name": "title",
+              "value": "T"
+            }
+          ],
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "p1"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "p2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "normal-blockquote-untouched",
+      "children": [
+        {
+          "type": "blockquote",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "just a quote"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unknown-marker-untouched",
+      "children": [
+        {
+          "type": "blockquote",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "[!CUSTOM] x"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fenced-code-immune",
+      "children": [
+        {
+          "type": "code",
+          "value": "[!NOTE] inside code"
+        }
+      ]
+    }
+  ],
+  "gfmAlertsPlain": [
+    {
+      "name": "important-with-title",
+      "children": [
+        {
+          "type": "blockquote",
+          "data": {
+            "hProperties": {
+              "className": [
+                "gfm-alert",
+                "gfm-alert-important"
+              ]
+            }
+          },
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "设计决策"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "value": " "
+                },
+                {
+                  "type": "text",
+                  "value": "正文"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "inline-code-not-chopped",
+      "children": [
+        {
+          "type": "blockquote",
+          "data": {
+            "hProperties": {
+              "className": [
+                "gfm-alert",
+                "gfm-alert-warning"
+              ]
+            }
+          },
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "在 "
+                },
+                {
+                  "type": "inlineCode",
+                  "value": ".strict()"
+                },
+                {
+                  "type": "text",
+                  "value": " 的世界里"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stripLeadingTitle": [
+    {
+      "name": "strip-first-h1-keep-rest",
+      "children": [
+        {
+          "type": "heading",
+          "depth": 2,
+          "children": [
+            {
+              "type": "text",
+              "value": "A"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "depth": 1,
+          "children": [
+            {
+              "type": "text",
+              "value": "Later"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "h2-first-untouched",
+      "children": [
+        {
+          "type": "heading",
+          "depth": 2,
+          "children": [
+            {
+              "type": "text",
+              "value": "Start"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "depth": 1,
+          "children": [
+            {
+              "type": "text",
+              "value": "Deep"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fence-first-untouched",
+      "children": [
+        {
+          "type": "code",
+          "value": "code"
+        },
+        {
+          "type": "heading",
+          "depth": 1,
+          "children": [
+            {
+              "type": "text",
+              "value": "Title"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "normalizeTitle": [
+    {
+      "input": "第 2 章: 数据预处理",
+      "normalized": "第2章:数据预处理"
+    },
+    {
+      "input": "第2章:数据预处理",
+      "normalized": "第2章:数据预处理"
+    },
+    {
+      "input": "# **Hello** World",
+      "normalized": "helloworld"
+    },
+    {
+      "input": "“引用标题”",
+      "normalized": "引用标题"
+    },
+    {
+      "input": null,
+      "normalized": ""
+    },
+    {
+      "input": "",
+      "normalized": ""
+    }
+  ],
+  "safeBraces": [
+    {
+      "name": "expressions-to-text-identifier-to-dynamicvar-and-strip-comments",
+      "result": {
+        "type": "paragraph",
+        "children": [
+          {
+            "type": "text",
+            "value": "{user.name}"
+          },
+          {
+            "type": "text",
+            "value": "{foo()}"
+          },
+          {
+            "type": "text",
+            "value": "{a ? b : c}"
+          },
+          {
+            "type": "text",
+            "value": "{this}"
+          },
+          {
+            "type": "mdxJsxTextElement",
+            "name": "DynamicVar",
+            "value": "API_KEY",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "API_KEY"
+              }
+            ],
+            "children": []
+          },
+          {
+            "type": "text",
+            "value": "tail"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "op": "course-map-and-cross-repo",
+  "courseMaps": [
+    {
+      "name": "code-clusters-basic",
+      "repoProfile": {
+        "codeClusters": [
+          { "teachingOrder": 1, "title": "起步与环境", "files": ["src/index.ts", "src/env.ts"] },
+          { "teachingOrder": 2, "title": "核心调度 \"Engine\"", "files": ["src/core.ts"] }
+        ]
+      }
+    },
+    {
+      "name": "code-clusters-cognitive-dag",
+      "repoProfile": {
+        "codeClusters": [
+          {
+            "teachingOrder": 1,
+            "title": "基础核心",
+            "directories": ["src/core"],
+            "files": ["src/core/base.ts"],
+            "cognitive": { "phase": "phase1_perception", "upstreamModules": [] }
+          },
+          {
+            "teachingOrder": 2,
+            "title": "流水线调度",
+            "directories": ["src/pipeline"],
+            "files": ["src/pipeline/runner.ts"],
+            "cognitive": { "phase": "phase3_pipeline", "upstreamModules": ["src/core"] }
+          }
+        ]
+      }
+    },
+    {
+      "name": "navtree-fallback",
+      "repoProfile": {},
+      "navTree": [
+        { "name": "intro", "title": "入门指南", "type": "file", "path": "docs/intro.md", "url": "/docs/o/r/intro" },
+        { "name": "advanced", "title": "进阶主题", "type": "file", "path": "docs/advanced.md", "url": "/docs/o/r/advanced" }
+      ]
+    },
+    {
+      "name": "empty-repo",
+      "repoProfile": {},
+      "navTree": []
+    }
+  ],
+  "extractKeywords": [
+    "我要用 Next.js 和 Rust 搭建一个 Web 应用，with async/await"
+  ],
+  "crossRepoConcepts": [
+    {
+      "name": "global-and-single-repo-hits",
+      "query": "响应式",
+      "hits": [
+        {
+          "conceptId": "c1",
+          "conceptName": "响应式数据绑定",
+          "category": "architecture",
+          "globalConceptId": "gc-reactivity",
+          "repoId": "r1",
+          "repoOwner": "vuejs",
+          "repoName": "core",
+          "docPath": "docs/reactivity.md",
+          "address": "docs/reactivity.md#reactivity"
+        },
+        {
+          "conceptId": "c2",
+          "conceptName": "Signals 响应式",
+          "category": "architecture",
+          "globalConceptId": "gc-reactivity",
+          "repoId": "r2",
+          "repoOwner": "solidjs",
+          "repoName": "solid",
+          "docPath": "docs/signals.md",
+          "address": "docs/signals.md#signals"
+        },
+        {
+          "conceptId": "c3",
+          "conceptName": "独有架构设计",
+          "category": "workflow",
+          "globalConceptId": null,
+          "repoId": "r1",
+          "repoOwner": "vuejs",
+          "repoName": "core",
+          "docPath": "docs/arch.md",
+          "address": null
+        }
+      ],
+      "globalConcepts": [
+        ["gc-reactivity", { "canonicalName": "响应式系统", "aliases": ["Reactivity", "Signals"] }]
+      ]
+    },
+    {
+      "name": "no-hits",
+      "query": "未知概念",
+      "hits": [],
+      "globalConcepts": []
+    }
+  ],
+  "recommendTutorial": [
+    {
+      "query": "React 核心",
+      "ranked": [
+        {
+          "repo": { "id": "r1", "owner": "facebook", "repo": "react" },
+          "totalConcepts": 10,
+          "matchedConcepts": [
+            { "conceptName": "Fiber 架构", "category": "architecture", "docPath": "fiber.md", "address": "fiber.md#fiber" }
+          ],
+          "score": 0.8
+        }
+      ]
+    }
+  ],
+  "skillCoverage": [
+    {
+      "skill": "系统设计",
+      "hits": [
+        {
+          "repo": { "id": "r1", "owner": "org1", "repo": "basic-repo" },
+          "conceptName": "基础概念",
+          "category": "principle",
+          "address": "basic.md#1",
+          "prereqCount": 0,
+          "globalConceptId": null
+        },
+        {
+          "repo": { "id": "r2", "owner": "org2", "repo": "deep-repo" },
+          "conceptName": "高级抽象",
+          "category": "architecture",
+          "address": "deep.md#2",
+          "prereqCount": 5,
+          "globalConceptId": null
+        }
+      ]
+    }
+  ]
+}

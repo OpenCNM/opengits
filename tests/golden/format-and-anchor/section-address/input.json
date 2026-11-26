@@ -1,0 +1,12 @@
+{
+  "op": "section-address",
+  "roundTrips": [
+    { "docPath": "docs/getting-started.md", "headingPath": "core > overview" },
+    { "docPath": "docs/a.md", "headingPath": "", "parseInput": "docs/a.md" }
+  ],
+  "cleanAddresses": [
+    { "docPath": "docs/foo.md", "headingPath": "docs/foo.md#上下文设计" },
+    { "docPath": "code/intro.ts", "headingPath": "cluster > overview" },
+    { "docPath": "docs/a.md", "headingPath": "  " }
+  ]
+}
